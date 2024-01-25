@@ -1,10 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+
 .App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
+  background-color: #282c34;
+  color: white;
+  font-family: 'Roboto', sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1 {
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: red;
+}
+
+.row {
+  display: flex;
+}
+
+.cell {
+  border: 1px solid white;
+  width: 20px;
+  height: 20px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -26,6 +48,16 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.row {
+  display: flex;
+}
+
+.cell {
+  border: 1px solid black;
+  width: 20px;
+  height: 20px;
 }
 
 @keyframes App-logo-spin {
