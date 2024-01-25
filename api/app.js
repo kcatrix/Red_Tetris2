@@ -1,24 +1,36 @@
 const express = require('express');
-
 const app = express();
-
+const cors = require('cors');
+const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
+const pieces = require('./pieces');
+
+server.listen(port, () =>
+  console.log(`Server running on port ${port}, http://localhost:${port}`)
+);
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
+});
+
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 app.get('/', (req, res) => {
   res.send('Home Route');
 });
 
-app.listen(port, () =>
-  console.log(`Server running on port ${port}, http://localhost:${port}`)
-);
+io.on('connection', (socket) => {
+  console.log('a user connected');
 
-const pieces = require('./pieces');
- 
-app.get('/random-piece', (req, res) => {
-  const randomIndex = Math.floor(Math.random() * pieces.length);
-  const randomPiece = pieces[randomIndex];
-  console.log("random = ", randomPiece);
-  res.json(randomPiece);
+  socket.on('requestRandomPiece', () => {
+    const randomIndex = Math.floor(Math.random() * pieces.length);
+    const randomPiece = pieces[randomIndex];
+    socket.emit('randomPiece', randomPiece);
+  });
 });
+
 
 

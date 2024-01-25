@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import io from 'socket.io-client';
 
 function App() {
   const rows = [];
@@ -10,6 +11,13 @@ function App() {
     }
     rows.push(<div className="row" key={i}>{cells}</div>);
   }
+
+  const socket = io('http://localhost:4000');
+
+  socket.emit('requestRandomPiece');
+  socket.on('randomPiece', (randomPiece) => {
+    console.log(randomPiece);
+  });
 
   return (
     <div className="App">
