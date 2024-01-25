@@ -13,9 +13,12 @@ app.listen(port, () =>
 );
 
 const pieces = require('./pieces');
-
-app.get('/pieces', (req, res) => {
-  res.json(pieces);
+ 
+app.get('/random-piece', (req, res) => {
+  const randomIndex = Math.floor(Math.random() * pieces.length);
+  const randomPiece = pieces[randomIndex];
+  console.log("random = ", randomPiece);
+  res.json(randomPiece);
 });
 
-console.log(pieces);
+
