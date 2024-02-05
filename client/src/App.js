@@ -1,28 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import Game from './Game';
 import io from 'socket.io-client';
 
 function App() {
-  const rows = [];
-  for (let i = 0; i < 20; i++) {
-    const cells = [];
-    for (let j = 0; j < 10; j++) {
-      cells.push(<div className="cell" key={j}></div>);
-    }
-    rows.push(<div className="row" key={i}>{cells}</div>);
-  }
+  const [socket, setSocket] = useState(null);
+  const [piece, setPiece] = useState(null);
 
-  const socket = io('http://localhost:4000');
+  // Connexion au serveur socket.io
+  useEffect(() => {
+    const socketIo = io('http://localhost:4000');
+    setSocket(socketIo);
 
-  socket.emit('requestRandomPiece');
-  socket.on('randomPiece', (randomPiece) => {
-    console.log(randomPiece);
-  });
+    socketIo.on('randomPiece', (randomPiece) => {
+      setPiece(randomPiece);
+    });
+
+    socketIo.emit('requestRandomPiece');
+
+    // Nettoyer la connexion socket lors du démontage du composant
+    return () => socketIo.disconnect();
+  }, []);
 
   return (
     <div className="App">
-      <h1>RED_TETRIS</h1>
-      {rows}
+      <Game piece={piece} />
     </div>
   );
 }

@@ -60,6 +60,11 @@ h1 {
   height: 20px;
 }
 
+/* css des pieces */
+.cell.piece {
+  background-color: red;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
