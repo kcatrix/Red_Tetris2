@@ -1,4 +1,5 @@
-function Game({ piece, onPieceLanded }) {
+function Game({ pieces, onPieceLanded }) {
+    console.log(pieces[0]);
     // Construction de la grille de jeu
     const rows = [];
     for (let i = 0; i < 20; i++) {

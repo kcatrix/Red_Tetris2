@@ -28,7 +28,7 @@ function App() {
 
   return (
     <div className="App">
-      <Game piece={pieces} onPieceLanded={handlePieceLanded} />
+      <Game pieces={pieces} onPieceLanded={handlePieceLanded} />
     </div>
   );
 }
