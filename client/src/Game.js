@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 function Game({ piece, onPieceLanded }) {
     console.log(piece);
-    const pieceWidth = piece && piece[0] ? piece[0].length : 0;
     // Initialiser la position de la pièce au sommet du tableau
-    const [position, setPosition] = useState({ x: Math.floor((10 - pieceWidth) / 2), y: 0 });
+    const [position, setPosition] = useState({ x: 4, y: 0 });
     let index = 0;
     // Mettre à jour la position de la pièce à chaque seconde
     useEffect(() => {
@@ -12,6 +11,7 @@ function Game({ piece, onPieceLanded }) {
             setPosition((prev) => {
                 const newY = prev.y + 1;
                 const pieceHeight = piece ? piece.length : 0;
+                const pieceWidth = piece && piece[0] ? piece[0].length : 0;
                 // Vérifie si la nouvelle position Y est en dehors de la grille
                 if (newY + pieceHeight <= 20 && prev.x + pieceWidth <= 10) { // Ajoutez la hauteur de la pièce à la position y
                     return { ...prev, y: newY };
