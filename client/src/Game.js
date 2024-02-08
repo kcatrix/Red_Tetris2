@@ -1,5 +1,5 @@
 function Game({ pieces, onPieceLanded }) {
-    console.log(pieces[0]);
+    const [position, setPosition] = useState({ x: 4, y: 0 });
     // Construction de la grille de jeu
     const rows = [];
     for (let i = 0; i < 20; i++) {
