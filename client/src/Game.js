@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-function Game({ piece }) {
+function Game({ piece, onPieceLanded }) {
 	// Initialiser la position de la pièce au sommet du tableau
 	const [position, setPosition] = useState({ x: 4, y: 0 });
-
+	let index = 0;
 	// Mettre à jour la position de la pièce à chaque seconde
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -14,7 +14,7 @@ function Game({ piece }) {
 			  return { ...prev, y: newY };
 			} else {
 			  // Si la pièce est en dehors de la grille, arrêtez de mettre à jour la position
-			  clearInterval(interval);
+			  onPieceLanded();
 			  return prev;
 			}
 		  });
@@ -44,3 +44,4 @@ function Game({ piece }) {
 }
 
 export default Game;
+

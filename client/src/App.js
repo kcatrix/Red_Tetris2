@@ -5,7 +5,11 @@ import io from 'socket.io-client';
 
 function App() {
   const [socket, setSocket] = useState(null);
-  const [piece, setPiece] = useState(null);
+  const [pieces, setPieces] = useState([]); // Array to hold the pieces
+
+  const handlePieceLanded = () => {
+    socket.emit('requestRandomPiece');
+  };
 
   // Connexion au serveur socket.io
   useEffect(() => {
@@ -13,7 +17,7 @@ function App() {
     setSocket(socketIo);
 
     socketIo.on('randomPiece', (randomPiece) => {
-      setPiece(randomPiece);
+      setPieces(prevPieces => [...prevPieces, randomPiece]); // Add the randomPiece to the pieces array
     });
 
     socketIo.emit('requestRandomPiece');
@@ -24,7 +28,7 @@ function App() {
 
   return (
     <div className="App">
-      <Game piece={piece} />
+      <Game piece={pieces} onPieceLanded={handlePieceLanded} />
     </div>
   );
 }
