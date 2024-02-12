@@ -82,7 +82,7 @@ const removePiece = (piece, position) => {
 
 useEffect(() => {
   removePiece(pieces[pieceIndex], position[pieceIndex]);
-  // position[pieceIndex].y++;
+  setPosition({...position, y: position.y + 1});
 }, [isPieceDropping]);
 
 const launchGame = () => {
