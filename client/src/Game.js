@@ -67,12 +67,18 @@
 import React, { useState, useEffect } from 'react';
 
 function Game({ pieces, onPieceLanded }) {
+
+    console.log("pieces = ", pieces[0])
   // Définir une pièce
+
   const piece = [
     [0, 1, 0],
     [1, 1, 1],
-    [0, 0, 0]
+
   ];
+
+console.log("pieces = ", pieces[0])
+console.log("piece = ", piece)
 
   // Définir le plateau de jeu
   const [rows, setRows] = useState([
