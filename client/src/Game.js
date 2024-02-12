@@ -5,6 +5,8 @@ function Game({ pieces, onPieceLanded }) {
 //Pieces actuelle dans le tableau de piece
 const [pieceIndex, setPieceIndex] = useState(0);
 const [position, setPosition] = useState([{x: 4, y: 0}]);
+const [isPieceDropping, setIsPieceDropping] = useState(false);
+const [gameLaunched, setGameLaunched] = useState(false);
 
   // Définir le plateau de jeu
   const [rows, setRows] = useState([
@@ -45,14 +47,9 @@ const [position, setPosition] = useState([{x: 4, y: 0}]);
     });
   };
 
-const dropPiece = (piece, position) => {
-    removePiece(piece, position);
-    console.log("rows = ", rows);
-    position.y++;
-    addPieceToRow(piece, position);
-}
 
 const removePiece = (piece, position) => {
+  if (!piece || !position) return;
     setRows(prevRows => {
         let newRows = [...prevRows];
         for (let y = 0; y < piece.length; y++) {
@@ -70,11 +67,27 @@ const removePiece = (piece, position) => {
   
   // Appeler la fonction addPieceToRow lorsque le composant est monté
   useEffect(() => {
-    if (!pieces[pieceIndex] || !position) return;
+    if (!pieces[pieceIndex] || !position || !gameLaunched) return;
+    console.log("game");
+    const intervalId = setInterval(() => {
     addPieceToRow(pieces[pieceIndex], position[pieceIndex]);
-    // dropPiece(pieces[pieceIndex], position[pieceIndex]);
+    setIsPieceDropping(true);
     // console.log(rows);
-  }, [pieces]);
+    // console.log("pieceIndex = ", pieceIndex);
+  }, 1000);
+
+  return () => clearInterval(intervalId);
+}, [gameLaunched]);
+
+
+useEffect(() => {
+  removePiece(pieces[pieceIndex], position[pieceIndex]);
+  // position[pieceIndex].y++;
+}, [isPieceDropping]);
+
+const launchGame = () => {
+  setGameLaunched(true);
+};
 
   return (
     <div className="Game">
@@ -88,6 +101,7 @@ const removePiece = (piece, position) => {
           </div>
         )}
       </div>
+      <button onClick={launchGame}>Launch Game</button>
     </div>
   );
 }
