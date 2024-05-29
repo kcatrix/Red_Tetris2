@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 function Game({ pieces, onPieceLanded }) {
   const [pieceIndex, setPieceIndex] = useState(0);
-  const [position, setPosition] = useState({ x: 4, y: 0 });
+  const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [isPieceDropping, setIsPieceDropping] = useState(false);
   const [gameLaunched, setGameLaunched] = useState(false);
 
@@ -40,13 +40,16 @@ function Game({ pieces, onPieceLanded }) {
 
   useEffect(() => {
     if (!gameLaunched || !pieces[pieceIndex]) return;
+    addPieceToRow(pieces[pieceIndex], position[pieceIndex]);
 
     const intervalId = setInterval(() => {
-      setPosition(prevPosition => {
-        const newPosition = { ...prevPosition, y: prevPosition.y + 1 };
-        removePiece(pieces[pieceIndex], prevPosition);
+      setPosition(prevPositions => {
+        const newPosition = { ...prevPositions[pieceIndex], y: prevPositions[pieceIndex].y + 1 };
+        removePiece(pieces[pieceIndex], prevPositions[pieceIndex]);
         addPieceToRow(pieces[pieceIndex], newPosition);
-        return newPosition;
+        const newPositions = [...prevPositions];
+        newPositions[pieceIndex] = newPosition;
+        return newPositions;
       });
     }, 1000);
 
