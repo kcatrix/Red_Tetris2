@@ -23,3 +23,7 @@ git:
 	git add .
 	git commit -m "auto commit"
 	git push
+
+git_reset:
+	git fetch origin
+	git reset --hard origin/master
