@@ -25,8 +25,7 @@ function Game({ pieces, onPieceLanded }) {
   };
 
   const check_collison = (piece ,position) => {
-    console.log(position.y)
-    if (position.y == 17)
+    if (position.y == rows.length - 1 - piece.length)
       return true
     else 
       return false
