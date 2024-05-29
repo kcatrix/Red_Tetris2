@@ -24,6 +24,13 @@ function Game({ pieces, onPieceLanded }) {
     });
   };
 
+  const check_collison = (piece ,position) => {
+    console.log(position.y)
+    if (position.y == 17)
+      return true
+    else 
+      return false
+  }
   const removePiece = (piece, position) => {
     setRows(prevRows => {
       let newRows = [...prevRows];
@@ -44,6 +51,8 @@ function Game({ pieces, onPieceLanded }) {
 
     const intervalId = setInterval(() => {
       setPosition(prevPositions => {
+        if (check_collison(pieces[pieceIndex], prevPositions[pieceIndex]))
+          clearInterval(intervalId)
         const newPosition = { ...prevPositions[pieceIndex], y: prevPositions[pieceIndex].y + 1 };
         removePiece(pieces[pieceIndex], prevPositions[pieceIndex]);
         addPieceToRow(pieces[pieceIndex], newPosition);
