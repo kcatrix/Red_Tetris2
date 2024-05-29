@@ -28,13 +28,62 @@ function Game({ pieces, onPieceLanded }) {
     });
   };
 
+
+
   const check_collison = (piece ,position) => {
-    if (position.y == rows.length - 1 - piece.length)
-      return true
+    // console.log("position y = ", position.x)
+    // console.log("rows = ", rows)
+    if ((position.y == rows.length - 1 - piece.length) || (position.x < 0 || position.x > 7)) //check collision growd only
+      return 1
     else 
-      return false
+      return 0
   };
 
+  //---------------------gestion des touches---------------------
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!gameLaunched || !pieces[pieceIndex]) return;
+      let newPosition = { ...position[pieceIndex] };
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          newPosition.x -= 1;
+          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
+          break;
+        case 'ArrowRight':
+          newPosition.x += 1;
+          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
+          break;
+        // Add other cases for ArrowDown, etc.
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [gameLaunched, pieces, pieceIndex, position]);
+
+  //---------------------gestion de la chute---------------------
 
   useEffect(() => {
     if (!gameLaunched || !pieces[pieceIndex]) return;
@@ -42,7 +91,7 @@ function Game({ pieces, onPieceLanded }) {
 
     const intervalId = setInterval(() => {
       setPosition(prevPositions => {
-        if (check_collison(pieces[pieceIndex], prevPositions[pieceIndex]))
+        if (check_collison(pieces[pieceIndex], prevPositions[pieceIndex]) == 1)
           clearInterval(intervalId)
         const newPosition = { ...prevPositions[pieceIndex], y: prevPositions[pieceIndex].y + 1 };
         writePiece(0, pieces[pieceIndex], prevPositions[pieceIndex]);
