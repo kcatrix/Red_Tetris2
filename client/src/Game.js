@@ -30,7 +30,7 @@ function Game({ pieces, onPieceLanded }) {
 
 
 
-  const check_collison = (piece ,position) => {
+  const checkCollision = (piece ,position) => {
     // console.log("position y = ", position.x)
     // console.log("rows = ", rows)
     if ((position.y == rows.length - 1 - piece.length) || (position.x < 0 || position.x > 7)) //check collision growd only
@@ -49,7 +49,7 @@ function Game({ pieces, onPieceLanded }) {
       switch (event.key) {
         case 'ArrowLeft':
           newPosition.x -= 1;
-          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -61,7 +61,7 @@ function Game({ pieces, onPieceLanded }) {
           break;
         case 'ArrowRight':
           newPosition.x += 1;
-          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -86,24 +86,36 @@ function Game({ pieces, onPieceLanded }) {
   //---------------------gestion de la chute---------------------
 
   useEffect(() => {
-    if (!gameLaunched || !pieces[pieceIndex]) return;
-    writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+    if (!gameLaunched) return;
+	writePiece(1, pieces[pieceIndex], position[pieceIndex]);
 
     const intervalId = setInterval(() => {
-      setPosition(prevPositions => {
-        if (check_collison(pieces[pieceIndex], prevPositions[pieceIndex]) == 1)
-          clearInterval(intervalId)
-        const newPosition = { ...prevPositions[pieceIndex], y: prevPositions[pieceIndex].y + 1 };
-        writePiece(0, pieces[pieceIndex], prevPositions[pieceIndex]);
-        writePiece(1, pieces[pieceIndex], newPosition);
-        const newPositions = [...prevPositions];
-        newPositions[pieceIndex] = newPosition;
+      setPosition(prevPosition => {
+        const currentPiece = pieces[pieceIndex];
+        const currentPos = prevPosition[pieceIndex];
+        const newPos = { ...currentPos, y: currentPos.y + 1 };
+
+        if (checkCollision(currentPiece, currentPos)) {
+          const nextIndex = (pieceIndex + 1) % pieces.length;
+          setPieceIndex(nextIndex); // Incrémenter directement dans le set ne marche pas
+          return [...prevPosition, { x: 4, y: 0 }];
+		  // on ne peut pas retourner position avec piece index, piece index ne peut pas etre utilisé/
+		  // dans cette instance car la variable ne sera pas modifié dans ce set Interval
+        }
+
+		writePiece(0, pieces[pieceIndex], currentPos);
+		writePiece(1, pieces[pieceIndex], newPos);
+
+        const newPositions = [...prevPosition];
+        newPositions[pieceIndex] = newPos;
         return newPositions;
       });
+
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [gameLaunched, pieces, pieceIndex]);
+  }, [gameLaunched, pieceIndex, pieces]);
+
 
   const launchGame = () => {
     setGameLaunched(true);

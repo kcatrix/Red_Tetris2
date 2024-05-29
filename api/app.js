@@ -4,6 +4,7 @@ const cors = require('cors');
 const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
 const pieces = require('./pieces');
+const nmbrPieces = 20;
 
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://localhost:${port}`)
@@ -26,9 +27,11 @@ io.on('connection', (socket) => {
   console.log('a user connected');
 
   socket.on('requestRandomPiece', () => {
-    const randomIndex = Math.floor(Math.random() * pieces.length);
-    const randomPiece = pieces[randomIndex];
-    socket.emit('randomPiece', randomPiece);
+	for (i = 0; i < nmbrPieces; i++) {
+		const randomIndex = Math.floor(Math.random() * pieces.length);
+		const randomPiece = pieces[randomIndex];
+		socket.emit('randomPiece', randomPiece);
+	};
   });
 });
 
