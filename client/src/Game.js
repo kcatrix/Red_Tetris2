@@ -32,7 +32,7 @@ const [gameLaunched, setGameLaunched] = useState(false);
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
-  const addPieceToRow = (piece, position) => {
+  const addPieceToRow = async (piece, position) => {
     setRows(prevRows => {
       let newRows = [...prevRows];
       for (let y = 0; y < piece.length; y++) {
@@ -48,9 +48,10 @@ const [gameLaunched, setGameLaunched] = useState(false);
   };
 
 
-const removePiece = (piece, position) => {
+const removePiece = async (piece, position) => {
+  await timeout(800);
   if (!piece || !position) return;
-    setRows(prevRows => {
+     setRows(prevRows => {
         let newRows = [...prevRows];
         for (let y = 0; y < piece.length; y++) {
           for (let x = 0; x < piece[y].length; x++) {
@@ -64,29 +65,41 @@ const removePiece = (piece, position) => {
         return newRows;
       });
 };
-  
+
+function timeout(delay) {
+  return new Promise( res => setTimeout(res, delay) );
+}
+
   // Appeler la fonction addPieceToRow lorsque le composant est monté
-  useEffect(() => {
-    if (!pieces[pieceIndex] || !position || !gameLaunched) return;
-    console.log("game");
-    const intervalId = setInterval(() => {
-    addPieceToRow(pieces[pieceIndex], position[pieceIndex]);
-    setIsPieceDropping(true);
-    // console.log(rows);
-    // console.log("pieceIndex = ", pieceIndex);
-  }, 1000);
+//   useEffect(() => {
+//     if (!pieces[pieceIndex] || !position || !gameLaunched) return;
+//     console.log("game");
+//     const intervalId = setInterval(() => {
+//     addPieceToRow(pieces[pieceIndex], position[pieceIndex]);
+//     setIsPieceDropping(true);
+//     // console.log(rows);
+//     // console.log("pieceIndex = ", pieceIndex);
+//   }, 1000);
 
-  return () => clearInterval(intervalId);
-}, [gameLaunched]);
+//   return () => clearInterval(intervalId);
+// }, [gameLaunched]);
 
 
-useEffect(() => {
-  removePiece(pieces[pieceIndex], position[pieceIndex]);
-  setPosition({...position, y: position.y + 1});
-}, [isPieceDropping]);
+// useEffect(() => {
+//   removePiece(pieces[pieceIndex], position[pieceIndex]);
+//   setPosition({...position, y: position.y + 1});
+// }, [isPieceDropping]);
 
 const launchGame = () => {
   setGameLaunched(true);
+  const intervalId = setInterval(async () => {
+  await addPieceToRow(pieces[pieceIndex], position[pieceIndex]);
+  setPosition({...position, y: position.y + 1});
+  setIsPieceDropping(true);
+  console.log(rows);
+  await removePiece(pieces[pieceIndex], position[pieceIndex]);
+  }, 2000);
+  return () => clearInterval(intervalId);
 };
 
   return (
