@@ -6,21 +6,24 @@ import io from 'socket.io-client';
 function App() {
   const [socket, setSocket] = useState(null);
   const [pieces, setPieces] = useState([]); // Array to hold the pieces
-
-  const handlePieceLanded = () => {
-    socket.emit('requestRandomPiece');
-  };
+  const [catalogPieces, setCatalogPieces] = useState([]);
 
   // Connexion au serveur socket.io
   useEffect(() => {
     const socketIo = io('http://localhost:4000');
     setSocket(socketIo);
 
+    socketIo.emit('requestRandomPiece');
+
     socketIo.on('randomPiece', (randomPiece) => {
       setPieces(prevPieces => [...prevPieces, randomPiece]); // Add the randomPiece to the pieces array
     });
 
-    socketIo.emit('requestRandomPiece');
+	socketIo.emit('allPieces')
+
+	socketIo.on('piecesDelivered', (Pieces) => {
+		setCatalogPieces(Pieces);
+	});
 
     // Nettoyer la connexion socket lors du démontage du composant
     return () => socketIo.disconnect();
@@ -28,7 +31,7 @@ function App() {
 
   return (
     <div className="App">
-      <Game pieces={pieces} onPieceLanded={handlePieceLanded} />
+      <Game pieces={pieces} catalogPieces={catalogPieces} />
     </div>
   );
 }

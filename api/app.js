@@ -34,6 +34,9 @@ io.on('connection', (socket) => {
 		socket.emit('randomPiece', randomPiece);
 	};
   });
+	socket.on('allPieces', () => {
+		socket.emit('piecesDelivered', pieces);
+	});
 });
 
 

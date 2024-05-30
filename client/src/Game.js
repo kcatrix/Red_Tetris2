@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-function Game({ pieces, onPieceLanded }) {
+function Game({ pieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [isPieceDropping, setIsPieceDropping] = useState(false);
   const [gameLaunched, setGameLaunched] = useState(false);
   const [timer, setTimer] = useState(1000);
-  const [actualIndex, setActualIndex] = useState(0);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -118,7 +117,17 @@ function Game({ pieces, onPieceLanded }) {
                 return newPositions;
               });
             }
-            break;
+          break;
+		//   case 'ArrowUp': // faire tourner la piece
+		// 	// const newPieces = catalogPieces.map(matchingPiece => {
+		// 	// 	if (matchingPiece == pieces[pieceIndex])
+					
+		// 	// });
+        //     if (checkCollision(newPieces[pieceIndex], position[pieceIndex]) === 0) {
+        //       writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+		// 	  writePiece(1, newPieces[pieceIndex], position[pieceIndex]);
+        //     }
+		// 	break;
         default:
           break;
       }
@@ -131,7 +140,7 @@ function Game({ pieces, onPieceLanded }) {
 
   }, [pieceIndex, position]);
 
-    
+  //---------------------gestion rotation------------------------ 
   //---------------------gestion de la chute---------------------
 
   useEffect(() => {
