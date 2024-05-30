@@ -29,7 +29,8 @@ io.on('connection', (socket) => {
   socket.on('requestRandomPiece', () => {
 	for (i = 0; i < nmbrPieces; i++) {
 		const randomIndex = Math.floor(Math.random() * pieces.length);
-		const randomPiece = pieces[randomIndex];
+		const randomPieces = pieces[randomIndex];
+		const randomPiece = randomPieces[Math.floor(Math.random() * 4)] 
 		socket.emit('randomPiece', randomPiece);
 	};
   });

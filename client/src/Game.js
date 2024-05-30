@@ -6,6 +6,7 @@ function Game({ pieces, onPieceLanded }) {
   const [isPieceDropping, setIsPieceDropping] = useState(false);
   const [gameLaunched, setGameLaunched] = useState(false);
   const [timer, setTimer] = useState(1000);
+  const [actualIndex, setActualIndex] = useState(0);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -128,7 +129,7 @@ function Game({ pieces, onPieceLanded }) {
       window.removeEventListener('keydown', handleKeyDown);
     };
 
-  }, [gameLaunched, pieces, pieceIndex, position]);
+  }, [pieceIndex, position]);
 
     
   //---------------------gestion de la chute---------------------
