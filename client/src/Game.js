@@ -28,13 +28,26 @@ function Game({ pieces, onPieceLanded }) {
     });
   };
 
+  // a placer dans fonction pratique
+  const maxRangeX = (piece, position) => {
+    let max = 0 ;
+    for (let i = 0; i < piece.length; i++) {
+      for (let j = 0; j < piece[i].length; j++) {
+        if (max < j && piece[i][j] == 1)
+          max = j;
+      }
+    }
+    return max + position.x;
+  }
 
 
   const checkCollision = (piece ,position) => {
-    // console.log("position y = ", position.x)
-    // console.log("rows = ", rows)
-    if ((position.y == rows.length - 1 - piece.length) || (position.x < 0 || position.x > 7)) //check collision growd only
+    const overstepGridOnY = rows.length - 1 - piece.length;
+    const maxGridOnX = 9;
+    if ((position.y == overstepGridOnY) || (position.x < 0 || maxRangeX(piece, position) > maxGridOnX)) //check collision growd only
       return 1
+    else if (position.y + 1 == 1 || position.x + 1 == 1 || position.y - 1 == 1 || position.x - 1 == 1)
+      return 2
     else 
       return 0
   };
