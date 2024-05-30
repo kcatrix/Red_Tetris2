@@ -28,13 +28,26 @@ function Game({ pieces, onPieceLanded }) {
     });
   };
 
+  // a placer dans fonction pratique
+  const maxRangeX = (piece, position) => {
+    let max = 0 ;
+    for (let i = 0; i < piece.length; i++) {
+      for (let j = 0; j < piece[i].length; j++) {
+        if (max < j && piece[i][j] == 1)
+          max = j;
+      }
+    }
+    return max + position.x;
+  }
 
 
-  const check_collison = (piece ,position) => {
-    // console.log("position y = ", position.x)
-    // console.log("rows = ", rows)
-    if ((position.y == rows.length - 1 - piece.length) || (position.x < 0 || position.x > 7)) //check collision growd only
+  const checkCollision = (piece ,position) => {
+    const overstepGridOnY = rows.length - 1 - piece.length;
+    const maxGridOnX = 9;
+    if ((position.y == overstepGridOnY) || (position.x < 0 || maxRangeX(piece, position) > maxGridOnX)) //check collision growd only
       return 1
+    else if (position.y + 1 == 1 || position.x + 1 == 1 || position.y - 1 == 1 || position.x - 1 == 1)
+      return 2
     else 
       return 0
   };
@@ -49,7 +62,7 @@ function Game({ pieces, onPieceLanded }) {
       switch (event.key) {
         case 'ArrowLeft':
           newPosition.x -= 1;
-          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -61,7 +74,7 @@ function Game({ pieces, onPieceLanded }) {
           break;
         case 'ArrowRight':
           newPosition.x += 1;
-          if (check_collison(pieces[pieceIndex], newPosition) === 0) {
+          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -91,7 +104,7 @@ function Game({ pieces, onPieceLanded }) {
 
     const intervalId = setInterval(() => {
       setPosition(prevPositions => {
-        if (check_collison(pieces[pieceIndex], prevPositions[pieceIndex]) == 1)
+        if (checkCollision(pieces[pieceIndex], prevPositions[pieceIndex]) == 1)
           clearInterval(intervalId)
         const newPosition = { ...prevPositions[pieceIndex], y: prevPositions[pieceIndex].y + 1 };
         writePiece(0, pieces[pieceIndex], prevPositions[pieceIndex]);
