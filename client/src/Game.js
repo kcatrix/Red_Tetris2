@@ -5,6 +5,7 @@ function Game({ pieces, onPieceLanded }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [isPieceDropping, setIsPieceDropping] = useState(false);
   const [gameLaunched, setGameLaunched] = useState(false);
+  const [timer, setTimer] = useState(1000);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -29,28 +30,49 @@ function Game({ pieces, onPieceLanded }) {
   };
 
   // a placer dans fonction pratique
-  const maxRangeX = (piece, position) => {
-    let max = 0 ;
-    for (let i = 0; i < piece.length; i++) {
-      for (let j = 0; j < piece[i].length; j++) {
-        if (max < j && piece[i][j] == 1)
-          max = j;
-      }
+  const rangeDiscover = (piece, position, option) => {
+    const maxRangeY = piece.length;
+    const maxGridOnX = 9;
+    const maxGridOnY = 19;
+
+    switch (option) {
+
+      case "+x":
+
+        let max = 0 ;
+        for (let i = 0; i < maxRangeY; i++) {
+          for (let j = 0; j < piece[i].length; j++) {
+            if (max < j && piece[i][j] == 1)
+              max = j;
+          }
+        }
+
+      return (max + position.x);
+
+      case "-x":
+        return position.x;
+
+      case "+y":
+        return (position.y + maxRangeY);
+
+      case "-y":
+        return (position.y);
     }
-    return max + position.x;
   }
 
 
-  const checkCollision = (piece ,position) => {
-    const overstepGridOnY = rows.length - 1 - piece.length;
+  const checkCollision = (piece, position, rows) => {
+    const maxRangeY = piece.length;
     const maxGridOnX = 9;
-    if ((position.y == overstepGridOnY) || (position.x < 0 || maxRangeX(piece, position) > maxGridOnX)) //check collision growd only
-      return 1
-    else if (position.y + 1 == 1 || position.x + 1 == 1 || position.y - 1 == 1 || position.x - 1 == 1)
-      return 2
+    const maxGridOnY = 19;
+    if (position.y + maxRangeY > maxGridOnY || position.x < 0 || rangeDiscover(piece, position, "+x") > maxGridOnX ) //check collision grid only || rows[rangeDiscover(piece, position, "+y") + 1][position.x] == 1
+      return 1;
+    // else if ( rows[position.y + 1][position.x] == 1 || rangeDiscover(piece, position) + 1 == 1 || position.x - 1 == 1)
+    //    return 2;
     else 
-      return 0
+      return 0;
   };
+
 
   //---------------------gestion des touches---------------------
 
@@ -84,7 +106,18 @@ function Game({ pieces, onPieceLanded }) {
             });
           }
           break;
-        // Add other cases for ArrowDown, etc.
+          case 'ArrowDown':
+            newPosition.y += 1;
+            if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
+              writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+              setPosition(prevPositions => {
+                const newPositions = [...prevPositions];
+                newPositions[pieceIndex] = newPosition;
+                writePiece(1, pieces[pieceIndex], newPosition);
+                return newPositions;
+              });
+            }
+            break;
         default:
           break;
       }
@@ -94,13 +127,15 @@ function Game({ pieces, onPieceLanded }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
+
   }, [gameLaunched, pieces, pieceIndex, position]);
 
+    
   //---------------------gestion de la chute---------------------
 
   useEffect(() => {
     if (!gameLaunched) return;
-	writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+	    writePiece(1, pieces[pieceIndex], position[pieceIndex]);
 
     const intervalId = setInterval(() => {
       setPosition(prevPosition => {
@@ -108,23 +143,23 @@ function Game({ pieces, onPieceLanded }) {
         const currentPos = prevPosition[pieceIndex];
         const newPos = { ...currentPos, y: currentPos.y + 1 };
 
-        if (checkCollision(currentPiece, currentPos)) {
-          const nextIndex = (pieceIndex + 1) % pieces.length;
+        if (checkCollision(currentPiece, currentPos, rows) == 1) {
+          const nextIndex = (pieceIndex + 1);
           setPieceIndex(nextIndex); // Incrémenter directement dans le set ne marche pas
           return [...prevPosition, { x: 4, y: 0 }];
 		  // on ne peut pas retourner position avec piece index, piece index ne peut pas etre utilisé/
 		  // dans cette instance car la variable ne sera pas modifié dans ce set Interval
         }
 
-		writePiece(0, pieces[pieceIndex], currentPos);
-		writePiece(1, pieces[pieceIndex], newPos);
+        writePiece(0, pieces[pieceIndex], currentPos);
+        writePiece(1, pieces[pieceIndex], newPos);
 
         const newPositions = [...prevPosition];
         newPositions[pieceIndex] = newPos;
         return newPositions;
       });
 
-    }, 1000);
+    }, timer);
 
     return () => clearInterval(intervalId);
   }, [gameLaunched, pieceIndex, pieces]);
