@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function Game({ pieces, catalogPieces }) {
+function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [isPieceDropping, setIsPieceDropping] = useState(false);
@@ -60,6 +60,21 @@ function Game({ pieces, catalogPieces }) {
     }
   }
 
+  const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
+	let newPiece = [];
+	var hash = {};
+	for(var i = 0 ; i < catalogPieces.length; i += 1) {
+		for(var j = 0; j < catalogPieces[i].length; j++) {
+    		hash[catalogPieces[i][j]] = [i, j];
+		}
+	}
+
+	if(hash.hasOwnProperty(pieces[pieceIndex])) {
+   	 newPiece = (hash[pieces[pieceIndex]]);
+	}
+  	console.log(newPiece);
+ 	return newPiece;
+}
 
   const checkCollision = (piece, position, rows) => {
     const maxRangeY = piece.length;
@@ -118,16 +133,23 @@ function Game({ pieces, catalogPieces }) {
               });
             }
           break;
-		//   case 'ArrowUp': // faire tourner la piece
-		// 	// const newPieces = catalogPieces.map(matchingPiece => {
-		// 	// 	if (matchingPiece == pieces[pieceIndex])
-					
-		// 	// });
-        //     if (checkCollision(newPieces[pieceIndex], position[pieceIndex]) === 0) {
-        //       writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-		// 	  writePiece(1, newPieces[pieceIndex], position[pieceIndex]);
-        //     }
-		// 	break;
+		  case 'ArrowUp': // faire tourner la piece
+		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
+		  if (newPiecePosition[1] + 1 == 4 || newPiecePosition[0] == 3) // 3 représente le carré
+			newPiecePosition[1] = 0;
+		  else
+		    newPiecePosition[1] = newPiecePosition[1] + 1;
+		  const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+          if (checkCollision(newPiece, position[pieceIndex]) === 0) {
+			  setPieces(oldPieces => {
+				  const newPieces = [...oldPieces];
+				  newPieces[pieceIndex] = newPiece;
+				  return newPieces;
+			  });
+			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+			writePiece(1, newPiece, position[pieceIndex]);
+          }
+			break;
         default:
           break;
       }
@@ -145,7 +167,7 @@ function Game({ pieces, catalogPieces }) {
 
   useEffect(() => {
     if (!gameLaunched) return;
-	    writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+	    // writePiece(1, pieces[pieceIndex], position[pieceIndex]);
 
     const intervalId = setInterval(() => {
       setPosition(prevPosition => {

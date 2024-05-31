@@ -21,8 +21,8 @@ function App() {
 
 	socketIo.emit('allPieces')
 
-	socketIo.on('piecesDelivered', (Pieces) => {
-		setCatalogPieces(Pieces);
+	socketIo.on('piecesDelivered', (pieces) => {
+		setCatalogPieces(pieces);
 	});
 
     // Nettoyer la connexion socket lors du démontage du composant
@@ -31,7 +31,7 @@ function App() {
 
   return (
     <div className="App">
-      <Game pieces={pieces} catalogPieces={catalogPieces} />
+      <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} />
     </div>
   );
 }
