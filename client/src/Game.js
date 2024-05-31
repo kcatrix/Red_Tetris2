@@ -7,9 +7,28 @@ function Game({ pieces, onPieceLanded }) {
   const [gameLaunched, setGameLaunched] = useState(false);
   const [timer, setTimer] = useState(1000);
 
-  const [rows, setRows] = useState(
-    Array.from({ length: 20 }, () => Array(10).fill(0))
-  );
+  const [rows, setRows] = useState([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
 
   // Action premet de supprimer quand on donne 0 ou d'écrire quand on donne 1
   const writePiece = (action, piece, position) => {
@@ -25,6 +44,7 @@ function Game({ pieces, onPieceLanded }) {
           }
         }
       }
+
       return newRows;
     });
   };
@@ -65,11 +85,15 @@ function Game({ pieces, onPieceLanded }) {
     const maxRangeY = piece.length;
     const maxGridOnX = 9;
     const maxGridOnY = 19;
+    // console.log("position x = ", position.x)
+    // console.log("position y = ", position.y)
+    // if (rows != undefined)
+    //   console.log(rows[position.x][position.y + 2])
     if (position.y + maxRangeY > maxGridOnY || position.x < 0 || rangeDiscover(piece, position, "+x") > maxGridOnX ) //check collision grid only || rows[rangeDiscover(piece, position, "+y") + 1][position.x] == 1
       return 1;
-    // else if ( rows[position.y + 1][position.x] == 1 || rangeDiscover(piece, position) + 1 == 1 || position.x - 1 == 1)
-    //    return 2;
-    else 
+    else if (rows != undefined && rows[position.x][position.y + 2] == 1)
+      return 1
+    else
       return 0;
   };
 
@@ -84,7 +108,7 @@ function Game({ pieces, onPieceLanded }) {
       switch (event.key) {
         case 'ArrowLeft':
           newPosition.x -= 1;
-          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
+          if (newPosition.x > -1 && checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -96,7 +120,7 @@ function Game({ pieces, onPieceLanded }) {
           break;
         case 'ArrowRight':
           newPosition.x += 1;
-          if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
+          if (newPosition.x < 8 && checkCollision(pieces[pieceIndex], newPosition) === 0) {
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -108,7 +132,7 @@ function Game({ pieces, onPieceLanded }) {
           break;
           case 'ArrowDown':
             newPosition.y += 1;
-            if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
+            if (newPosition.y < 19 && checkCollision(pieces[pieceIndex], newPosition) === 0) {
               writePiece(0, pieces[pieceIndex], position[pieceIndex]);
               setPosition(prevPositions => {
                 const newPositions = [...prevPositions];
@@ -136,8 +160,12 @@ function Game({ pieces, onPieceLanded }) {
   useEffect(() => {
     if (!gameLaunched) return;
 	    writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+    console.log("position = ", position[pieceIndex])
+    console.log("Piece index = ", pieceIndex)
+    console.log(rows)
 
     const intervalId = setInterval(() => {
+      console.log("after ", rows)
       setPosition(prevPosition => {
         const currentPiece = pieces[pieceIndex];
         const currentPos = prevPosition[pieceIndex];
