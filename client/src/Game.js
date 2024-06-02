@@ -15,7 +15,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
       let newRows = [...prevRows];
       for (let y = 0; y < piece.length; y++) {
         for (let x = 0; x < piece[y].length; x++) {
-          if (piece[y][x] == 1 && action == 1) {
+          if (piece[y][x] == 1 && action == 1 && position.y + y < rows.length) {
             newRows[position.y + y][position.x + x] = 1;
           } else if (piece[y][x] == 1 && action == 0) {
             newRows[position.y + y][position.x + x] = 0;
@@ -26,9 +26,24 @@ function Game({ pieces, setPieces, catalogPieces }) {
     });
   };
 
+  const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
+    let newPiece = [];
+    var hash = {};
+    for(var i = 0 ; i < catalogPieces.length; i++) {
+      for(var j = 0; j < catalogPieces[i].length; j++) {
+          hash[catalogPieces[i][j]] = [i, j];
+      }
+    }
+  
+    if(hash.hasOwnProperty(pieces[pieceIndex])) {
+        newPiece = (hash[pieces[pieceIndex]]);
+    }
+    console.log(newPiece);
+     return newPiece;
+  }
+
   const check1 = async (rows, piece, position, axe) => {
     
-    console.log('Checking collision for position:', position);
     let it;
     let tmpPosition;
 
@@ -37,12 +52,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
       if (piece[y][x] == 1) {
         const newY = position.y + y;
         const newX = position.x + x;
-        // if(newY > 19) //évite de vérifier en dessous du tableau  
-        //   return 0;
 
         // Vérifier les limites du tableau
         if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
-          console.log(`Collision with boundaries at (x: ${newX}, y: ${newY})`);
           return 1; // Collision avec les bords du tableau
         }
 
@@ -50,124 +62,48 @@ function Game({ pieces, setPieces, catalogPieces }) {
         // Gestion de collision vers le bas de toute partie de la pièce
         it = 0;
 
-        console.log("----------------------start----------------");
-
-        console.log("Regarde mon bel axe = ", axe)
-        console.log("et la position de la piece = y: ", y, " + x: ",x)
-
         if (axe == "y"){
 
-          console.log("bout de piece en cours = ", newY, " et = ", newX)
-          console.log("itY avant boucle = ", it);
-
-          for(it; it + y < piece.length; it++) {
-            if (piece[it + y][x] == 1) {
+          for(it; it + y < piece.length; it++)
+            if (piece[it + y][x] == 1) 
               tmpPosition = it;
-              console.log("tmpPosition = ", tmpPosition)
-            }
-          }
+
           it = tmpPosition + 1;
-          console.log("it après boucle = ", it);
-
-          console.log (" --- ");
-
-          console.log("positionY = ", position.y)
-          console.log("y = ", y)
-          console.log("itY = ", it)
-          console.log("newY = ", newY)
-
-
-        if (newY + it >= rows.length) {
-          console.log(`Collision in Y with grid (x: ${newX}, y: ${newY})`);
-          return 1; 
-        }
-          if (rows[newY + it][newX] == 1) { // + 2 pour prendre en compte 1 cran plus loin dans le tableau et un cran plus loin dans la pièce
-            console.log(`Collision in Y with another block at (x: ${newX}, y: ${newY})`);
-            debugger;
+          if (newY + it >= rows.length || rows[newY + it][newX] == 1) // it représente le dernier 1 de la piece
             return 1; // Collision avec la grille en Y
-          }
         }
-        // Gestion de collision vers la droite de toute partie de la pièce
         
+        // Gestion de collision vers la droite de toute partie de la pièce
         if (axe == "+x") {
 
-          console.log("itX avant boucle = ", it)
-          console.log("piece[y].length ",piece[y].length)
-
-          for(it; it + x < piece[y].length; it++) {
-            if (piece[y][it + x] == 1) {
+          for(it; it + x < piece[y].length; it++) 
+            if (piece[y][it + x] == 1) 
               tmpPosition = it;
-              console.log("tmpPosition X = ", tmpPosition)
-            }
-          }
-
+          
           it = tmpPosition + 1;
-          console.log("itX après boucle = ", it)
-
-          console.log(" --- ")
-
-          console.log("positionX = ", position.x)
-          console.log("itX = ", it)
-          console.log("newX = ", newX)
-          console.log("newY = ", newY)
-
-          console.log("----------------------end------------------");
-
-          if (newX + it > rows[y].length - 1) {
-            // console.log(`Collision in X with grid (x: ${newX}, y: ${newY})`);
-            return 2;
-          }
-          if (rows[newY][newX + it] == 1) {
-            // console.log(`Collision in X with another block at (x: ${newX}, y: ${newY})`);
-            // debugger;
-            return 2;
-          }
+          if (newX + it > rows[y].length - 1 ||  rows[newY][newX + it] == 1) 
+            return 2; // on retourne 2 pour ne trigger ni le 1 de collision ni le 0 de tout est ok
         }
+
+        // Gestion de collision vers la gauche de toute partie de la pièce
         if (axe == "-x") {
 
-          console.log("it-X avant boucle = ", it)
-          console.log("piece[y].length ",piece[y].length)
-
           it = piece[y].length - 1;
-          for(it; it - x >= 0; it--) {
-            if (piece[y][it - x] == 1) {
+          for(it; it - x >= 0; it--) 
+            if (piece[y][it - x] == 1) 
               tmpPosition = it;
-              console.log("tmpPosition X- = ", tmpPosition)
-            }
-          }
 
           it = tmpPosition + 1;
-          console.log("itX- après boucle = ", it)
-
-          console.log(" --- ")
-
-          console.log("positionX = ", position.x)
-          console.log("itX- = ", it)
-          console.log("newX = ", newX)
-          console.log("newY = ", newY)
-
-          console.log("----------------------end------------------");
-
-          if (newX == 0) {
-            // console.log(`Collision in X with grid (x: ${newX}, y: ${newY})`);
+          if (newX == 0 || rows[newY][newX - it] == 1) 
             return 2;
-          }
-          if (rows[newY][newX - it] == 1) {
-            // console.log(`Collision in X with another block at (x: ${newX}, y: ${newY})`);
-            // debugger;
-            console.log("check1 = 0")
-            return 2;
-          }
         }
       }
     }
   }
-  console.log("coucou end check1")
   return 0; // Pas de collision
 };
 
-  // Problème 1: l'ordre de check1 ne permet pas d'avoir un retour juste
-  // Problème 2: de problème 1, en découle que les mouvements avec les fleches n'ont pas les erreurs correctes
+  // Problème : les pieces sont interchangé parfois lors de la rotation
 
   useEffect(() => {
     const handleKeyDown = async (event) => {
@@ -214,35 +150,28 @@ function Game({ pieces, setPieces, catalogPieces }) {
               return (newPositions);
             });
           break;
-          case 'ArrowDown':
-            newPosition.y += 1;
-            if (checkCollision(pieces[pieceIndex], newPosition) === 0) {
-              writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-              setPosition(prevPositions => {
-                const newPositions = [...prevPositions];
-                newPositions[pieceIndex] = newPosition;
-                writePiece(1, pieces[pieceIndex], newPosition);
-                return newPositions;
-              });
+        case 'ArrowUp': // faire tourner la piece
+          let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
+          if (newPiecePosition[1] + 1 == 4 || newPiecePosition[0] == 3) // 3 représente le carré
+            newPiecePosition[1] = 0;
+          else
+            newPiecePosition[1] = newPiecePosition[1] + 1;
+            const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+              if (await check1(newPiece, position[pieceIndex], "y") === 0 && await check1(newPiece, position[pieceIndex], "+x") === 0 
+              && await check1(newPiece, position[pieceIndex], "-x") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
+                writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+                setPieces(oldPieces => {
+                  const newPieces = [...oldPieces];
+                  newPieces[pieceIndex] = newPiece;
+                  return newPieces;
+                });
+                writePiece(1, newPiece, position[pieceIndex]);
+                // erreur sur piece I -> quand on rotate, ca trasnforme en pièce O (carré) = cause probable: le hash se trompe entre des pieces "ressemblantes" entre 1 et 0
+                // erreur sur piece S -> quand on rotate, ça transforme en pièce Z
+                // erreur générale -> quand on rotate et que la piece a venir rentre en collision avec d'autres 1, suppression de ces 1   
+                // erreur générale -> quand on utilise fleche du bas, les 0 entre plusieurs 1 en dessous seront susceptibles d'être changé en 1
             }
           break;
-		  case 'ArrowUp': // faire tourner la piece
-		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
-		  if (newPiecePosition[1] + 1 == 4 || newPiecePosition[0] == 3) // 3 représente le carré
-			newPiecePosition[1] = 0;
-		  else
-		    newPiecePosition[1] = newPiecePosition[1] + 1;
-		  const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-          if (checkCollision(newPiece, position[pieceIndex]) === 0) {
-			  setPieces(oldPieces => {
-				  const newPieces = [...oldPieces];
-				  newPieces[pieceIndex] = newPiece;
-				  return newPieces;
-			  });
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			writePiece(1, newPiece, position[pieceIndex]);
-          }
-			break;
         default:
           break;
       }
