@@ -4,7 +4,7 @@ function Game({ pieces, onPieceLanded }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
-  const [timer, setTimer] = useState(1000);
+  const timer = 1000;
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -15,9 +15,9 @@ function Game({ pieces, onPieceLanded }) {
       let newRows = [...prevRows];
       for (let y = 0; y < piece.length; y++) {
         for (let x = 0; x < piece[y].length; x++) {
-          if (piece[y][x] === 1 && action === 1) {
+          if (piece[y][x] == 1 && action == 1) {
             newRows[position.y + y][position.x + x] = 1;
-          } else if (piece[y][x] === 1 && action === 0) {
+          } else if (piece[y][x] == 1 && action == 0) {
             newRows[position.y + y][position.x + x] = 0;
           }
         }
@@ -26,145 +26,148 @@ function Game({ pieces, onPieceLanded }) {
     });
   };
 
-  const check1 = (rows, piece, position) => {
+  const check1 = async (rows, piece, position, axe) => {
     
     console.log('Checking collision for position:', position);
-    let itY;
-    let itX;
+    let it;
     let tmpPosition;
+
   for (let y = 0; y < piece.length; y++) {
     for (let x = 0; x < piece[y].length; x++) {
-      if (piece[y][x] === 1) {
+      if (piece[y][x] == 1) {
         const newY = position.y + y;
         const newX = position.x + x;
-        if(newY > 19) //évite de vérifier en dessous du tableau  
-          return 0;
+        // if(newY > 19) //évite de vérifier en dessous du tableau  
+        //   return 0;
 
         // Vérifier les limites du tableau
         if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
           console.log(`Collision with boundaries at (x: ${newX}, y: ${newY})`);
-          return true; // Collision avec les bords du tableau
+          return 1; // Collision avec les bords du tableau
         }
 
         // Vérifier la collision avec un autre bloc
         // Gestion de collision vers le bas de toute partie de la pièce
-        itY = 0;
+        it = 0;
 
         console.log("----------------------start----------------");
 
-        console.log("bout de piece en cours = ", newY, " et = ", newX)
+        console.log("Regarde mon bel axe = ", axe)
+        console.log("et la position de la piece = y: ", y, " + x: ",x)
 
-        console.log("itY avant boucle = ", itY);
-        for(itY; itY + y < piece.length; itY++) {
-          if (piece[itY][x] == 1) {
-            tmpPosition = itY;
-            console.log("tmpPosition = ", tmpPosition)
-          }
-          if (itY == piece.length - 1) {
-            itY = tmpPosition + 1;
-            break;
-          }
+        if (axe == "y"){
 
+          console.log("bout de piece en cours = ", newY, " et = ", newX)
+          console.log("itY avant boucle = ", it);
+
+          for(it; it + y < piece.length; it++) {
+            if (piece[it + y][x] == 1) {
+              tmpPosition = it;
+              console.log("tmpPosition = ", tmpPosition)
+            }
+          }
+          it = tmpPosition + 1;
+          console.log("it après boucle = ", it);
+
+          console.log (" --- ");
+
+          console.log("positionY = ", position.y)
+          console.log("y = ", y)
+          console.log("itY = ", it)
+          console.log("newY = ", newY)
+
+
+        if (newY + it >= rows.length) {
+          console.log(`Collision in Y with grid (x: ${newX}, y: ${newY})`);
+          return 1; 
         }
-        console.log("itY après boucle = ", itY);
-
-        console.log (" --- ");
-
-        console.log("positionY = ", position.y)
-        console.log("y = ", y)
-        console.log("itY = ", itY)
-        console.log("newY = ", newY)
-
-
-        // if (newY + itY + 1 == rows.length - 1) {
-        //   console.log(`Collision in Y with grid (x: ${newX}, y: ${newY})`);
-        //   return true; 
-        // }
-        if (newY + itY < 20 && rows[newY + itY][newX] == 1) { // + 2 pour prendre en compte 1 cran plus loin dans le tableau et un cran plus loin dans la pièce
-          console.log(`Collision in Y with another block at (x: ${newX}, y: ${newY})`);
-          debugger;
-          return true; // Collision avec la grille en Y
+          if (rows[newY + it][newX] == 1) { // + 2 pour prendre en compte 1 cran plus loin dans le tableau et un cran plus loin dans la pièce
+            console.log(`Collision in Y with another block at (x: ${newX}, y: ${newY})`);
+            debugger;
+            return 1; // Collision avec la grille en Y
+          }
         }
         // Gestion de collision vers la droite de toute partie de la pièce
-        itX = 0;
-        console.log("itX avant boucle = ", itX)
-        console.log("piece[y].length ",piece[y].length)
-        for(itX; itX + x < piece[y].length; itX++) {
-          tmpPosition = itX;
-          console.log("tmpPosition X = ", tmpPosition)
-          if (itX == piece[y].length - 1) {
-            itX = tmpPosition + 1;
-            break; 
+        
+        if (axe == "+x") {
+
+          console.log("itX avant boucle = ", it)
+          console.log("piece[y].length ",piece[y].length)
+
+          for(it; it + x < piece[y].length; it++) {
+            if (piece[y][it + x] == 1) {
+              tmpPosition = it;
+              console.log("tmpPosition X = ", tmpPosition)
+            }
+          }
+
+          it = tmpPosition + 1;
+          console.log("itX après boucle = ", it)
+
+          console.log(" --- ")
+
+          console.log("positionX = ", position.x)
+          console.log("itX = ", it)
+          console.log("newX = ", newX)
+          console.log("newY = ", newY)
+
+          console.log("----------------------end------------------");
+
+          if (newX + it > rows[y].length - 1) {
+            // console.log(`Collision in X with grid (x: ${newX}, y: ${newY})`);
+            return 2;
+          }
+          if (rows[newY][newX + it] == 1) {
+            // console.log(`Collision in X with another block at (x: ${newX}, y: ${newY})`);
+            // debugger;
+            return 2;
           }
         }
-        console.log("itX après boucle = ", itX)
+        if (axe == "-x") {
 
-        console.log(" --- ")
+          console.log("it-X avant boucle = ", it)
+          console.log("piece[y].length ",piece[y].length)
 
-        console.log("positionX = ", position.x)
-        console.log("itX = ", itX)
-        console.log("newX = ", newX)
-        console.log("----------------------end------------------");
+          it = piece[y].length - 1;
+          for(it; it - x >= 0; it--) {
+            if (piece[y][it - x] == 1) {
+              tmpPosition = it;
+              console.log("tmpPosition X- = ", tmpPosition)
+            }
+          }
 
-        // if (newX + itX + 1 == rows[y].length - 1) {
-        //   // console.log(`Collision in X with grid (x: ${newX}, y: ${newY})`);
-        //   return true;
-        // }
-        if (rows[newY][newX + itX] == 1) {
-          // console.log(`Collision in X with another block at (x: ${newX}, y: ${newY})`);
-          // debugger;
-          return false
+          it = tmpPosition + 1;
+          console.log("itX- après boucle = ", it)
+
+          console.log(" --- ")
+
+          console.log("positionX = ", position.x)
+          console.log("itX- = ", it)
+          console.log("newX = ", newX)
+          console.log("newY = ", newY)
+
+          console.log("----------------------end------------------");
+
+          if (newX == 0) {
+            // console.log(`Collision in X with grid (x: ${newX}, y: ${newY})`);
+            return 2;
+          }
+          if (rows[newY][newX - it] == 1) {
+            // console.log(`Collision in X with another block at (x: ${newX}, y: ${newY})`);
+            // debugger;
+            console.log("check1 = 0")
+            return 2;
+          }
         }
       }
     }
   }
-  return false; // Pas de collision
+  console.log("coucou end check1")
+  return 0; // Pas de collision
 };
-  
-  
 
-  const rangeDiscover = (piece, position, option) => {
-    const maxRangeY = piece.length - 1;
-    const maxGridOnX = 9;
-
-    switch (option) {
-      case "+x":
-        let max = 0;
-        for (let i = 0; i < maxRangeY; i++) {
-          for (let j = 0; j < piece[i].length; j++) {
-            if (max < j && piece[i][j] === 1)
-              max = j;
-          }
-        }
-        return (max + position.x);
-
-      case "-x":
-        return position.x;
-
-      case "+y":
-        return (position.y + maxRangeY);
-
-      case "-y":
-        return (position.y);
-      default:
-        return position.y;
-    }
-  };
-
-  const checkCollision = (piece, position, rows) => {
-    const maxRangeY = piece.length;
-    const maxGridOnX = 9;
-    const maxGridOnY = 19;
-    if (position.y + maxRangeY > maxGridOnY || position.x < 0 || rangeDiscover(piece, position, "+x") > maxGridOnX)
-    {
-      console.log("ici c'est check collisio")
-      return 1;
-    }
-    if (check1(rows, piece, position) == 1)
-      return 1;
-    else
-      return 0;
-  };
+  // Problème 1: l'ordre de check1 ne permet pas d'avoir un retour juste
+  // Problème 2: de problème 1, en découle que les mouvements avec les fleches n'ont pas les erreurs correctes
 
   useEffect(() => {
     const handleKeyDown = async (event) => {
@@ -174,20 +177,23 @@ function Game({ pieces, onPieceLanded }) {
       switch (event.key) {
         case 'ArrowLeft':
           newPosition.x -= 1;
-          if (checkCollision(pieces[pieceIndex], newPosition, rows) === 0) {
+          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "-x") == 0) { 
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            setPosition(prevPositions => {
-              const newPositions = [...prevPositions];
-              newPositions[pieceIndex] = newPosition;
-              writePiece(1, pieces[pieceIndex], newPosition);
-              return (newPositions);
-            });
+            console.log("On va a gaucheee")
+              setPosition(prevPositions => {
+                const newPositions = [...prevPositions];
+                newPositions[pieceIndex] = newPosition;
+                writePiece(1, pieces[pieceIndex], newPosition);
+                return (newPositions);
+              });
           }
           break;
         case 'ArrowRight':
           newPosition.x += 1;
-          if (checkCollision(pieces[pieceIndex], newPosition, rows) === 0) {
+          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "+x") == 0) {
+            console.log("allo apres")
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            console.log("On va a droiteeee")
             setPosition( prevPositions => {
               const newPositions = [...prevPositions];
               newPositions[pieceIndex] = newPosition;
@@ -198,15 +204,15 @@ function Game({ pieces, onPieceLanded }) {
           break;
         case 'ArrowDown':
           newPosition.y += 1;
-          if (checkCollision(pieces[pieceIndex], newPosition, rows) === 0) {
+          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "y" ) == 0)
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            console.log("On appuie sur bassssssss")
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
               newPositions[pieceIndex] = newPosition;
               writePiece(1, pieces[pieceIndex], newPosition);
               return (newPositions);
             });
-          }
           break;
         default:
           break;
@@ -227,12 +233,16 @@ function Game({ pieces, onPieceLanded }) {
       const currentPos = position[pieceIndex];
       const newPos = { ...currentPos, y: currentPos.y + 1 };
 
-      if (checkCollision(currentPiece, currentPos, rows) === 1) {
-        const nextIndex = (pieceIndex + 1) % pieces.length;
-        setPieceIndex(nextIndex);
-        setPosition([...position, { x: 4, y: 0 }]);
+      // if (await checkCollision(currentPiece, newPos, rows, "y") == 1) {
+        if (await check1(rows, currentPiece, currentPos, "y") == 1) {
+          const nextIndex = (pieceIndex + 1) % pieces.length;
+          setPieceIndex(nextIndex);
+          setPosition([...position, { x: 4, y: 0 }]);
+        }
         // console.log("rows end = ", rows)
-      } else {
+    //}
+       else if (await check1(rows, currentPiece, currentPos, "y") == 0){
+        console.log("On va en bassssss");
         await writePiece(0, currentPiece, currentPos);
         await writePiece(1, currentPiece, newPos);
         setPosition(prevPosition => {
@@ -260,7 +270,7 @@ function Game({ pieces, onPieceLanded }) {
         {rows.map((row, i) => (
           <div key={i} className="row">
             {row.map((cell, j) => (
-              <div key={j} className={`cell ${cell === 1 ? 'cell piece' : ''}`}>{cell}</div>
+              <div key={j} className={`cell ${cell == 1 ? 'cell piece' : ''}`}>{cell}</div>
             ))}
           </div>
         ))}
