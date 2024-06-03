@@ -17,7 +17,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
         for (let x = 0; x < piece[y].length; x++) {
           if (piece[y][x] == 1 && action == 1 && position.y + y < rows.length) {
             newRows[position.y + y][position.x + x] = 1;
-          } else if (piece[y][x] == 1 && action == 0) {
+          } 
+          else if (piece[y][x] == 1 && action == 0) {
             newRows[position.y + y][position.x + x] = 0;
           }
         }
@@ -26,26 +27,74 @@ function Game({ pieces, setPieces, catalogPieces }) {
     });
   };
 
-  const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
-    let newPiece = [];
-    var hash = {};
-    for(var i = 0 ; i < catalogPieces.length; i++) {
-      for(var j = 0; j < catalogPieces[i].length; j++) {
-          hash[catalogPieces[i][j]] = [i, j];
-      }
+  const searchMatchingPatterns = async (catalogPieces, pieces, pieceIndex) => {
+    // let newPiece = [];
+    // var hash = {};
+    // for(var i = 0 ; i < catalogPieces.length; i++) {
+    //   for(var j = 0; j < catalogPieces[i].length; j++) {
+    //     hash[catalogPieces[i][j]] = [i, j];
+    //   }
+    // }
+    // console.log("catalogue ", catalogPieces)
+    // if(hash.hasOwnProperty(pieces[pieceIndex])) {
+    //     newPiece = (hash[pieces[pieceIndex]]);
+    // }
+    for(let i = 0 ; i < catalogPieces.length; i++) {
+      for(let y = 0; y < catalogPieces[i].length; y++)
+        {
+          for(let z = 0; z < catalogPieces[i][y].length; z++)
+          {
+            console.log("1", catalogPieces[i][y])
+            console.log("2", pieces[pieceIndex])
+            console.log(same_array(catalogPieces[i][y], pieces[pieceIndex]))
+            if(same_array(catalogPieces[i][y], pieces[pieceIndex]) == true)
+              return ([i, y])
+             
+          }
+        }
     }
-  
-    if(hash.hasOwnProperty(pieces[pieceIndex])) {
-        newPiece = (hash[pieces[pieceIndex]]);
+    
+    //  return newPiece;
+  }
+
+  const same_array = (catalogPieces, pieces) => {
+    if (catalogPieces.length == pieces.length)
+    {
+      console.log("meme longeur de tableau")
+      for(let i = 0; i < catalogPieces.length; i++)
+      {
+        if (catalogPieces[i].length == pieces[i].length)
+        {
+          console.log("meme longeur de piece dans le tableau")
+          for (let y = 0; y < catalogPieces[i].length; y++)
+          {
+            if (catalogPieces[i][y] != pieces[i][y])
+              {
+                console.log("c'est pas pareil parait il ", catalogPieces[i][y], "and", pieces[i][y])
+                console.log("4")
+                return false
+              }
+          }
+        }
+        else if (catalogPieces[i].length != pieces[i].length)
+        {
+          console.log("3")
+          return false
+        }
+     }
     }
-    console.log(newPiece);
-     return newPiece;
+    else if (catalogPieces.length != pieces.length)
+    {
+      console.log("2")
+      return false
+    }
+    return true
   }
 
   const check1 = async (rows, piece, position, axe) => {
     
-    let it;
-    let tmpPosition;
+  let it;
+  let tmpPosition;
 
   for (let y = 0; y < piece.length; y++) {
     for (let x = 0; x < piece[y].length; x++) {
@@ -140,8 +189,15 @@ function Game({ pieces, setPieces, catalogPieces }) {
           break;
         case 'ArrowDown':
           newPosition.y += 1;
+          for (let y = pieces.length - 1; y < pieces.length; y++) {
+            for (let x = 0; x < pieces[pieceIndex].length; x++)
+              {
+                if (position[pieceIndex].y + 1 >= rows.length || rows[position[pieceIndex].y + 1][position[pieceIndex].x + x] == 1)
+                  break;
+              }
+          }
           if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "y" ) == 0)
-            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             console.log("On appuie sur bassssssss")
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -151,25 +207,25 @@ function Game({ pieces, setPieces, catalogPieces }) {
             });
           break;
         case 'ArrowUp': // faire tourner la piece
-          let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
-          if (newPiecePosition[1] + 1 == 4 || newPiecePosition[0] == 3) // 3 représente le carré
-            newPiecePosition[1] = 0;
-          else
-            newPiecePosition[1] = newPiecePosition[1] + 1;
-            const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-              if (await check1(newPiece, position[pieceIndex], "y") === 0 && await check1(newPiece, position[pieceIndex], "+x") === 0 
-              && await check1(newPiece, position[pieceIndex], "-x") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
+          let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
+          console.log("oldPiece = ", pieces[pieceIndex])
+          console.log("newPiecePosition = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
+          newPiecePosition[1] == 3 ? newPiecePosition[1] = 0 : newPiecePosition[1] = newPiecePosition[1] + 1;
+          const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+          console.log("newPiece after switch = ",  catalogPieces[newPiecePosition])
+          if (await check1(newPiece, position[pieceIndex], "y") === 0 && await check1(newPiece, position[pieceIndex], "+x") === 0 && await check1(newPiece, position[pieceIndex], "-x") === 0 &&
+          (newPiece.length - 1) + position[pieceIndex].y < rows.length){
+              setPieces(oldPieces => {
+                const newPieces = [...oldPieces];
+                newPieces[pieceIndex] = newPiece;
                 writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-                setPieces(oldPieces => {
-                  const newPieces = [...oldPieces];
-                  newPieces[pieceIndex] = newPiece;
-                  return newPieces;
-                });
                 writePiece(1, newPiece, position[pieceIndex]);
-                // erreur sur piece I -> quand on rotate, ca trasnforme en pièce O (carré) = cause probable: le hash se trompe entre des pieces "ressemblantes" entre 1 et 0
-                // erreur sur piece S -> quand on rotate, ça transforme en pièce Z
+                return newPieces;
+                });
+                console.log("coucou")
+                debugger;
                 // erreur générale -> quand on rotate et que la piece a venir rentre en collision avec d'autres 1, suppression de ces 1   
-                // erreur générale -> quand on utilise fleche du bas, les 0 entre plusieurs 1 en dessous seront susceptibles d'être changé en 1
+                // erreur générale -> quand on utilise fleche du bas, les 0 en dessous des 1 seront changent en 1
             }
           break;
         default:
