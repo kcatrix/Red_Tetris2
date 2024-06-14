@@ -177,22 +177,17 @@ function Game({ pieces, setPieces, catalogPieces }) {
           }
           break;
         case 'ArrowDown':
+          const collisionCheck = await check1(rows, pieces[pieceIndex], newPosition, "y");
           newPosition.y += 1;
-          for (let y = pieces.length - 1; y < pieces.length; y++) {
-            for (let x = 0; x < pieces[pieceIndex].length; x++)
-              {
-                if (position[pieceIndex].y + 1 >= rows.length || rows[position[pieceIndex].y + 1][position[pieceIndex].x + x] == 1)
-                  break;
-              }
-          }
-          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "y" ) == 0)
-            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+          if (collisionCheck == 0) {
+            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
               newPositions[pieceIndex] = newPosition;
               writePiece(1, pieces[pieceIndex], newPosition);
-              return (newPositions);
+              return newPositions;
             });
+          }
           break;
         case 'ArrowUp': // faire tourner la piece
           let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
