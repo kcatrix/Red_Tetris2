@@ -126,14 +126,47 @@ function Game({ pieces, setPieces, catalogPieces }) {
         // Gestion de collision vers la gauche de toute partie de la pièce
         if (axe == "-x") {
 
+					let special = 0;
+					tmpPosition = 0;
           it = piece[y].length - 1;
-          for(it; it - x >= 0; it--) 
-            if (piece[y][it - x] == 1) 
-              tmpPosition = it;
+					console.log("it assignation = ", it)
+          for(it; it - x >= 0; it--) {
+						if (piece[y][it - x] == 1){
+							tmpPosition = it;
+						}
+					}
 
-          it = tmpPosition + 1;
-          if (newX == 0 || rows[newY][newX - it] == 1) 
+					it = piece[y].length - 1;
+					for(it; it >= 0; it--) {
+						if (piece[y][it] == 1){
+							special++;
+						}
+					}
+
+					console.log("it -x pre embrouille = ", tmpPosition)
+					
+					// if (piece[y][x - tmpPosition] == 0) {
+					// 	while (piece[y][x - tmpPosition] == 0) {
+					// 		if (piece[y][x - tmpPosition - 1] == 1)
+					// 			break;
+					// 		tmpPosition = tmpPosition - 1;
+					// 	}
+					// 	it = tmpPosition;
+					// }
+					// else
+
+					if (special == 1 && tmpPosition - x == 1)
+						it = 1;
+					else
+						it = tmpPosition + 1;
+
+					console.log("it -x post embrouille = ", it)
+          if (newX == 0 || rows[newY][newX - it] == 1){
+						console.log("boom[", newY, "][", newX, "] = ", rows[newY][newX]);
+						console.log("it at this time = ", it);
+						debugger; 
             return 2;
+		  		}
         }
       }
     }
@@ -154,8 +187,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
   }
   return 0; // Pas de collision
 };
-
-  // Problème : les pieces sont interchangé parfois lors de la rotation
 
   useEffect(() => {
     const handleKeyDown = async (event) => {
