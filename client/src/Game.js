@@ -191,20 +191,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
             });
           }
           break;
-        case 'ArrowDown':
-          const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
-          newPosition.y += 1;
-          console.log(collisionCheck)
-          if (collisionCheck == 0) {
-            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            setPosition(prevPositions => {
-              const newPositions = [...prevPositions];
-              newPositions[pieceIndex] = newPosition;
-              writePiece(1, pieces[pieceIndex], newPosition);
-              return newPositions;
-            });
-          }
-          break;
         case 'ArrowUp': // faire tourner la piece
           let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
           console.log("oldPiece = ", pieces[pieceIndex])
@@ -224,6 +210,20 @@ function Game({ pieces, setPieces, catalogPieces }) {
                 // erreur générale -> quand on rotate et que la piece a venir rentre en collision avec d'autres 1, suppression de ces 1   
                 // erreur générale -> quand on utilise fleche du bas, les 0 en dessous des 1 seront changent en 1
             }
+          break;
+        case 'ArrowDown':
+          const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
+          newPosition.y += 1;
+          console.log(collisionCheck)
+          if (collisionCheck == 0) {
+            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
           break;
         default:
           break;
