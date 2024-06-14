@@ -76,16 +76,20 @@ function Game({ pieces, setPieces, catalogPieces }) {
     return true
   }
 
-  const check1 = async (rows, piece, position, axe) => {
+  const check1 = async (rows, piece, newPiece, position, axe) => {
     
   let it;
   let tmpPosition;
+  let rowsClean = rows;
 
   for (let y = 0; y < piece.length; y++) {
     for (let x = 0; x < piece[y].length; x++) {
       if (piece[y][x] == 1) {
         const newY = position.y + y;
         const newX = position.x + x;
+
+		  if (axe == "r")
+			  rowsClean[newY][newX] = 0;
 
         // Vérifier les limites du tableau
         if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
@@ -131,15 +135,22 @@ function Game({ pieces, setPieces, catalogPieces }) {
           if (newX == 0 || rows[newY][newX - it] == 1) 
             return 2;
         }
-
-        if (axe == "r"){
-
-          console.log("inside R -> piece[y][x] = ", newY, newX)
-          if (newX == 0 || newX > rows[y].length - 1 || newY >= rows.length || rows[newY][newX] == 1)
-            return 1;
-        }
       }
     }
+  }
+  if (axe == "r"){
+  
+	for (let dy = 0; dy < newPiece.length; dy++) {
+	  for (let dx = 0; dx < newPiece[dy].length; dx++) {
+		if (newPiece[dy][dx] == 1) {
+		  const newPieceY = position.y + dy;
+		  const newPieceX = position.x + dx;
+
+		if (newPieceX == 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] == 1)
+		  return 1;
+		}
+	  }
+	}
   }
   return 0; // Pas de collision
 };
@@ -154,7 +165,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
       switch (event.key) {
         case 'ArrowLeft':
           newPosition.x -= 1;
-          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "-x") == 0) { 
+          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") == 0) { 
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
               setPosition(prevPositions => {
                 const newPositions = [...prevPositions];
@@ -166,7 +177,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
           break;
         case 'ArrowRight':
           newPosition.x += 1;
-          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "+x") == 0) {
+          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") == 0) {
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition( prevPositions => {
               const newPositions = [...prevPositions];
@@ -185,7 +196,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
                   break;
               }
           }
-          if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "y" ) == 0)
+          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y" ) == 0)
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
@@ -202,7 +213,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
           newPiecePosition[1] == 3 ? newPiecePosition[1] = 0 : newPiecePosition[1] = newPiecePosition[1] + 1;
           const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
           console.log("newPiece after switch = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
-          if (await check1(rows, newPiece, position[pieceIndex], "r") == 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
+          if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") == 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
               setPieces(oldPieces => {
                 const newPieces = [...oldPieces];
                 newPieces[pieceIndex] = newPiece;
@@ -234,14 +245,14 @@ function Game({ pieces, setPieces, catalogPieces }) {
       const newPos = { ...currentPos, y: currentPos.y + 1 };
 
       // if (await checkCollision(currentPiece, newPos, rows, "y") == 1) {
-        if (await check1(rows, currentPiece, currentPos, "y") == 1) {
+        if (await check1(rows, currentPiece, 0, currentPos, "y") == 1) {
           const nextIndex = (pieceIndex + 1) % pieces.length;
           setPieceIndex(nextIndex);
           setPosition([...position, { x: 4, y: 0 }]);
         }
         // console.log("rows end = ", rows)
     //}
-       else if (await check1(rows, currentPiece, currentPos, "y") == 0){
+       else if (await check1(rows, currentPiece, 0, currentPos, "y") == 0){
         await writePiece(0, currentPiece, currentPos);
         await writePiece(1, currentPiece, newPos);
         setPosition(prevPosition => {
