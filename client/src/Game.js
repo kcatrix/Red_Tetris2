@@ -44,9 +44,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         {
           for(let z = 0; z < catalogPieces[i][y].length; z++)
           {
-            console.log("1", catalogPieces[i][y])
-            console.log("2", pieces[pieceIndex])
-            console.log(same_array(catalogPieces[i][y], pieces[pieceIndex]))
             if(same_array(catalogPieces[i][y], pieces[pieceIndex]) == true)
               return ([i, y])
              
@@ -60,34 +57,22 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const same_array = (catalogPieces, pieces) => {
     if (catalogPieces.length == pieces.length)
     {
-      console.log("meme longeur de tableau")
       for(let i = 0; i < catalogPieces.length; i++)
       {
         if (catalogPieces[i].length == pieces[i].length)
         {
-          console.log("meme longeur de piece dans le tableau")
           for (let y = 0; y < catalogPieces[i].length; y++)
           {
             if (catalogPieces[i][y] != pieces[i][y])
-              {
-                console.log("c'est pas pareil parait il ", catalogPieces[i][y], "and", pieces[i][y])
-                console.log("4")
                 return false
-              }
           }
         }
         else if (catalogPieces[i].length != pieces[i].length)
-        {
-          console.log("3")
           return false
-        }
      }
     }
     else if (catalogPieces.length != pieces.length)
-    {
-      console.log("2")
       return false
-    }
     return true
   }
 
@@ -146,6 +131,13 @@ function Game({ pieces, setPieces, catalogPieces }) {
           if (newX == 0 || rows[newY][newX - it] == 1) 
             return 2;
         }
+
+        if (axe == "r"){
+
+          console.log("inside R -> piece[y][x] = ", newY, newX)
+          if (newX == 0 || newX > rows[y].length - 1 || newY >= rows.length || rows[newY][newX] == 1)
+            return 1;
+        }
       }
     }
   }
@@ -164,7 +156,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
           newPosition.x -= 1;
           if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "-x") == 0) { 
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            console.log("On va a gaucheee")
               setPosition(prevPositions => {
                 const newPositions = [...prevPositions];
                 newPositions[pieceIndex] = newPosition;
@@ -176,9 +167,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         case 'ArrowRight':
           newPosition.x += 1;
           if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "+x") == 0) {
-            console.log("allo apres")
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            console.log("On va a droiteeee")
             setPosition( prevPositions => {
               const newPositions = [...prevPositions];
               newPositions[pieceIndex] = newPosition;
@@ -198,7 +187,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
           }
           if (await check1(rows, pieces[pieceIndex], position[pieceIndex], "y" ) == 0)
             writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            console.log("On appuie sur bassssssss")
             setPosition(prevPositions => {
               const newPositions = [...prevPositions];
               newPositions[pieceIndex] = newPosition;
@@ -210,11 +198,11 @@ function Game({ pieces, setPieces, catalogPieces }) {
           let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
           console.log("oldPiece = ", pieces[pieceIndex])
           console.log("newPiecePosition = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
+          // Ternaire pour indiquer que si nous sommes a la derniere piece d'un type, nous repassons a la premiere piece de ce type
           newPiecePosition[1] == 3 ? newPiecePosition[1] = 0 : newPiecePosition[1] = newPiecePosition[1] + 1;
           const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-          console.log("newPiece after switch = ",  catalogPieces[newPiecePosition])
-          if (await check1(newPiece, position[pieceIndex], "y") === 0 && await check1(newPiece, position[pieceIndex], "+x") === 0 && await check1(newPiece, position[pieceIndex], "-x") === 0 &&
-          (newPiece.length - 1) + position[pieceIndex].y < rows.length){
+          console.log("newPiece after switch = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
+          if (await check1(rows, newPiece, position[pieceIndex], "r") == 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
               setPieces(oldPieces => {
                 const newPieces = [...oldPieces];
                 newPieces[pieceIndex] = newPiece;
@@ -222,8 +210,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
                 writePiece(1, newPiece, position[pieceIndex]);
                 return newPieces;
                 });
-                console.log("coucou")
-                debugger;
                 // erreur générale -> quand on rotate et que la piece a venir rentre en collision avec d'autres 1, suppression de ces 1   
                 // erreur générale -> quand on utilise fleche du bas, les 0 en dessous des 1 seront changent en 1
             }
@@ -256,7 +242,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         // console.log("rows end = ", rows)
     //}
        else if (await check1(rows, currentPiece, currentPos, "y") == 0){
-        console.log("On va en bassssss");
         await writePiece(0, currentPiece, currentPos);
         await writePiece(1, currentPiece, newPos);
         setPosition(prevPosition => {
