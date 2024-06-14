@@ -101,6 +101,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         it = 0;
 
         if (axe == "y"){
+        console.log("dans check coli")
 
           for(it; it + y < piece.length; it++)
             if (piece[it + y][x] == 1) 
@@ -108,7 +109,10 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
           it = tmpPosition + 1;
           if (newY + it >= rows.length || rows[newY + it][newX] == 1) // it représente le dernier 1 de la piece
+          {
+            console.log("111111111111")
             return 1; // Collision avec la grille en Y
+          }
         }
         
         // Gestion de collision vers la droite de toute partie de la pièce
@@ -188,8 +192,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
           }
           break;
         case 'ArrowDown':
-          const collisionCheck = await check1(rows, pieces[pieceIndex], newPosition, "y");
+          const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
           newPosition.y += 1;
+          console.log(collisionCheck)
           if (collisionCheck == 0) {
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
