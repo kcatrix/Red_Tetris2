@@ -4,7 +4,7 @@ const cors = require('cors');
 const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
 const pieces = require('./pieces');
-const nmbrPieces = 20;
+const nmbrPieces = 2000;
 
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://localhost:${port}`)

@@ -83,91 +83,85 @@ function Game({ pieces, setPieces, catalogPieces }) {
   let tmpPosition;
   let rowsClean = rows;
 
-  for (let y = 0; y < piece.length; y++) {
-    for (let x = 0; x < piece[y].length; x++) {
-      if (piece[y][x] == 1) {
-        const newY = position.y + y;
-        const newX = position.x + x;
+	if (axe == "y" || axe == "+x" || axe == "r") {
+		for (let y = 0; y < piece.length; y++) {
+			for (let x = 0; x < piece[y].length; x++) {
+				if (piece[y][x] == 1) {
+					const newY = position.y + y;
+					const newX = position.x + x;
 
-		  if (axe == "r")
-			  rowsClean[newY][newX] = 0;
+				if (axe == "r")
+					rowsClean[newY][newX] = 0;
 
-        // Vérifier les limites du tableau
-        if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
-          return 1; // Collision avec les bords du tableau
-        }
-
-        // Vérifier la collision avec un autre bloc
-        // Gestion de collision vers le bas de toute partie de la pièce
-        it = 0;
-
-        if (axe == "y"){
-
-          for(it; it + y < piece.length; it++)
-            if (piece[it + y][x] == 1) 
-              tmpPosition = it;
-
-          it = tmpPosition + 1;
-          if (newY + it >= rows.length || rows[newY + it][newX] == 1) // it représente le dernier 1 de la piece
-          {
-            return 1; // Collision avec la grille en Y
-          }
-        }
-        
-        // Gestion de collision vers la droite de toute partie de la pièce
-        if (axe == "+x") {
-
-          for(it; it + x < piece[y].length; it++) 
-            if (piece[y][it + x] == 1) 
-              tmpPosition = it;
-          
-          it = tmpPosition + 1;
-          if (newX + it > rows[y].length - 1 ||  rows[newY][newX + it] == 1) 
-            return 2; // on retourne 2 pour ne trigger ni le 1 de collision ni le 0 de tout est ok
-        }
-
-        // Gestion de collision vers la gauche de toute partie de la pièce
-        if (axe == "-x") {
-
-					let special = 0;
-					tmpPosition = 0;
-          it = piece[y].length - 1;
-          for(it; it - x >= 0; it--) {
-						if (piece[y][it - x] == 1){
-							tmpPosition = it;
-						}
+					// Vérifier les limites du tableau
+					if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
+						return 1; // Collision avec les bords du tableau
 					}
 
-					it = piece[y].length - 1;
+					// Vérifier la collision avec un autre bloc
+					// Gestion de collision vers le bas de toute partie de la pièce
+					it = 0;
+
+					if (axe == "y"){
+
+						for(it; it + y < piece.length; it++)
+							if (piece[it + y][x] == 1) 
+								tmpPosition = it;
+
+						it = tmpPosition + 1;
+						if (newY + it >= rows.length || rows[newY + it][newX] == 1) // it représente le dernier 1 de la piece
+						{
+							return 1; // Collision avec la grille en Y
+						}
+					}
+					
+					// Gestion de collision vers la droite de toute partie de la pièce
+					if (axe == "+x") {
+
+						for(it; it + x < piece[y].length; it++) 
+							if (piece[y][it + x] == 1) 
+								tmpPosition = it;
+						
+						it = tmpPosition + 1;
+						if (newX + it > rows[y].length - 1 ||  rows[newY][newX + it] == 1) 
+							return 2; // on retourne 2 pour ne trigger ni le 1 de collision ni le 0 de tout est ok
+					}
+
+					// Gestion de collision vers la gauche de toute partie de la pièce
+
+				}
+			}
+		}
+	}	
+
+	if (axe == "-x") {
+
+		for (let y = 0; y < piece.length; y++) {
+			for (let x = piece[y].length - 1; x >= 0; x--) {
+				if (piece[y][x] == 1) {
+
+					const newY = position.y + y;
+        	const newX = position.x + x;
+					let itp = 0
+					it = x;
+					tmpPosition = 0;
+					
 					for(it; it >= 0; it--) {
 						if (piece[y][it] == 1){
-							special++;
+							tmpPosition = ++itp;
 						}
 					}
 
-					
-					// if (piece[y][x - tmpPosition] == 0) {
-					// 	while (piece[y][x - tmpPosition] == 0) {
-					// 		if (piece[y][x - tmpPosition - 1] == 1)
-					// 			break;
-					// 		tmpPosition = tmpPosition - 1;
-					// 	}
-					// 	it = tmpPosition;
-					// }
-					// else
+					it = tmpPosition;
 
-					if (special == 1 && tmpPosition - x == 1)
-						it = 1;
-					else
-						it = tmpPosition + 1;
+					if (newX == 0 || rows[newY][newX - it] == 1){
+						return 2;
+					}
+				}
+			}
+		}
+	}
 
-          if (newX == 0 || rows[newY][newX - it] == 1){
-            return 2;
-		  		}
-        }
-      }
-    }
-  }
   if (axe == "r"){
   
 	for (let dy = 0; dy < newPiece.length; dy++) {
