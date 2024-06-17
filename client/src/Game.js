@@ -5,6 +5,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const timer = 1000;
+  const [isMovingDown, setIsMovingDown] = useState(false);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -101,7 +102,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         it = 0;
 
         if (axe == "y"){
-        console.log("dans check coli")
 
           for(it; it + y < piece.length; it++)
             if (piece[it + y][x] == 1) 
@@ -110,7 +110,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
           it = tmpPosition + 1;
           if (newY + it >= rows.length || rows[newY + it][newX] == 1) // it représente le dernier 1 de la piece
           {
-            console.log("111111111111")
             return 1; // Collision avec la grille en Y
           }
         }
@@ -133,7 +132,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
 					let special = 0;
 					tmpPosition = 0;
           it = piece[y].length - 1;
-					console.log("it assignation = ", it)
           for(it; it - x >= 0; it--) {
 						if (piece[y][it - x] == 1){
 							tmpPosition = it;
@@ -147,7 +145,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
 						}
 					}
 
-					console.log("it -x pre embrouille = ", tmpPosition)
 					
 					// if (piece[y][x - tmpPosition] == 0) {
 					// 	while (piece[y][x - tmpPosition] == 0) {
@@ -164,11 +161,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
 					else
 						it = tmpPosition + 1;
 
-					console.log("it -x post embrouille = ", it)
           if (newX == 0 || rows[newY][newX - it] == 1){
-						console.log("boom[", newY, "][", newX, "] = ", rows[newY][newX]);
-						console.log("it at this time = ", it);
-						debugger; 
             return 2;
 		  		}
         }
@@ -224,12 +217,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
           break;
         case 'ArrowUp': // faire tourner la piece
           let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
-          console.log("oldPiece = ", pieces[pieceIndex])
-          console.log("newPiecePosition = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
           // Ternaire pour indiquer que si nous sommes a la derniere piece d'un type, nous repassons a la premiere piece de ce type
           newPiecePosition[1] == 3 ? newPiecePosition[1] = 0 : newPiecePosition[1] = newPiecePosition[1] + 1;
           const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-          console.log("newPiece after switch = ",  catalogPieces[newPiecePosition[0]][newPiecePosition[1]])
           if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") == 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
               setPieces(oldPieces => {
                 const newPieces = [...oldPieces];
@@ -245,7 +235,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         case 'ArrowDown':
           const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
           newPosition.y += 1;
-          console.log(collisionCheck)
           if (collisionCheck == 0) {
             await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             setPosition(prevPositions => {
