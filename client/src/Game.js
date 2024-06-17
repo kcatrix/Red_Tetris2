@@ -5,21 +5,48 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const timer = 1000;
+  const [deletion, setDeletion] = useState(0);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
   );
+
+  const equal = (rows, number) => {
+    let save = 0;
+    for (let x = 0; x < rows.length; x++){
+      if (rows[x] != number){
+		return 0;
+	  }
+      else if (rows[x] == number)
+        save = 1;
+    }
+    return save;
+  }
+
+  const checkRowsEqual = (rows, y, number) => {
+	if (number == 0) {
+		if (equal(rows[y], 0) == 1)
+			return 1;
+	}
+	else if (number == 1){
+		if (equal(rows[y], 1) == 1)
+			return 1;
+	}
+    return 0;
+  }
 
   const writePiece = async (action, piece, position) => {
     setRows(prevRows => {
       let newRows = [...prevRows];
       for (let y = 0; y < piece.length; y++) {
         for (let x = 0; x < piece[y].length; x++) {
-          if (piece[y][x] == 1 && action == 1 && position.y + y < rows.length) {
-            newRows[position.y + y][position.x + x] = 1;
-          } 
-          else if (piece[y][x] == 1 && action == 0) {
-            newRows[position.y + y][position.x + x] = 0;
+          if (piece[y][x] == 1){
+            if (action == 1 && position.y + y < rows.length) {
+              newRows[position.y + y][position.x + x] = 1;
+            } 
+            else if (action == 0) { 
+              newRows[position.y + y][position.x + x] = 0;
+            }
           }
         }
       }
@@ -27,31 +54,66 @@ function Game({ pieces, setPieces, catalogPieces }) {
     });
   };
 
+  const deleteLine = async (rows) => {
+
+	let end = 0;
+	console.log("inside deleteLine -------")
+    for (let y = rows.length - 1; y >= 0; y--) {
+      if (equal(rows[y], 1)){
+          setRows(prevRows => {
+            let newRows = [...prevRows];
+            for(let tmpX = 0; tmpX < 10; tmpX++)
+              newRows[y][tmpX] = 0;
+            return newRows;
+          })
+		end = 1;
+      }
+    }
+	return end;
+  }
+
+  const deleteSpace = async (rows, y) => {
+
+    let checkEmptyLine = 0;
+	let newRows = rows;
+    let pos = y;
+	let long = y;
+
+	console.log("--------- deleteSpace")
+	console.log("rows = ", rows)
+    for(pos; equal(rows[pos], 0) == 1; pos--){
+      checkEmptyLine = 1;
+    }
+	long = pos;
+	for(long; rows[long].includes(1); long--)
+    console.log("-------------")
+    console.log("data: ")
+    console.log("rows[y] = ", rows[pos])
+    console.log("pos = ", pos)
+	console.log("long = ", long)
+    if (long != 0 && checkEmptyLine == 1){
+      console.log("transformation");
+	  for (y; y >= long - 1; y--){
+		newRows[y] = rows[y - 1];
+	  }
+		console.log("newRows apres transfo = ", newRows)
+    }
+	  setRows(newRows);   
+    //   debugger;
+}
+
   const searchMatchingPatterns = async (catalogPieces, pieces, pieceIndex) => {
-    // let newPiece = [];
-    // var hash = {};
-    // for(var i = 0 ; i < catalogPieces.length; i++) {
-    //   for(var j = 0; j < catalogPieces[i].length; j++) {
-    //     hash[catalogPieces[i][j]] = [i, j];
-    //   }
-    // }
-    // console.log("catalogue ", catalogPieces)
-    // if(hash.hasOwnProperty(pieces[pieceIndex])) {
-    //     newPiece = (hash[pieces[pieceIndex]]);
-    // }
+
     for(let i = 0 ; i < catalogPieces.length; i++) {
       for(let y = 0; y < catalogPieces[i].length; y++)
+      {
+        for(let z = 0; z < catalogPieces[i][y].length; z++)
         {
-          for(let z = 0; z < catalogPieces[i][y].length; z++)
-          {
-            if(same_array(catalogPieces[i][y], pieces[pieceIndex]) == true)
-              return ([i, y])
-             
-          }
+          if(same_array(catalogPieces[i][y], pieces[pieceIndex]) == true)
+            return ([i, y])     
         }
-    }
-    
-    //  return newPiece;
+      }
+    }    
   }
 
   const same_array = (catalogPieces, pieces) => {
@@ -169,7 +231,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
 		  const newPieceY = position.y + dy;
 		  const newPieceX = position.x + dx;
 
-		if (newPieceX == 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] == 1)
+		if (newPieceX < 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] == 1)
 		  return 1;
 		}
 	  }
@@ -257,11 +319,21 @@ function Game({ pieces, setPieces, catalogPieces }) {
       const currentPos = position[pieceIndex];
       const newPos = { ...currentPos, y: currentPos.y + 1 };
 
+
       // if (await checkCollision(currentPiece, newPos, rows, "y") == 1) {
         if (await check1(rows, currentPiece, 0, currentPos, "y") == 1) {
           const nextIndex = (pieceIndex + 1) % pieces.length;
           setPieceIndex(nextIndex);
           setPosition([...position, { x: 4, y: 0 }]);
+          if (currentPos.y >= 0 && checkRowsEqual(rows, currentPos.y + currentPiece.length - 1, 1)) {
+            console.log("par ici !")
+            await deleteLine(rows)
+			setDeletion(currentPos.y + currentPiece.length - 1);
+			if (deletion != 0){
+				await deleteSpace(rows, deletion)
+				setDeletion(0)
+			  }
+          }
         }
         // console.log("rows end = ", rows)
     //}
