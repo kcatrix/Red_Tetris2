@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 
 function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
@@ -77,7 +77,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
     return true
   }
 
-  const check1 = async (rows, piece, newPiece, position, axe) => {
+  const check1 = (rows, piece, newPiece, position, axe) => {
     
   let it;
   let tmpPosition;
@@ -179,96 +179,91 @@ function Game({ pieces, setPieces, catalogPieces }) {
   return 0; // Pas de collision
 };
 
-  useEffect(() => {
-    const handleKeyDown = async (event) => {
-      if (!gameLaunched || !pieces[pieceIndex]) return;
-      let newPosition = { ...position[pieceIndex] };
+const handleKeyDown = useCallback((event) => {
+  console.log(gameLaunched);
+  console.log(pieces[pieceIndex]);
+  if (!gameLaunched || !pieces[pieceIndex]) return;
+  let newPosition = { ...position[pieceIndex] };
 
-      switch (event.key) {
-        case 'ArrowLeft':
-          newPosition.x -= 1;
-          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") == 0) { 
-            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-              setPosition(prevPositions => {
-                const newPositions = [...prevPositions];
-                newPositions[pieceIndex] = newPosition;
-                writePiece(1, pieces[pieceIndex], newPosition);
-                return (newPositions);
-              });
-          }
-          break;
-        case 'ArrowRight':
-          newPosition.x += 1;
-          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") == 0) {
-            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            setPosition( prevPositions => {
-              const newPositions = [...prevPositions];
-              newPositions[pieceIndex] = newPosition;
-              writePiece(1, pieces[pieceIndex], newPosition);
-              return (newPositions);
-            });
-          }
-          break;
-        case 'ArrowUp': // faire tourner la piece
-          let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex)
-          // Ternaire pour indiquer que si nous sommes a la derniere piece d'un type, nous repassons a la premiere piece de ce type
-          newPiecePosition[1] == 3 ? newPiecePosition[1] = 0 : newPiecePosition[1] = newPiecePosition[1] + 1;
-          const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-          if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") == 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length){
-              setPieces(oldPieces => {
-                const newPieces = [...oldPieces];
-                newPieces[pieceIndex] = newPiece;
-                writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-                writePiece(1, newPiece, position[pieceIndex]);
-                return newPieces;
-                });
-                // erreur générale -> quand on rotate et que la piece a venir rentre en collision avec d'autres 1, suppression de ces 1   
-                // erreur générale -> quand on utilise fleche du bas, les 0 en dessous des 1 seront changent en 1
-            }
-          break;
-        case 'ArrowDown':
-          const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
-          newPosition.y += 1;
-          if (collisionCheck == 0) {
-            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            setPosition(prevPositions => {
-              const newPositions = [...prevPositions];
-              newPositions[pieceIndex] = newPosition;
-              writePiece(1, pieces[pieceIndex], newPosition);
-              return newPositions;
-            });
-          }
-          break;
-        default:
-          break;
+  switch (event.key) {
+    case 'ArrowLeft':
+      console.log("arrow left");
+      newPosition.x -= 1;
+      if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) {
+        writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+        setPosition(prevPositions => {
+          const newPositions = [...prevPositions];
+          newPositions[pieceIndex] = newPosition;
+          writePiece(1, pieces[pieceIndex], newPosition);
+          return newPositions;
+        });
       }
-    };
+      break;
+    case 'ArrowRight':
+      newPosition.x += 1;
+      if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
+        writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+        setPosition(prevPositions => {
+          const newPositions = [...prevPositions];
+          newPositions[pieceIndex] = newPosition;
+          writePiece(1, pieces[pieceIndex], newPosition);
+          return newPositions;
+        });
+      }
+      break;
+    case 'ArrowUp':
+      let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
+      newPiecePosition[1] = (newPiecePosition[1] === 3) ? 0 : newPiecePosition[1] + 1;
+      const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+      if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
+        setPieces(oldPieces => {
+          const newPieces = [...oldPieces];
+          newPieces[pieceIndex] = newPiece;
+          writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+          writePiece(1, newPiece, position[pieceIndex]);
+          return newPieces;
+        });
+      }
+      break;
+    case 'ArrowDown':
+      newPosition.y += 1;
+      if (check1(rows, pieces[pieceIndex], 0, newPosition, "y") === 0) {
+        writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+        setPosition(prevPositions => {
+          const newPositions = [...prevPositions];
+          newPositions[pieceIndex] = newPosition;
+          writePiece(1, pieces[pieceIndex], newPosition);
+          return newPositions;
+        });
+      }
+      break;
+    default:
+      break;
+  }
+}, [gameLaunched, pieces, pieceIndex, position, rows]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [gameLaunched, pieceIndex, position, pieces, rows]);
-
-  useEffect(() => {
-    const movePieceDown = async () => {
+    const movePieceDown  = () => {
       if (!gameLaunched) return;
+      console.log("move")
       const currentPiece = pieces[pieceIndex];
-      await writePiece(1, currentPiece, position[pieceIndex]);
+      writePiece(0, currentPiece, position[pieceIndex]);
+      writePiece(1, currentPiece, position[pieceIndex]);
       const currentPos = position[pieceIndex];
       const newPos = { ...currentPos, y: currentPos.y + 1 };
 
       // if (await checkCollision(currentPiece, newPos, rows, "y") == 1) {
-        if (await check1(rows, currentPiece, 0, currentPos, "y") == 1) {
+        if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
+          console.log("cas 1")
           const nextIndex = (pieceIndex + 1) % pieces.length;
           setPieceIndex(nextIndex);
           setPosition([...position, { x: 4, y: 0 }]);
         }
         // console.log("rows end = ", rows)
     //}
-       else if (await check1(rows, currentPiece, 0, currentPos, "y") == 0){
-        await writePiece(0, currentPiece, currentPos);
-        await writePiece(1, currentPiece, newPos);
+       else if (check1(rows, currentPiece, 0, currentPos, "y") == 0){
+        console.log("cas 2")
+        writePiece(0, currentPiece, currentPos);
+        writePiece(1, currentPiece, newPos);
         setPosition(prevPosition => {
           const newPositions = [...prevPosition];
           newPositions[pieceIndex] = newPos;
@@ -278,13 +273,23 @@ function Game({ pieces, setPieces, catalogPieces }) {
       }
     };
 
-    const intervalId = setInterval(movePieceDown, timer);
+    window.addEventListener('keydown', handleKeyDown);
+    
+     useEffect(() => {
+      if (gameLaunched) {
+        const intervalId = setInterval(movePieceDown, 1000);
+        return () => clearInterval(intervalId);
+      }
+    }, [gameLaunched, pieceIndex, position, rows]);
 
-    return () => clearInterval(intervalId);
-  }, [gameLaunched, pieceIndex, position, pieces, rows, timer]);
 
-  const launchGame = () => {
-    setGameLaunched(true);
+  const control = (e) => {
+    if (e.keyCode === 37)
+      console.log("left")
+  }
+  
+  const launchGame = async () => {
+    setGameLaunched(true)
   };
 
   return (
