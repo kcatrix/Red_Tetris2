@@ -5,6 +5,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const movePieceDownRef = useRef();
+  const [score, setScore] = useState(0);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -27,17 +28,16 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
 
-
   movePieceDownRef.current = useCallback(() => {
     if (!gameLaunched) return;
     const currentPiece = pieces[pieceIndex];
-    // writePiece(1, currentPiece, position[pieceIndex]);
     const currentPos = position[pieceIndex];
     const newPos = { ...currentPos, y: currentPos.y + 1 };
 
     if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
       writePiece(0, currentPiece, currentPos);
       writePiece(1, currentPiece, newPos);
+      // piece z disparait position haute toute a gauche sur y 19 
       setPosition(prevPosition => {
         const newPositions = [...prevPosition];
         newPositions[pieceIndex] = newPos;
@@ -48,13 +48,17 @@ function Game({ pieces, setPieces, catalogPieces }) {
     else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
       const nextIndex = (pieceIndex + 1) % pieces.length;
       let newRows = rows;
+      let tmpScore = 0;
       for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) {
-        if (checkRowsEqual(rows, currentPos.y, checkPiece, 1))
+        if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
           newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y)
+          tmpScore += 100;
+        }
         if (checkPiece == currentPos.y){
           setRows(oldRows => { 
             return newRows});
         }
+        setScore(score + tmpScore)
       }
       setPieceIndex(nextIndex);
       setPosition([...position, { x: 4, y: 0 }]);
@@ -287,6 +291,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   return (
     <div className="Game">
       <h1>RED_TETRIS</h1>
+      <h3>Score : {score} </h3>
       <div className="board">
         {rows.map((row, i) => (
           <div key={i} className="row">
