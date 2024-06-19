@@ -5,13 +5,13 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const movePieceDownRef = useRef();
+  const [Time, setTime] = useState(1000);
   const [score, setScore] = useState(0);
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
   );
 
-  const timer = 1000;
   let intervalId;
 
   const equal = (row, number) => {
@@ -91,6 +91,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
         newRows.unshift(Array(10).fill(0));
       }
     }
+    if (Time > 100)
+      setTime(Time - 50);
     return newRows;
   };
 
@@ -277,12 +279,12 @@ function Game({ pieces, setPieces, catalogPieces }) {
     if (gameLaunched) {
       intervalId = setInterval(() => {
         movePieceDownRef.current();
-      }, 1000);
+      }, Time);
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [gameLaunched, movePieceDownRef]);
+  }, [gameLaunched, movePieceDownRef, Time]);
 
   const launchGame = async () => {
     setGameLaunched(true);
