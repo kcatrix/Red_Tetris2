@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
-  const [position, setPosition] = useState([{ x: 4, y: 0 }]);
+  const [position, setPosition] = useState([{ x: 4, y: 0}]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const movePieceDownRef = useRef();
   const [Time, setTime] = useState(1000);
   const [score, setScore] = useState(0);
+  const [startPiece, setStartPiece] = useState(true);
+
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -34,6 +36,13 @@ function Game({ pieces, setPieces, catalogPieces }) {
     const currentPos = position[pieceIndex];
     const newPos = { ...currentPos, y: currentPos.y + 1 };
 
+    if (startPiece == true)
+    {
+      writePiece(1, currentPiece, currentPos)
+      setStartPiece(false)
+      return startPiece;
+    }
+
     if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
       writePiece(0, currentPiece, currentPos);
       writePiece(1, currentPiece, newPos);
@@ -46,6 +55,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
     }
 
     else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
+      if (position[pieceIndex].y == 0 )
+        setGameLaunched(false)
       // const nextIndex = (pieceIndex + 1) % pieces.length;
       let newRows = rows;
       let tmpScore = 0;
@@ -61,6 +72,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         setScore(score + tmpScore)
       }
       setPieceIndex(pieceIndex + 1);
+      setStartPiece(true)
       setPosition([...position, { x: 4, y: 0 }]);
     } 
   }, [gameLaunched, pieceIndex, position, rows]);
@@ -267,7 +279,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
   useEffect(() => {
-
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
