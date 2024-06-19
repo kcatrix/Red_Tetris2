@@ -5,7 +5,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
   const [isMovingDown, setIsMovingDown] = useState(false);
-  const [keyPressed, setKeyPressed] = useState(null);
   const movePieceDownRef = useRef();
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -169,8 +168,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
   const handleKeyDown = async (event) => {
-    if (!gameLaunched || !pieces[pieceIndex] || keyPressed) return;
-    setKeyPressed(event.key);
+    if (!gameLaunched || !pieces[pieceIndex]) return;
 
     let newPosition = { ...position[pieceIndex] };
 
@@ -232,16 +230,11 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
   useEffect(() => {
-    const handleKeyUp = () => {
-      setKeyPressed(null);
-    };
 
     document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
     };
   }, [handleKeyDown]);
 
