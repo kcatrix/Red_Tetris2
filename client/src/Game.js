@@ -1,39 +1,27 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
-  const [isMovingDown, setIsMovingDown] = useState(false);
-  const movePieceDownRef = useRef();
+  const timer = 1000;
+
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
   );
 
-  const timer = 1000;
-  let intervalId;
+  const equal = (row, number) => {
+    return row.every(cell => cell === number);
+  };
 
-  movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched) return;
-    const currentPiece = pieces[pieceIndex];
-    writePiece(1, currentPiece, position[pieceIndex]);
-    const currentPos = position[pieceIndex];
-    const newPos = { ...currentPos, y: currentPos.y + 1 };
-
-    if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
-      const nextIndex = (pieceIndex + 1) % pieces.length;
-      setPieceIndex(nextIndex);
-      setPosition([...position, { x: 4, y: 0 }]);
-    } else if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
-      writePiece(0, currentPiece, currentPos);
-      writePiece(1, currentPiece, newPos);
-      setPosition(prevPosition => {
-        const newPositions = [...prevPosition];
-        newPositions[pieceIndex] = newPos;
-        return newPositions;
-      });
+  const checkRowsEqual = (rows, firstY, lastY, number) => {
+    for (let y = lastY; y >= firstY; y--) {
+      if (equal(rows[y], number)) {
+        return true;
+      }
     }
-  }, [gameLaunched, pieceIndex, position, rows]);
+    return false;
+  };
 
   const writePiece = (action, piece, position) => {
     setRows(prevRows => {
@@ -53,40 +41,19 @@ function Game({ pieces, setPieces, catalogPieces }) {
     });
   };
 
-  const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
-    for(let i = 0 ; i < catalogPieces.length; i++) {
-      for(let y = 0; y < catalogPieces[i].length; y++) {
-        for(let z = 0; z < catalogPieces[i][y].length; z++) {
-          if(same_array(catalogPieces[i][y], pieces[pieceIndex]) === true)
-            return ([i, y]);
-        }
+  const deleteLine = (rows, start, end) => {
+    let newRows = [...rows];
+    for (let y = start; y >= end; y--) {
+      if (equal(newRows[y], 1)) {
+        newRows.splice(y, 1);
+        newRows.unshift(Array(10).fill(0));
       }
     }
-  }
-
-  const same_array = (catalogPieces, pieces) => {
-    if (catalogPieces.length === pieces.length) {
-      for(let i = 0; i < catalogPieces.length; i++) {
-        if (catalogPieces[i].length === pieces[i].length) {
-          for (let y = 0; y < catalogPieces[i].length; y++) {
-            if (catalogPieces[i][y] !== pieces[i][y])
-                return false;
-          }
-        } else {
-          return false;
-        }
-      }
-    } else {
-      return false;
-    }
-    return true;
-  }
+    return newRows;
+  };
 
   const check1 = (rows, piece, newPiece, position, axe) => {
-    let it;
-    let tmpPosition;
-    let rowsClean = rows;
-
+    let rowsClean = [...rows];
     if (axe === "y" || axe === "+x" || axe === "r") {
       for (let y = 0; y < piece.length; y++) {
         for (let x = 0; x < piece[y].length; x++) {
@@ -94,37 +61,39 @@ function Game({ pieces, setPieces, catalogPieces }) {
             const newY = position.y + y;
             const newX = position.x + x;
 
-            if (axe === "r")
-              rowsClean[newY][newX] = 0;
+            if (axe === "r") rowsClean[newY][newX] = 0;
 
             if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
               return 1;
             }
 
-            it = 0;
             if (axe === "y") {
-              for(it; it + y < piece.length; it++)
-                if (piece[it + y][x] === 1) 
-                  tmpPosition = it;
-
+              let it = 0;
+              let tmpPosition = 0;
+              for (it; it + y < piece.length; it++) {
+                if (piece[it + y][x] === 1) tmpPosition = it;
+              }
               it = tmpPosition + 1;
-              if (newY + it >= rows.length || rows[newY + it][newX] === 1) 
+              if (newY + it >= rows.length || rows[newY + it][newX] === 1) {
                 return 1;
+              }
             }
 
             if (axe === "+x") {
-              for(it; it + x < piece[y].length; it++) 
-                if (piece[y][it + x] === 1) 
-                  tmpPosition = it;
-
+              let it = 0;
+              let tmpPosition = 0;
+              for (it; it + x < piece[y].length; it++) {
+                if (piece[y][it + x] === 1) tmpPosition = it;
+              }
               it = tmpPosition + 1;
-              if (newX + it > rows[y].length - 1 || rows[newY][newX + it] === 1) 
+              if (newX + it > rows[y].length - 1 || rows[newY][newX + it] === 1) {
                 return 2;
+              }
             }
           }
         }
       }
-    }  
+    }
 
     if (axe === "-x") {
       for (let y = 0; y < piece.length; y++) {
@@ -133,17 +102,14 @@ function Game({ pieces, setPieces, catalogPieces }) {
             const newY = position.y + y;
             const newX = position.x + x;
             let itp = 0;
-            it = x;
-            tmpPosition = 0;
-
-            for(it; it >= 0; it--) {
-              if (piece[y][it] === 1){
+            let it = x;
+            let tmpPosition = 0;
+            for (it; it >= 0; it--) {
+              if (piece[y][it] === 1) {
                 tmpPosition = ++itp;
               }
             }
-
             it = tmpPosition;
-
             if (newX === 0 || rows[newY][newX - it] === 1) {
               return 2;
             }
@@ -158,9 +124,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
           if (newPiece[dy][dx] === 1) {
             const newPieceY = position.y + dy;
             const newPieceX = position.x + dx;
-
-            if (newPieceX === 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1)
+            if (newPieceX < 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1) {
               return 1;
+            }
           }
         }
       }
@@ -168,89 +134,104 @@ function Game({ pieces, setPieces, catalogPieces }) {
     return 0;
   };
 
-  const handleKeyDown = async (event) => {
-    if (!gameLaunched || !pieces[pieceIndex]) return;
+  useEffect(() => {
+    const handleKeyDown = async (event) => {
+      if (!gameLaunched || !pieces[pieceIndex]) return;
+      let newPosition = { ...position[pieceIndex] };
 
-    let newPosition = { ...position[pieceIndex] };
+      switch (event.key) {
+        case 'ArrowLeft':
+          newPosition.x -= 1;
+          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) {
+            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
+          break;
+        case 'ArrowRight':
+          newPosition.x += 1;
+          if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
+            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
+          break;
+        case 'ArrowUp':
+          let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
+          newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
+          const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+          if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
+            setPieces(oldPieces => {
+              const newPieces = [...oldPieces];
+              newPieces[pieceIndex] = newPiece;
+              writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+              writePiece(1, newPiece, position[pieceIndex]);
+              return newPieces;
+            });
+          }
+          break;
+        case 'ArrowDown':
+          const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
+          newPosition.y += 1;
+          if (collisionCheck === 0) {
+            await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+            setPosition(prevPositions => {
+              const newPositions = [...prevPositions];
+              newPositions[pieceIndex] = newPosition;
+              writePiece(1, pieces[pieceIndex], newPosition);
+              return newPositions;
+            });
+          }
+          break;
+        default:
+          break;
+      }
+    };
 
-    switch (event.key) {
-      case 'ArrowLeft':
-        newPosition.x -= 1;
-        if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
-          await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-          setPosition(prevPositions => {
-            const newPositions = [...prevPositions];
-            newPositions[pieceIndex] = newPosition;
-            writePiece(1, pieces[pieceIndex], newPosition);
-            return newPositions;
-          });
-        }
-        break;
-      case 'ArrowRight':
-        newPosition.x += 1;
-        if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
-          await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-          setPosition(prevPositions => {
-            const newPositions = [...prevPositions];
-            newPositions[pieceIndex] = newPosition;
-            writePiece(1, pieces[pieceIndex], newPosition);
-            return newPositions;
-          });
-        }
-        break;
-      case 'ArrowUp':
-        let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
-        newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
-        const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-        if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
-          setPieces(oldPieces => {
-            const newPieces = [...oldPieces];
-            newPieces[pieceIndex] = newPiece;
-            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-            writePiece(1, newPiece, position[pieceIndex]);
-            return newPieces;
-          });
-        }
-        break;
-      case 'ArrowDown':
-        const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
-        newPosition.y += 1;
-        if (collisionCheck === 0) {
-          await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-          setPosition(prevPositions => {
-            const newPositions = [...prevPositions];
-            newPositions[pieceIndex] = newPosition;
-            writePiece(1, pieces[pieceIndex], newPosition);
-            return newPositions;
-          });
-        }
-        break;
-      default:
-        break;
-    }
-  };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [gameLaunched, pieceIndex, position, pieces, rows]);
 
   useEffect(() => {
+    const movePieceDown = async () => {
+      if (!gameLaunched) return;
+      const currentPiece = pieces[pieceIndex];
+      const currentPos = position[pieceIndex];
+      const newPos = { ...currentPos, y: currentPos.y + 1 };
 
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      if (await check1(rows, currentPiece, 0, currentPos, "y") === 0) {
+        await writePiece(0, currentPiece, currentPos);
+        await writePiece(1, currentPiece, newPos);
+        setPosition(prevPosition => {
+          const newPositions = [...prevPosition];
+          newPositions[pieceIndex] = newPos;
+          return newPositions;
+        });
+      } else if (await check1(rows, currentPiece, 0, currentPos, "y") === 1) {
+        const nextIndex = (pieceIndex + 1) % pieces.length;
+        if (currentPos.y >= 0 && checkRowsEqual(rows, currentPos.y, currentPos.y + currentPiece.length - 1, 1)) {
+          setRows(prevRows => deleteLine(prevRows, currentPos.y + currentPiece.length - 1, currentPos.y));
+        }
+        setPieceIndex(nextIndex);
+        setPosition([...position, { x: 4, y: 0 }]);
+      }
     };
-  }, [handleKeyDown]);
 
-  useEffect(() => {
-    if (gameLaunched) {
-      intervalId = setInterval(() => {
-        movePieceDownRef.current();
-      }, 1000);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [gameLaunched, movePieceDownRef]);
+    const intervalId = setInterval(movePieceDown, timer);
+    return () => clearInterval(intervalId);
+  }, [gameLaunched, rows, position, pieceIndex, pieces, timer]);
 
-  const launchGame = async () => {
+  const launchGame = () => {
     setGameLaunched(true);
   };
 
@@ -261,7 +242,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         {rows.map((row, i) => (
           <div key={i} className="row">
             {row.map((cell, j) => (
-              <div key={j} className={`cell ${cell === 1 ? 'cell piece' : ''}`}>{cell}</div>
+              <div key={j} className={`cell ${cell === 1 ? 'cell piece' : ''}`}></div>
             ))}
           </div>
         ))}
