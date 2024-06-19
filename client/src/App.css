@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
 
-.App {
+.Game {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -24,6 +24,23 @@ h1 {
 }
 
 .cell {
+  border: 1px solid white;
+  width: 20px;
+  height: 20px;
+}
+
+.piece {
+  height: 8vh;
+  position: relative;
+
+}
+
+.rowPiece {
+  display: flex;
+  justify-content: center; 
+}
+
+.cellPiece {
   border: 1px solid white;
   width: 20px;
   height: 20px;

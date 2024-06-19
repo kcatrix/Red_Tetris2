@@ -46,7 +46,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
     }
 
     else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
-      const nextIndex = (pieceIndex + 1) % pieces.length;
+      // const nextIndex = (pieceIndex + 1) % pieces.length;
       let newRows = rows;
       let tmpScore = 0;
       for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) {
@@ -60,7 +60,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         }
         setScore(score + tmpScore)
       }
-      setPieceIndex(nextIndex);
+      setPieceIndex(pieceIndex + 1);
       setPosition([...position, { x: 4, y: 0 }]);
     } 
   }, [gameLaunched, pieceIndex, position, rows]);
@@ -289,9 +289,32 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
   return (
+    // <div className="piece">
+    // {gameLaunched == 1 &&
+    //   <h4>
+    //     {pieces[pieceIndex + 1].map((row, i) => (
+    //         <div key={i} className="rowPiece">
+    //           {row.map((cell, j) => (
+    //             <div key={j} className={`cellPiece ${cell === 1 ? 'cell piece' : ''}`}>{cell}</div>
+    //           ))}
+    //         </div>
+    //       ))}
+    //   </h4>
+    // }
     <div className="Game">
       <h1>RED_TETRIS</h1>
       <h3>Score : {score} </h3>
+      {gameLaunched == 1 &&
+         <h4>
+         {pieces[pieceIndex + 1].map((row, i) => (
+             <div key={i} className="rowPiece">
+               {row.map((cell, j) => (
+                 <div key={j} className={`cellPiece ${cell === 1 ? 'cell piece' : ''}`}>{cell}</div>
+               ))}
+             </div>
+           ))}
+      </h4>
+      }
       <div className="board">
         {rows.map((row, i) => (
           <div key={i} className="row">
