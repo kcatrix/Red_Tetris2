@@ -11,11 +11,11 @@ server.listen(port, () =>
 );
 
 const io = require('socket.io')(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-});
+	cors: {
+	  origin: "*", // ou spécifiez explicitement votre adresse publique
+	  methods: ["GET", "POST"]
+	}
+  });
 
 app.use(cors({ origin: 'http://localhost:3000' }));
 

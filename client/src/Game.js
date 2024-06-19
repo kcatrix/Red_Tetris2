@@ -8,6 +8,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [Time, setTime] = useState(1000);
   const [score, setScore] = useState(0);
   const [startPiece, setStartPiece] = useState(true);
+  const [gameover, setGameOver] = useState(false)
 
 
   const [rows, setRows] = useState(
@@ -56,7 +57,11 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
     else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
       if (position[pieceIndex].y == 0 )
+      {
         setGameLaunched(false)
+        setGameOver(true)
+        return gameLaunched
+      }
       // const nextIndex = (pieceIndex + 1) % pieces.length;
       let newRows = rows;
       let tmpScore = 0;
@@ -305,7 +310,10 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
     <div className="Game">
 	  <h1>RED_TETRIS</h1>
+    {gameover == true && 
+     <h2>Game Over</h2>}
     <h3>Score : {score} </h3>
+    {gameover == false &&
       <div className="board">
         {rows.map((row, i) => (
           <div key={i} className="row">
@@ -322,14 +330,16 @@ function Game({ pieces, setPieces, catalogPieces }) {
                   <div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
                 ))}
               </div>
-            ))
-          }
+            ))}
         </div>
       </div>
-      <div className="button">
-        <br />
-        <button onClick={launchGame}>Launch Game</button>
-      </div>
+      }
+      {gameover == false &&
+        <div className="button">
+          <br />
+          <button onClick={launchGame}>Launch Game</button>
+        </div>
+      }
     </div>
   );
 }
