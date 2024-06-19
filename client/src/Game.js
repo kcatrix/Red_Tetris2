@@ -4,8 +4,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0 }]);
   const [gameLaunched, setGameLaunched] = useState(false);
-  const [isMovingDown, setIsMovingDown] = useState(false);
   const movePieceDownRef = useRef();
+
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
   );
@@ -13,18 +13,29 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const timer = 1000;
   let intervalId;
 
+  const equal = (row, number) => {
+    return row.every(cell => cell === number);
+  };
+
+  const checkRowsEqual = (rows, firstY, lastY, number) => {
+    for (let y = lastY; y >= firstY; y--) {
+      if (equal(rows[y], number)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+
+
   movePieceDownRef.current = useCallback(() => {
     if (!gameLaunched) return;
     const currentPiece = pieces[pieceIndex];
-    writePiece(1, currentPiece, position[pieceIndex]);
+    // writePiece(1, currentPiece, position[pieceIndex]);
     const currentPos = position[pieceIndex];
     const newPos = { ...currentPos, y: currentPos.y + 1 };
 
-    if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
-      const nextIndex = (pieceIndex + 1) % pieces.length;
-      setPieceIndex(nextIndex);
-      setPosition([...position, { x: 4, y: 0 }]);
-    } else if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
+    if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
       writePiece(0, currentPiece, currentPos);
       writePiece(1, currentPiece, newPos);
       setPosition(prevPosition => {
@@ -33,6 +44,21 @@ function Game({ pieces, setPieces, catalogPieces }) {
         return newPositions;
       });
     }
+
+    else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
+      const nextIndex = (pieceIndex + 1) % pieces.length;
+      let newRows = rows;
+      for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) {
+        if (checkRowsEqual(rows, currentPos.y, checkPiece, 1))
+          newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y)
+        if (checkPiece == currentPos.y){
+          setRows(oldRows => { 
+            return newRows});
+        }
+      }
+      setPieceIndex(nextIndex);
+      setPosition([...position, { x: 4, y: 0 }]);
+    } 
   }, [gameLaunched, pieceIndex, position, rows]);
 
   const writePiece = (action, piece, position) => {
@@ -40,11 +66,12 @@ function Game({ pieces, setPieces, catalogPieces }) {
       let newRows = [...prevRows];
       for (let y = 0; y < piece.length; y++) {
         for (let x = 0; x < piece[y].length; x++) {
-          if (piece[y][x] == 1 && action == 1 && position.y + y < rows.length) {
-            newRows[position.y + y][position.x + x] = 1;
-          } 
-          else if (piece[y][x] == 1 && action == 0) {
-            newRows[position.y + y][position.x + x] = 0;
+          if (piece[y][x] === 1) {
+            if (action === 1 && position.y + y < rows.length) {
+              newRows[position.y + y][position.x + x] = 1;
+            } else if (action === 0) {
+              newRows[position.y + y][position.x + x] = 0;
+            }
           }
         }
       }
@@ -52,34 +79,38 @@ function Game({ pieces, setPieces, catalogPieces }) {
     });
   };
 
+  const deleteLine = (rows, start, end) => {
+    let newRows = [...rows];
+    for (let y = start; y >= end; y--) {
+      if (equal(newRows[y], 1)) {
+        newRows.splice(y, 1);
+        newRows.unshift(Array(10).fill(0));
+      }
+    }
+    return newRows;
+  };
+
   const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
     for(let i = 0 ; i < catalogPieces.length; i++) {
       for(let y = 0; y < catalogPieces[i].length; y++) {
         for(let z = 0; z < catalogPieces[i][y].length; z++) {
-          if(same_array(catalogPieces[i][y], pieces[pieceIndex]) === true)
+          if(sameArray(catalogPieces[i][y], pieces[pieceIndex]) === true)
             return ([i, y]);
         }
       }
     }
   }
 
-  const same_array = (catalogPieces, pieces) => {
-    if (catalogPieces.length === pieces.length) {
-      for(let i = 0; i < catalogPieces.length; i++) {
-        if (catalogPieces[i].length === pieces[i].length) {
-          for (let y = 0; y < catalogPieces[i].length; y++) {
-            if (catalogPieces[i][y] !== pieces[i][y])
-                return false;
-          }
-        } else {
-          return false;
-        }
+  const sameArray = (array1, array2) => {
+    if (array1.length !== array2.length) return false;
+    for (let i = 0; i < array1.length; i++) {
+      if (array1[i].length !== array2[i].length) return false;
+      for (let j = 0; j < array1[i].length; j++) {
+        if (array1[i][j] !== array2[i][j]) return false;
       }
-    } else {
-      return false;
     }
     return true;
-  }
+  };
 
   const check1 = (rows, piece, newPiece, position, axe) => {
     let it;
