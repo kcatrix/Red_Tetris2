@@ -134,6 +134,29 @@ function Game({ pieces, setPieces, catalogPieces }) {
     return 0;
   };
 
+  const searchMatchingPatterns = (catalogPieces, pieces, pieceIndex) => {
+    for (let i = 0; i < catalogPieces.length; i++) {
+      for (let y = 0; y < catalogPieces[i].length; y++) {
+        for (let z = 0; z < catalogPieces[i][y].length; z++) {
+          if (sameArray(catalogPieces[i][y], pieces[pieceIndex])) {
+            return [i, y];
+          }
+        }
+      }
+    }
+  };
+
+  const sameArray = (array1, array2) => {
+    if (array1.length !== array2.length) return false;
+    for (let i = 0; i < array1.length; i++) {
+      if (array1[i].length !== array2[i].length) return false;
+      for (let j = 0; j < array1[i].length; j++) {
+        if (array1[i][j] !== array2[i][j]) return false;
+      }
+    }
+    return true;
+  };
+
   useEffect(() => {
     const handleKeyDown = async (event) => {
       if (!gameLaunched || !pieces[pieceIndex]) return;
