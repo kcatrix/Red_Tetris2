@@ -320,7 +320,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
   return (
 
     <div className="Game">
-	  <h1>RED_TETRIS</h1>
+    <h1>RED_TETRIS</h1>
     {gameover == true && 
      <h2>Game Over</h2>}
     <h3>Score : {score} </h3>
