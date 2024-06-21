@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import sound from './tetris.mp3'
+
 
 function Game({ pieces, setPieces, catalogPieces }) {
   const [pieceIndex, setPieceIndex] = useState(0);
@@ -9,7 +11,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [score, setScore] = useState(0);
   const [startPiece, setStartPiece] = useState(true);
   const [gameover, setGameOver] = useState(false)
-
+  const [play, setPlay] = useState(false);
+  const audio = document.getElementById("audio_tag");
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -30,6 +33,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
     return false;
   };
 
+
+  // const audio = new Audio(sound)
 
   movePieceDownRef.current = useCallback(() => {
     if (!gameLaunched) return;
@@ -58,6 +63,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
       if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
         setGameLaunched(false)
         setGameOver(true)
+        play ? setPlay(false) : setPlay(true);
+        play ? audio.pause() : audio.play();
         return gameLaunched
       }
       let newRows = rows;
@@ -306,6 +313,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
   const launchGame = async () => {
     setGameLaunched(true);
+    play ? setPlay(false) : setPlay(true);
+    play ? audio.pause() : audio.play();
   };
 
   return (
@@ -316,25 +325,25 @@ function Game({ pieces, setPieces, catalogPieces }) {
      <h2>Game Over</h2>}
     <h3>Score : {score} </h3>
     {gameover == false &&
-      <div className="board">
-        {rows.map((row, i) => (
-          <div key={i} className="row">
-            {row.map((cell, j) => (
-              <div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
-            ))}
-          </div>
-        ))}
-        <div className="visuaPiece">
-          {gameLaunched == 1 &&
-            pieces[pieceIndex + 1].map((row, i) => (
+        <div className="board">
+            {rows.map((row, i) => (
               <div key={i} className="row">
                 {row.map((cell, j) => (
-                  <div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
+                  <div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
                 ))}
               </div>
             ))}
-        </div>
-      </div>
+            <div className="visuaPiece">
+              {gameLaunched == 1 &&
+                pieces[pieceIndex + 1].map((row, i) => (
+                  <div key={i} className="row">
+                    {row.map((cell, j) => (
+                      <div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
+                    ))}
+                  </div>
+                ))}
+            </div>
+          </div>
       }
       {gameover == false &&
         <div className="button">
@@ -342,6 +351,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
           <button onClick={launchGame}>Launch Game</button>
         </div>
       }
+    <audio id="audio_tag" src={sound} />
     </div>
   );
 }
