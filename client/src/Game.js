@@ -253,7 +253,8 @@ function Game({ pieces, setPieces, catalogPieces }) {
         let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
         newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
         const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-        if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
+        // if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
+        if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
           writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           setPieces(oldPieces => {
             const newPieces = [...oldPieces];
@@ -261,10 +262,13 @@ function Game({ pieces, setPieces, catalogPieces }) {
             writePiece(1, newPiece, position[pieceIndex]);
             return newPieces;
           });
+          debugger;
         }
-        else
-        writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-        writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+        else if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
+          writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+          writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+          debugger;
+        }
         break;
       case 'ArrowDown':
         newPosition.y += 1;
