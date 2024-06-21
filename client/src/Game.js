@@ -262,12 +262,10 @@ function Game({ pieces, setPieces, catalogPieces }) {
             writePiece(1, newPiece, position[pieceIndex]);
             return newPieces;
           });
-          debugger;
         }
         else if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
           writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           writePiece(1, pieces[pieceIndex], position[pieceIndex]);
-          debugger;
         }
         break;
       case 'ArrowDown':
