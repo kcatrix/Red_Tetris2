@@ -44,10 +44,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
       return startPiece;
     }
 
-    if (check1(rows, currentPiece, 0, currentPos, "y") == 0) {
+    if (check1(rows, currentPiece, 0, currentPos, "y") == 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
       writePiece(0, currentPiece, currentPos);
       writePiece(1, currentPiece, newPos);
-      // piece z disparait position haute toute a gauche sur y 19 
       setPosition(prevPosition => {
         const newPositions = [...prevPosition];
         newPositions[pieceIndex] = newPos;
@@ -55,17 +54,15 @@ function Game({ pieces, setPieces, catalogPieces }) {
       });
     }
 
-    else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) {
-      if (position[pieceIndex].y == 0 )
-      {
+    else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+      if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
         setGameLaunched(false)
         setGameOver(true)
         return gameLaunched
       }
-      // const nextIndex = (pieceIndex + 1) % pieces.length;
       let newRows = rows;
       let tmpScore = 0;
-      for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) {
+      for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
         if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
           newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y)
           tmpScore += 100;
@@ -212,8 +209,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
             const newPieceY = position.y + dy;
             const newPieceX = position.x + dx;
 
-            if (newPieceX === 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1)
+            if (newPieceX === 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1){
               return 1;
+            }
           }
         }
       }
@@ -256,19 +254,21 @@ function Game({ pieces, setPieces, catalogPieces }) {
         newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
         const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
         if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
+          writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           setPieces(oldPieces => {
             const newPieces = [...oldPieces];
             newPieces[pieceIndex] = newPiece;
-            writePiece(0, pieces[pieceIndex], position[pieceIndex]);
             writePiece(1, newPiece, position[pieceIndex]);
             return newPieces;
           });
         }
+        else
+        writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+        writePiece(1, pieces[pieceIndex], position[pieceIndex]);
         break;
       case 'ArrowDown':
-        const collisionCheck = await check1(rows, pieces[pieceIndex], 0, newPosition, "y");
         newPosition.y += 1;
-        if (collisionCheck === 0) {
+        if (check1(rows, pieces[pieceIndex], 0, newPosition, "y") === 0) {
           await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           setPosition(prevPositions => {
             const newPositions = [...prevPositions];
