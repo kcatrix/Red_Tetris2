@@ -34,8 +34,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
   };
 
 
-  // const audio = new Audio(sound)
-
   movePieceDownRef.current = useCallback(() => {
     if (!gameLaunched) return;
     const currentPiece = pieces[pieceIndex];
@@ -143,6 +141,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
     let it;
     let tmpPosition;
     let rowsClean = rows;
+    let final = 0;
 
     if (axe === "y" || axe === "+x" || axe === "r") {
       for (let y = 0; y < piece.length; y++) {
@@ -153,7 +152,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
             if (axe === "r")
               rowsClean[newY][newX] = 0;
-
             if (newY >= rows.length || newX >= rows[0].length || newX < 0 || newY < 0) {
               return 1;
             }
@@ -165,8 +163,10 @@ function Game({ pieces, setPieces, catalogPieces }) {
                   tmpPosition = it;
 
               it = tmpPosition + 1;
-              if (newY + it >= rows.length || rows[newY + it][newX] === 1) 
+              if (newY + it >= rows.length || rows[newY + it][newX] === 1) //surment ici
+              {
                 return 1;
+              }
             }
 
             if (axe === "+x") {
@@ -218,6 +218,30 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
             if (newPieceX === 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1){
               return 1;
+            }
+          }
+        }
+      }
+    }
+
+    it = 0
+    if (axe === "y+")
+    {
+      for (let dy = piece.length - 1; dy >= 0; dy--) {
+        for (let dx = 0; dx < piece[dy].length; dx++) {
+          if (piece[dy][dx] === 1) {
+            const newPieceY = position.y + dy;
+            const newPieceX = position.x + dx;
+            it = dy;
+            let increase = it;
+            for(increase; increase <= rows.length - 1 && rows[increase][dx] == 0; increase++)
+            console.log("increase = ", increase)
+            if (final < increase)
+              final = increase;
+            console.log("final = ", final)
+            console.log("bout de pîece en cours y = ", dy," && x = ", dx)
+            if (dx <= piece[dy].length - 1){
+              return final - 1;
             }
           }
         }
@@ -277,7 +301,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
         break;
       case 'ArrowDown':
         newPosition.y += 1;
-        if (check1(rows, pieces[pieceIndex], 0, newPosition, "y") === 0) {
+        if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
           await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           setPosition(prevPositions => {
             const newPositions = [...prevPositions];
@@ -287,6 +311,18 @@ function Game({ pieces, setPieces, catalogPieces }) {
           });
         }
         break;
+        case ' ':
+          newPosition.y = check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y+")
+          console.log("newPosition.y = ", newPosition.y)
+          writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+          setPosition(prevPositions => {
+            const newPositions = [...prevPositions];
+            newPositions[pieceIndex] = newPosition;
+            writePiece(1, pieces[pieceIndex], newPosition);
+            return newPositions;
+          });
+          debugger;
+        break; 
       default:
         break;
     }
