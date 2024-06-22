@@ -40,7 +40,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
     const currentPos = position[pieceIndex];
     const newPos = { ...currentPos, y: currentPos.y + 1 };
 
-    if (startPiece == true)
+    if (startPiece == true && check1(rows, currentPiece, 0, currentPos, "y") == 0)
     {
       writePiece(1, currentPiece, currentPos)
       setStartPiece(false)
