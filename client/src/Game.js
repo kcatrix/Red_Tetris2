@@ -223,30 +223,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         }
       }
     }
-
-    it = 0
-    if (axe === "y+")
-    {
-      for (let dy = piece.length - 1; dy >= 0; dy--) {
-        for (let dx = 0; dx < piece[dy].length; dx++) {
-          if (piece[dy][dx] === 1) {
-            const newPieceY = position.y + dy;
-            const newPieceX = position.x + dx;
-            it = dy;
-            let increase = it;
-            for(increase; increase <= rows.length - 1 && rows[increase][dx] == 0; increase++)
-            console.log("increase = ", increase)
-            if (final < increase)
-              final = increase;
-            console.log("final = ", final)
-            console.log("bout de pîece en cours y = ", dy," && x = ", dx)
-            if (dx <= piece[dy].length - 1){
-              return final - 1;
-            }
-          }
-        }
-      }
-    }
     return 0;
   };
 
@@ -312,16 +288,18 @@ function Game({ pieces, setPieces, catalogPieces }) {
         }
         break;
         case ' ':
-          newPosition.y = check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y+")
-          console.log("newPosition.y = ", newPosition.y)
           writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+          let tempPosition = { ...position[pieceIndex] };
+          while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
+            tempPosition.y++;
+          }
+          // tempPosition.y--; // Move back one step to the last valid position
           setPosition(prevPositions => {
             const newPositions = [...prevPositions];
-            newPositions[pieceIndex] = newPosition;
-            writePiece(1, pieces[pieceIndex], newPosition);
+            newPositions[pieceIndex] = tempPosition;
+            writePiece(1, pieces[pieceIndex], tempPosition);
             return newPositions;
           });
-          debugger;
         break; 
       default:
         break;
