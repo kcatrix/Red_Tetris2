@@ -16,7 +16,7 @@ function App() {
     socketIo.emit('requestRandomPiece');
 
     socketIo.on('randomPiece', (randomPiece) => {
-      setPieces(prevPieces => [...prevPieces, randomPiece]); // Add the randomPiece to the pieces array
+      setPieces(randomPiece) // Add the randomPiece to the pieces array
     });
 
 	socketIo.emit('allPieces')
