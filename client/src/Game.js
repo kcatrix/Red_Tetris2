@@ -288,7 +288,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
         }
         break;
         case ' ':
-          console.log("test git")
           writePiece(0, pieces[pieceIndex], position[pieceIndex]);
           let tempPosition = { ...position[pieceIndex] };
           while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
@@ -301,7 +300,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
             writePiece(1, pieces[pieceIndex], tempPosition);
             return newPositions;
           });
-          console.log("testgit2")
         break; 
       default:
         break;
