@@ -300,6 +300,7 @@ function Game({ pieces, setPieces, catalogPieces }) {
             writePiece(1, pieces[pieceIndex], tempPosition);
             return newPositions;
           });
+          console.log("testgit2")
         break; 
       default:
         break;
