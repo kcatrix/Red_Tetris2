@@ -4,6 +4,7 @@ const cors = require('cors');
 const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
+const Room = require('./room');
 const nmbrPieces = 2000;
 
 server.listen(port, () =>
@@ -37,7 +38,12 @@ io.on('connection', (socket) => {
         socket.emit('piecesDelivered', pieces.pieces);
     });
 
-    socket.on('createGameRoom', () => {
-        console.log("allo le back ")
+    socket.on('createGameRoom', (name) => {
+        // Exemple d'utilisation
+        console.log("name = ", name)
+        const myRoom = new Room(name);
+        console.log(myRoom.token); // Affiche un nombre aléatoire à 3 chiffres, par exemple "007" ou "123"
+        console.log(myRoom.Players[0].name)
+        console.log(myRoom.Players[0].leader)
     });
 });
