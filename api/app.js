@@ -36,4 +36,8 @@ io.on('connection', (socket) => {
         const pieces = new Pieces();
         socket.emit('piecesDelivered', pieces.pieces);
     });
+
+    socket.on('createGameRoom', () => {
+        console.log("allo le back ")
+    });
 });

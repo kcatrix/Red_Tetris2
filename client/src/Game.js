@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import sound from './tetris.mp3'
 
 
-function Game({ pieces, setPieces, catalogPieces }) {
+function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0}]);
   const [gameLaunched, setGameLaunched] = useState(false);
@@ -11,8 +10,6 @@ function Game({ pieces, setPieces, catalogPieces }) {
   const [score, setScore] = useState(0);
   const [startPiece, setStartPiece] = useState(true);
   const [gameover, setGameOver] = useState(false)
-  const [play, setPlay] = useState(false);
-  const audio = document.getElementById("audio_tag");
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -327,14 +324,14 @@ function Game({ pieces, setPieces, catalogPieces }) {
 
   const launchGame = async () => {
     setGameLaunched(true);
+    console.log("play = ", play)
     play ? setPlay(false) : setPlay(true);
     play ? audio.pause() : audio.play();
   };
 
   return (
 
-    <div className="Game">
-    <h1>RED_TETRIS</h1>
+    <div className="App">
     {gameover == true && 
      <h2>Game Over</h2>}
     <h3>Score : {score} </h3>
@@ -361,11 +358,9 @@ function Game({ pieces, setPieces, catalogPieces }) {
       }
       {gameover == false &&
         <div className="button">
-          <br />
           <button onClick={launchGame}>Launch Game</button>
         </div>
       }
-    <audio id="audio_tag" src={sound} />
     </div>
   );
 }
