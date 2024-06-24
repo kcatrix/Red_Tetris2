@@ -9,6 +9,10 @@ class Room {
 		this.Url = this.generateUrl();
 	}
 	
+	creatNewPlayer(name){
+		this.Players.push(new Players(name, false))
+	}
+
 	generateToken() {
 		// Génère un nombre entier aléatoire entre 0 et 999
 		const randomNumber = Math.floor(Math.random() * 1000);
@@ -17,7 +21,9 @@ class Room {
 	}
 
 	generateUrl() {
-		this.Url = '/' + this.token + '/' + this.name;
+		const Url = '/' + this.token + '/' + this.name;
+		return Url;
+
 	}
 
 	// Ajouter logique d'ajout et de suppression des utilisateurs lorsqu'ils quittent la socket 

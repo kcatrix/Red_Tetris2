@@ -39,11 +39,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name) => {
-        // Exemple d'utilisation
-        console.log("name = ", name)
         const myRoom = new Room(name);
-        console.log(myRoom.token); // Affiche un nombre aléatoire à 3 chiffres, par exemple "007" ou "123"
-        console.log(myRoom.Players[0].name)
-        console.log(myRoom.Players[0].leader)
+        socket.emit('GiveUrl', myRoom.Url)
     });
 });
