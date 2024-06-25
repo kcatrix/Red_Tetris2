@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 
-function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name }) {
+function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, socket }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0}]);
   const [gameLaunched, setGameLaunched] = useState(false);
@@ -10,6 +11,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name }) 
   const [score, setScore] = useState(0);
   const [startPiece, setStartPiece] = useState(true);
   const [gameover, setGameOver] = useState(false)
+  const location = useLocation();
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -60,6 +62,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name }) 
         setGameOver(true)
         play ? setPlay(false) : setPlay(true);
         play ? audio.pause() : audio.play();
+        socket.emit("gameStopped", location.pathname)
         return gameLaunched
       }
       let newRows = rows;
@@ -324,7 +327,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name }) 
 
   const launchGame = async () => {
     setGameLaunched(true);
-    console.log("play = ", play)
+    socket.emit("gameStarted", location.pathname)
     play ? setPlay(false) : setPlay(true);
     play ? audio.pause() : audio.play();
   };

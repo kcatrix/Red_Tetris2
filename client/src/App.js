@@ -48,14 +48,15 @@ function App() {
       navigate(givenUrl); // Rediriger vers la nouvelle URL
     });
 
-    if (Url == "" && location.pathname.length > 1) {
+    if (Url == "" && location.pathname.length > 1) { // IL FAUT SORTIR TOUS DU USEEFFECT
       console.log("location.pathname = ", location.pathname)
       setCheckUrl(location.pathname)
     }
 
-    socketIo.on("urlChecked", (check) => {
+    socketIo.on("urlChecked", (check) => { // réponse de demande d'accès
       console.log("yo")
-      check ? setChangeOk(false) : setChangeOk(true);
+      check ? setChangeOk(true) : setChangeOk(false);
+      console.log("check = ", check)
       if (changeOk)
         navigate(location.pathname)
       else
@@ -64,9 +65,9 @@ function App() {
 
     // Nettoyer la connexion socket lors du démontage du composant
     return () => socketIo.disconnect();
-  }, []);
+  }, [changeOk]);
 
-  useEffect( () => {
+  useEffect( () => { // demande d'acceptation d'accès a room existante
     console.log("checkUrl = ", checkUrl)
     if (tempName.length == 0)
     {
@@ -77,16 +78,26 @@ function App() {
       socket.emit("urlCheck", checkUrl)
       console.log("emit done")
     }
+    
   }, [checkUrl])
   
-  useEffect( () => {
-    if (oldUrl)
+  useEffect( () => { // Redirection auto si pas de name nous devont vérifier available !!!!!!!
+
+    if (oldUrl && changeOk)
     {
+      console.log("oldUrl = ", oldUrl)
       const tempUrl = oldUrl
       setoldUrl()
       navigate(tempUrl)
     }
   }, [noName])
+
+  // useEffect(() => {
+  //   if (gameStart == true)
+  //     socket.emit("gameStarted", location.pathname)
+  //   if (play == true && gameStart == false)
+  //     socket.emit("gameStopped", location.pathname)
+  // }, [gameStart])
 
   const handleInputChange = (event) => {
     setTempName(event.target.value);
@@ -107,7 +118,7 @@ function App() {
       <Routes> 
         <Route path="/:roomId/:name" element={
           <div>
-            <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName}/>
+            <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
             <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
           </div>
         }/>
@@ -121,7 +132,7 @@ function App() {
             )}
             {!noName && solo &&
               <div>
-                <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName}/>
+                <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
                 <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
               </div>
             }

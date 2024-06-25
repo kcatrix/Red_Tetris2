@@ -47,13 +47,26 @@ io.on('connection', (socket) => {
     });
 
     socket.on('urlCheck', (checkUrl) => {
-        console.log("eh bien le bonsoir en fait")
         const searchUrl = (element) => element.Url == checkUrl
-        if (Rooms.find(searchUrl)){
+        if (Rooms.findIndex(searchUrl) && Rooms[Rooms.findIndex(searchUrl)].available == true){
             
             socket.emit("urlChecked", 1);
         }
         else
             socket.emit("urlChecked", 0);
     });
+
+    socket.on('gameStarted', (checkUrl) => {
+        const searchUrl = (element) => element.Url == checkUrl
+        if (Rooms[Rooms.findIndex(searchUrl)])
+            Rooms[Rooms.findIndex(searchUrl)].available = false;
+        console.log("start = ", Rooms[Rooms.findIndex(searchUrl)])
+    })
+
+    socket.on('gameStopped', (checkUrl) => {
+        const searchUrl = (element) => element.Url == checkUrl
+        if (Rooms[Rooms.findIndex(searchUrl)])
+            Rooms[Rooms.findIndex(searchUrl)].available = true;
+        console.log("stop = ", Rooms[Rooms.findIndex(searchUrl)])
+    })
 });
