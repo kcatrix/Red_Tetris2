@@ -6,6 +6,8 @@ const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
 const Room = require('./room');
 const nmbrPieces = 2000;
+const Rooms = [];
+
 
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://localhost:${port}`)
@@ -39,7 +41,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name) => {
-        const myRoom = new Room(name);
-        socket.emit('GiveUrl', myRoom.Url)
+        Rooms.push(new Room(name));
+        const index = (element) => element.name == name
+        socket.emit('GiveUrl', Rooms[Rooms.findIndex(index)].Url);
+    });
+
+    socket.on('urlCheck', (checkUrl) => {
+        console.log("eh bien le bonsoir en fait")
+        const searchUrl = (element) => element.Url == checkUrl
+        if (Rooms.find(searchUrl)){
+            
+            socket.emit("urlChecked", 1);
+        }
+        else
+            socket.emit("urlChecked", 0);
     });
 });

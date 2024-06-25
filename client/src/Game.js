@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 
-function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio }) {
+function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0}]);
   const [gameLaunched, setGameLaunched] = useState(false);
@@ -334,7 +334,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio }) {
     <div className="App">
     {gameover == true && 
      <h2>Game Over</h2>}
-    <h3>Score : {score} </h3>
+    <h3>{name} : {score} </h3>
     {gameover == false &&
         <div className="board">
             {rows.map((row, i) => (

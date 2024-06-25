@@ -7,6 +7,7 @@ export const changeButton = (solo, setSolo, audio, setPlay) => {
   setPlay(false)
 }
 
-export const coucou = (cou, setCou) => {
+export const coucou = (cou, setCou, socket, tempName) => {
   cou ? setCou(false) : setCou(true);
+  socket.emit('createGameRoom', tempName);
 };

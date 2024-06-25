@@ -7,6 +7,7 @@ class Room {
 		this.Players = [new Players(name, true)];
 		this.token = this.generateToken();
 		this.Url = this.generateUrl();
+		this.available = true;
 	}
 	
 	creatNewPlayer(name){
