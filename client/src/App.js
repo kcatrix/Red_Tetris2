@@ -58,7 +58,10 @@ function App() {
       check ? setChangeOk(true) : setChangeOk(false);
       console.log("check = ", check)
       if (changeOk)
+      {
+        socket.emit('createPlayer', "vier", "gros vier") 
         navigate(location.pathname)
+      }
       else
         navigate("/");
     })
