@@ -8,7 +8,7 @@ resume:
 	docker-compose start
 
 clean:
-	docker compose down
+	docker-compose down
 	docker container prune -f
 	docker volume prune -f
 
