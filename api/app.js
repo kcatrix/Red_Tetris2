@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
 
             socket.emit("urlChecked", 1);
         }
-        else if (Rooms[Rooms.findIndex(searchUrl)].available == false)
+        if (Rooms[Rooms.findIndex(searchUrl)].available == false)
             socket.emit("urlChecked", 0);
         else
             socket.emit("urlChecked", 1);
