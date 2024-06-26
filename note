@@ -1,4 +1,4 @@
- installer express dans le back et react-scripts dans le front avec npm
+ npm install express dans le back et npm install react-scripts dans le front avec npm
 
 Quand un joueur quitte la game : 
 	on le supprime de la room (toute ces infos)

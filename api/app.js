@@ -47,20 +47,27 @@ io.on('connection', (socket) => {
     });
 
     socket.on('urlCheck', (checkUrl) => {
-        const searchUrl = (element) => element.Url == checkUrl
-        console.log("check URL BACK ", checkUrl)
-        console.log("rooms = ", Rooms)
-        if (Rooms && Rooms.findIndex(searchUrl) && Rooms[Rooms.findIndex(searchUrl)].available == true)
-        {   
-            console.log("root valide you know")
-
-            socket.emit("urlChecked", 1);
-        }
-        if (Rooms[Rooms.findIndex(searchUrl)].available == false)
+        const searchUrl = (element) => element.Url == checkUrl;
+        console.log("check URL BACK ", checkUrl);
+        console.log("rooms = ", Rooms);
+        console.log("");
+    
+        const index = Rooms.findIndex(searchUrl);
+    
+        if (index !== -1) {  // Ensure the index is valid
+            if (Rooms[index].available === true) {
+                console.log("root valide you know");
+                socket.emit("urlChecked", 1);
+            } else {
+                socket.emit("urlChecked", 0);
+            }
+        } else {
+            // Handle case where no matching room is found
+            console.log("Room not found");
             socket.emit("urlChecked", 0);
-        else
-            socket.emit("urlChecked", 1);
+        }
     });
+    
 
     socket.on('gameStarted', (checkUrl) => {
         const searchUrl = (element) => element.Url == checkUrl
