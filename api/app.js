@@ -83,9 +83,21 @@ io.on('connection', (socket) => {
         console.log("stop = ", Rooms[Rooms.findIndex(searchUrl)])
     })
 
-    socket.on('createPlayer', (Url, name) => {
+    socket.on('createPlayer', (Url, name) => {                                      //FINDINDEXDAUBé A TOUTE LES SAUCES
         console.log("URL = ", Url)
-        console.log("name ", name)
+        console.log("name =", name)
+        const searchUrl = (element) => element.Url == Url
+        const index = Rooms.findIndex(searchUrl);
+        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)])
+        {
+            Rooms[Rooms.findIndex(searchUrl)].creatNewPlayer(name)
+            console.log(Rooms[Rooms.findIndex(searchUrl)])
+        }
+        else 
+        {
+            console.log("index daubé = ", index)
+        }
+        
     })
 
 });

@@ -88,9 +88,9 @@ function App() {
 
     if (oldUrl && changeOk)
     {
-      console.log("oldUrl = ", oldUrl)
       const tempUrl = oldUrl
       setoldUrl()
+      socket.emit('createPlayer', oldUrl, tempName)
       navigate(tempUrl)
     }
   }, [noName])
