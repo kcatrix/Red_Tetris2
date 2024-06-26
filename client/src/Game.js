@@ -35,6 +35,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
 
   movePieceDownRef.current = useCallback(() => {
     if (!gameLaunched) return;
+    
     const currentPiece = pieces[pieceIndex];
     const currentPos = position[pieceIndex];
     const newPos = { ...currentPos, y: currentPos.y + 1 };
