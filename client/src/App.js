@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import Game from './Game';
+import MultiGame from './multigame';
 import io from 'socket.io-client';
 import * as changeButtonFunctions from './components/changeButton'; // Importation de toutes les fonctions
 import sound from './tetris.mp3';
@@ -121,7 +122,7 @@ function App() {
       <Routes> 
         <Route path="/:roomId/:name" element={
           <div>
-            <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
+            <MultiGame pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
             <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
           </div>
         }/>

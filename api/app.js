@@ -5,6 +5,7 @@ const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
 const Room = require('./room');
+const Players = require('./players');
 const nmbrPieces = 2000;
 const Rooms = [];
 
@@ -100,4 +101,14 @@ io.on('connection', (socket) => {
         
     })
 
+    socket.on('leaderornot', (Url, name) => {
+        const searchUrl = (element) => element.Url == Url
+        const searchName = (element) => element.name == name
+        const index = Rooms.findIndex(searchUrl);
+        const index_player = Rooms[index].Players.findIndex(searchName)
+        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)].Players[index_player].leader) //va checher la valeur de la variable leader dans le player
+            socket.emit('leaderrep', true)
+        else 
+            socket.emit('leaderrep', false)
+    })
 });
