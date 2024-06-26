@@ -50,16 +50,14 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == checkUrl
         console.log("check URL BACK ", checkUrl)
         console.log("rooms = ", Rooms)
-        if (Rooms && Rooms.findIndex(searchUrl) && Rooms[Rooms.findIndex(searchUrl)].available == true)
+        if (Rooms.length > 0 && typeof(Rooms[Rooms.findIndex(searchUrl)].available) != undefined)
         {   
             console.log("root valide you know")
 
             socket.emit("urlChecked", 1);
         }
-        if (Rooms[Rooms.findIndex(searchUrl)].available == false)
+        else if (Rooms.length > 0 && typeof(Rooms[Rooms.findIndex(searchUrl)].available) && Rooms[Rooms.findIndex(searchUrl)].available == false)
             socket.emit("urlChecked", 0);
-        else
-            socket.emit("urlChecked", 1);
     });
 
     socket.on('gameStarted', (checkUrl) => {
