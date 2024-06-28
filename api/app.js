@@ -95,7 +95,7 @@ io.on('connection', (socket) => {
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
             Rooms[index].creatNewPlayer(name);
-            console.log(Rooms[index]);
+            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
         } else {
             console.log("index daubé = ", index);
@@ -106,6 +106,9 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
+				if (!Rooms[index].Players)
+					return;
+				 
         const index_player = Rooms[index].Players.findIndex(searchName);
 				
         if (index !== -1 && Rooms[index].Players[index_player].leader) // Check the leader status
@@ -119,13 +122,15 @@ io.on('connection', (socket) => {
 				const searchName = (element) => element.name == name
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
-
-				if (Rooms[index])
-					Rooms[index].Players[index_player].setHigherPos(number);
-
-				console.log("---- inside higherPos back -> higherPos de ",  Rooms[index].Players[index_player].name," = ", Rooms[index].Players[index_player].higherPos)
-				socket.emit('higherPos', Rooms[index].Players.filter(element => {element.name != name}), Url)
-
+ 
+				if (Rooms[index] && Rooms[index].Players.length > 1) {
+					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
+					const Players = Rooms[index].Players;
+					// console.log("Players = ", Players)
+					// for (let i = 0; i < Rooms[index].Players.length; i++)
+					// 	console.log("position of ", Rooms[index].Players[index_player].name, " =  ", Rooms[index].Players[index_player].higherPos)
+					socket.broadcast.emit('higherPos', Players, Url)
+				}
 		});
 });
 

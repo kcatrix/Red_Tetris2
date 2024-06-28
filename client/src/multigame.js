@@ -15,10 +15,18 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [leader, setleader] = useState(false)
 	const location = useLocation();
 	const [Players, setPlayers] = useState([])
+	const [down, setDown] = useState(false);
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
 	}, []);
+
+	useEffect(() => {
+		if (down == true){
+			socket.emit("setHigherPos", checkLastRows(rows), location.pathname, name)
+			setDown(false);
+		}
+	}, [down])
 
 	socket.on('leaderrep', (checkleader, piecesleader) => {
 		setPieces(piecesleader);
@@ -34,9 +42,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			launchGame()
 	})
 
-	socket.on('higherPos', (Players, Url) => {
-		if (Url == location.pathname)
-			setPlayers(Players)
+	socket.once('higherPos', (Players, Url) => {
+		if (Url == location.pathname) {
+			setPlayers(Players.filter(element => element.name != name))
+			console.log(Players.filter(element => element.name != name))
+		}
 	})
 
 	const [rows, setRows] = useState(
@@ -111,8 +121,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		  }
 		  setScore(score + tmpScore)
 		}
-		checkLastRows(rows);
-		socket.emit("setHigherPos", checkLastRows(rows), location.pathname, name)
+		setDown(true)
 		setPieceIndex(pieceIndex + 1);
 		setStartPiece(true)
 		setPosition([...position, { x: 4, y: 0 }]);
@@ -374,10 +383,16 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			<div className="Opponents">
 				{gameover == false && 
 				<div className="board">
-					{rows.map((cell, i) => (
-						<div key={i} className={`cell ${i === Players[2] ? 'piece' : ''}`}>
-						</div>
-					))}
+					{Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="row">
+              <div className={`cell ${Players.some(player => player.higherPos === i) ? 'piece' : ''}`}></div>
+							<div className="player-names">
+                {Players.filter(player => player.higherPos === i).map(player => (
+                  <span key={player.name} className="player-name">{player.name}</span>
+                ))}
+              </div>
+            </div>
+          ))}
 				</div>
 				}
 			</div>
