@@ -17,14 +17,21 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [Players, setPlayers] = useState([])
 
 	useEffect(() => {
-		console.log("name = ", name)
-		console.log("URL =", location.pathname)
 		socket.emit('leaderornot', location.pathname, name)
 	}, []);
 
-	socket.on('leaderrep', (checkleader) => {
+	socket.on('leaderrep', (checkleader, piecesleader) => {
+		setPieces(piecesleader);
 		if (checkleader)
 			setleader(true)
+	})
+
+	socket.on('launchGame', (Room) => {
+		console.log("in socket.on launchgame", Room)
+		console.log("leader = ", leader)
+		console.log("roooom = ", socket.Rooms)
+		if(leader == false)
+			launchGame()
 	})
 
 	socket.on('higherPos', (Players, Url) => {
@@ -355,7 +362,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	const launchGame = async () => {
 	  setGameLaunched(true);
-	  socket.emit("gameStarted", location.pathname)
+	  if (leader)
+	  	socket.emit("gameStarted", location.pathname)
 	  play ? setPlay(false) : setPlay(true);
 	  play ? audio.pause() : audio.play();
 	};
