@@ -4,14 +4,14 @@ const Players = require('./players');
 class Room {
 	constructor(name){
 		this.name = name;
-		this.Players = [new Players(name, true)];
+		this.Players = [new Players(name, true, 0)];
 		this.token = this.generateToken();
 		this.Url = this.generateUrl();
 		this.available = true;
 	}
 	
 	creatNewPlayer(name){
-		this.Players.push(new Players(name, false))
+		this.Players.push(new Players(name, false, 0))
 	}
 
 	generateToken() {
@@ -24,7 +24,6 @@ class Room {
 	generateUrl() {
 		const Url = '/' + this.token + '/' + this.name;
 		return Url;
-
 	}
 
 	// Ajouter logique d'ajout et de suppression des utilisateurs lorsqu'ils quittent la socket 

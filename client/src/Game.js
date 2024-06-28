@@ -336,35 +336,38 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
   return (
 
     <div className="App">
-    {gameover == true && 
-     <h2>Game Over</h2>}
-    <h3>{name} : {score} </h3>
-    {gameover == false &&
-        <div className="board">
-            {rows.map((row, i) => (
-              <div key={i} className="row">
-                {row.map((cell, j) => (
-                  <div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
-                ))}
-              </div>
-            ))}
-            <div className="visuaPiece">
-              {gameLaunched == 1 &&
-                pieces[pieceIndex + 1].map((row, i) => (
-                  <div key={i} className="row">
-                    {row.map((cell, j) => (
-                      <div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
-                    ))}
-                  </div>
-                ))}
-            </div>
-          </div>
-      }
-      {gameover == false &&
-        <div className="button">
-          <button onClick={launchGame}>Launch Game</button>
-        </div>
-      }
+			<div className="Opponents"/>
+			<div className="middle"> 
+				{gameover == true && 
+				<h2>Game Over</h2>}
+				<h3>{name} : {score} </h3>
+				{gameover == false &&
+				<div className="board">
+						{rows.map((row, i) => (
+							<div key={i} className="row">
+								{row.map((cell, j) => (
+									<div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
+								))}
+							</div>
+						))}
+					</div>
+					}
+					{gameover == false &&
+						<div className="button">
+							<button onClick={launchGame}>Launch Game</button>
+						</div>
+					}
+			</div>
+			<div className="visuaPiece">
+					{gameLaunched == 1 &&
+						pieces[pieceIndex + 1].map((row, i) => (
+							<div key={i} className="row">
+								{row.map((cell, j) => (
+									<div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
+								))}
+							</div>
+						))}
+			</div>
     </div>
   );
 }

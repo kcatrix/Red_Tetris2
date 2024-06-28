@@ -106,9 +106,25 @@ io.on('connection', (socket) => {
         const searchName = (element) => element.name == name
         const index = Rooms.findIndex(searchUrl);
         const index_player = Rooms[index].Players.findIndex(searchName)
+				
         if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)].Players[index_player].leader) //va checher la valeur de la variable leader dans le player
             socket.emit('leaderrep', true)
         else 
             socket.emit('leaderrep', false)
     })
+
+		socket.on('setHigherPos', (number, Url, name) => {
+				const searchUrl = (element) => element.Url == Url
+				const searchName = (element) => element.name == name
+				const index = Rooms.findIndex(searchUrl);
+				const index_player = Rooms[index].Players.findIndex(searchName)
+
+				if (Rooms[index])
+					Rooms[index].Players[index_player].setHigherPos(number);
+
+				console.log("---- inside higherPos back -> higherPos de ",  Rooms[index].Players[index_player].name," = ", Rooms[index].Players[index_player].higherPos)
+				socket.emit('higherPos', Rooms[index].Players.filter(element => {element.name != name}), Url)
+
+		})
 });
+
