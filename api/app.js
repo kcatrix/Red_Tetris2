@@ -9,7 +9,6 @@ const Players = require('./players');
 const nmbrPieces = 2000;
 const Rooms = [];
 
-
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://localhost:${port}`)
 );
@@ -32,7 +31,7 @@ io.on('connection', (socket) => {
 
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
-    	const randomPiece = pieces.getallPiece()
+    	const randomPiece = pieces.getallPiece();
     	socket.emit('randomPiece', randomPiece);
     });
 
@@ -42,8 +41,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name) => {
-        Rooms.push(new Room(name));
-        const index = (element) => element.name == name
+        const room = new Room(name);
+        Rooms.push(room);
+        const index = (element) => element.name == name;
+        socket.join(room.Url); // Join the room
         socket.emit('GiveUrl', Rooms[Rooms.findIndex(index)].Url);
     });
 
@@ -52,9 +53,9 @@ io.on('connection', (socket) => {
         console.log("check URL BACK ", checkUrl);
         console.log("rooms = ", Rooms);
         console.log("");
-    
+
         const index = Rooms.findIndex(searchUrl);
-    
+
         if (index !== -1) {  // Ensure the index is valid
             if (Rooms[index].available === true) {
                 console.log("root valide you know");
@@ -68,47 +69,47 @@ io.on('connection', (socket) => {
             socket.emit("urlChecked", 0);
         }
     });
-    
 
     socket.on('gameStarted', (checkUrl) => {
-        const searchUrl = (element) => element.Url == checkUrl
-        if (Rooms[Rooms.findIndex(searchUrl)])
-            Rooms[Rooms.findIndex(searchUrl)].available = false;
-        console.log("gamestart in back")
-        socket.emit('launchGame', Rooms[Rooms.findIndex(searchUrl)])
-    })
+        const searchUrl = (element) => element.Url == checkUrl;
+        const roomIndex = Rooms.findIndex(searchUrl);
+        if (Rooms[roomIndex]) {
+            Rooms[roomIndex].available = false;
+            console.log("gamestart in back");
+            io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
+        }
+    });
 
     socket.on('gameStopped', (checkUrl) => {
-        const searchUrl = (element) => element.Url == checkUrl
-        if (Rooms[Rooms.findIndex(searchUrl)])
-            Rooms[Rooms.findIndex(searchUrl)].available = true;
-    })
+        const searchUrl = (element) => element.Url == checkUrl;
+        const roomIndex = Rooms.findIndex(searchUrl);
+        if (Rooms[roomIndex]) {
+            Rooms[roomIndex].available = true;
+        }
+    });
 
-    socket.on('createPlayer', (Url, name) => {                                      //FINDINDEXDAUBé A TOUTE LES SAUCES
-        console.log("URL = ", Url)
-        console.log("name =", name)
-        const searchUrl = (element) => element.Url == Url
+    socket.on('createPlayer', (Url, name) => {
+        console.log("URL = ", Url);
+        console.log("name =", name);
+        const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
-        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)])
-        {
-            Rooms[Rooms.findIndex(searchUrl)].creatNewPlayer(name)
-            console.log(Rooms[Rooms.findIndex(searchUrl)])
+        if (index !== -1 && Rooms[index]) {
+            Rooms[index].creatNewPlayer(name);
+            console.log(Rooms[index]);
+            socket.join(Url); // Add player to the room
+        } else {
+            console.log("index daubé = ", index);
         }
-        else 
-        {
-            console.log("index daubé = ", index)
-        }
-        
-    })
+    });
 
     socket.on('leaderornot', (Url, name) => {
-        const searchUrl = (element) => element.Url == Url
-        const searchName = (element) => element.name == name
+        const searchUrl = (element) => element.Url == Url;
+        const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-        const index_player = Rooms[index].Players.findIndex(searchName)
-        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)].Players[index_player].leader) //va checher la valeur de la variable leader dans le player
-            socket.emit('leaderrep', true)
-        else 
-            socket.emit('leaderrep', false)
-    })
+        const index_player = Rooms[index].Players.findIndex(searchName);
+        if (index !== -1 && Rooms[index].Players[index_player].leader) // Check the leader status
+            socket.emit('leaderrep', true);
+        else
+            socket.emit('leaderrep', false);
+    });
 });
