@@ -97,6 +97,7 @@ io.on('connection', (socket) => {
             Rooms[index].creatNewPlayer(name);
             // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
+            io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
         } else {
             console.log("index daubé = ", index);
         }
