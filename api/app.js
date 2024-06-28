@@ -74,14 +74,14 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == checkUrl
         if (Rooms[Rooms.findIndex(searchUrl)])
             Rooms[Rooms.findIndex(searchUrl)].available = false;
-        console.log("start = ", Rooms[Rooms.findIndex(searchUrl)])
+        console.log("gamestart in back")
+        socket.emit('launchGame', Rooms[Rooms.findIndex(searchUrl)])
     })
 
     socket.on('gameStopped', (checkUrl) => {
         const searchUrl = (element) => element.Url == checkUrl
         if (Rooms[Rooms.findIndex(searchUrl)])
             Rooms[Rooms.findIndex(searchUrl)].available = true;
-        console.log("stop = ", Rooms[Rooms.findIndex(searchUrl)])
     })
 
     socket.on('createPlayer', (Url, name) => {                                      //FINDINDEXDAUBé A TOUTE LES SAUCES

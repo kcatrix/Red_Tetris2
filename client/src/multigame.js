@@ -22,8 +22,17 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, []);
 
 	socket.on('leaderrep', (checkleader) => {
+		console.log("leader = ", checkleader)
 		if (checkleader)
 			setleader(true)
+	})
+
+	socket.on('launchGame', (Room) => {
+		console.log("in socket.on launchgame", Room)
+		if(leader == false)
+		{
+			launchGame()
+		}
 	})
 
 	const [rows, setRows] = useState(
@@ -341,7 +350,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	const launchGame = async () => {
 	  setGameLaunched(true);
-	  socket.emit("gameStarted", location.pathname)
+	  if (leader)
+	  	socket.emit("gameStarted", location.pathname)
 	  play ? setPlay(false) : setPlay(true);
 	  play ? audio.pause() : audio.play();
 	};
@@ -373,7 +383,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			  </div>
 			</div>
 		}
-		{gameover == false &&
+		{gameover == false && leader &&
 		  <div className="button">
 			<button onClick={launchGame}>Launch Game</button>
 		  </div>
