@@ -132,5 +132,9 @@ io.on('connection', (socket) => {
 					socket.broadcast.emit('higherPos', Players, Url)
 				}
 		});
+
+		socket.on('disconnect', () => {
+      console.log('Got disconnect!');
+		});
 });
 
