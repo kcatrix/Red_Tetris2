@@ -1,8 +1,9 @@
 class Players {
-	constructor(name, leader, higherPos) {
+	constructor(name, leader, higherPos, socketId) {
 		this.name = name
 		this.leader = leader
 		this.higherPos = higherPos
+		this.socketId = socketId;
 	}
 
 	setHigherPos( number ) {

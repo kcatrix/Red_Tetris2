@@ -2,17 +2,17 @@ const { url } = require('inspector');
 const Players = require('./players');
 
 class Room {
-	constructor(name, pieces){
+	constructor(name, pieces, socketId){
 		this.name = name;
-		this.Players = [new Players(name, true, 0)];
+		this.Players = [new Players(name, true, 0, socketId)];
 		this.pieces = pieces
 		this.token = this.generateToken();
 		this.Url = this.generateUrl();
 		this.available = true;
 	}
 	
-	creatNewPlayer(name){
-		this.Players.push(new Players(name, false, 0))
+	creatNewPlayer(name, socketId){
+		this.Players.push(new Players(name, false, 0, socketId))
 	}
 
 	generateToken() {
@@ -26,6 +26,10 @@ class Room {
 		const Url = '/' + this.token + '/' + this.name;
 		return Url;
 	}
+
+	removePlayer(socketId) {
+    this.Players = this.Players.filter(player => player.socketId !== socketId);
+  }
 
 	// Ajouter logique d'ajout et de suppression des utilisateurs lorsqu'ils quittent la socket 
 	// Ajouter suppression de la room lorsque plus de player et ainsi dire au front qui est le gagnant
