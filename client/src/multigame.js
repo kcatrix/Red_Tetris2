@@ -15,6 +15,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [leader, setleader] = useState(false)
 	const location = useLocation();
 	const [Players, setPlayers] = useState([])
+	const [Playersoff, setPlayersoff] = useState([])
 	const [down, setDown] = useState(false);
 
 	useEffect(() => {
@@ -41,6 +42,16 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		if(leader == false)
 			launchGame()
 	})
+
+	socket.on('namePlayer', (Players) => {
+		console.log(Players)
+		setPlayersoff(Players.filter(element => element != name))
+	})
+
+	useEffect(() => {
+		console.log("players off = ", Playersoff)
+	}, [Playersoff])
+
 
 	socket.once('higherPos', (Players, Url) => {
 		if (Url == location.pathname) {
@@ -411,11 +422,20 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 						))}
 					</div>
 					}
-					{gameover == false &&
+					{gameover == false && leader &&
 						<div className="button">
 							<button onClick={launchGame}>Launch Game</button>
 						</div>
 					}
+			</div>
+			<div className="visuPlayer">
+				{gameLaunched == false &&
+					<div>
+						{Playersoff.map((player, index) => (
+						<h2 key={index}>{player}</h2> //pas politique
+					))}
+					</div>
+				}
 			</div>
 			<div className="visuaPiece">
 					{gameLaunched == 1 &&
