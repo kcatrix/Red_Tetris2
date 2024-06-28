@@ -133,7 +133,7 @@ function App() {
             {!noName && !solo && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}>Solo</button>
-                <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName)}>Create Room</button>
+                <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
               </div>
             )}
             {!noName && solo &&

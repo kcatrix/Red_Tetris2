@@ -40,8 +40,8 @@ io.on('connection', (socket) => {
         socket.emit('piecesDelivered', pieces.pieces);
     });
 
-    socket.on('createGameRoom', (name) => {
-        const room = new Room(name);
+    socket.on('createGameRoom', (name, pieces) => {
+        const room = new Room(name, pieces);
         Rooms.push(room);
         const index = (element) => element.name == name;
         socket.join(room.Url); // Join the room
@@ -108,8 +108,8 @@ io.on('connection', (socket) => {
         const index = Rooms.findIndex(searchUrl);
         const index_player = Rooms[index].Players.findIndex(searchName);
         if (index !== -1 && Rooms[index].Players[index_player].leader) // Check the leader status
-            socket.emit('leaderrep', true);
+            socket.emit('leaderrep', true, Rooms[index].pieces);
         else
-            socket.emit('leaderrep', false);
+            socket.emit('leaderrep', false, Rooms[index].pieces);
     });
 });

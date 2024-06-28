@@ -16,25 +16,22 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const location = useLocation();
 
 	useEffect(() => {
-		console.log("name = ", name)
-		console.log("URL =", location.pathname)
 		socket.emit('leaderornot', location.pathname, name)
 	}, []);
 
-	socket.on('leaderrep', (checkleader) => {
+	socket.on('leaderrep', (checkleader, piecesleader) => {
+		setPieces(piecesleader);
 		if (checkleader)
 			setleader(true)
 	})
 
-	useEffect(() => {
-		socket.on('launchGame', (Room) => {
-			console.log("in socket.on launchgame", Room)
-			console.log("leader = ", leader)
-			console.log("roooom = ", socket.Rooms)
-			if(leader == false)
-				launchGame()
-		})
-	}, [socket]);
+	socket.on('launchGame', (Room) => {
+		console.log("in socket.on launchgame", Room)
+		console.log("leader = ", leader)
+		console.log("roooom = ", socket.Rooms)
+		if(leader == false)
+			launchGame()
+	})
 
 	const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
