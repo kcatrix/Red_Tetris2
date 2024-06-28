@@ -2,8 +2,27 @@
 
 .App{
   display: flex;
+  flex-direction: row;
+	columns: 3 33vw;
+	width: 100vw;
+  align-items: center;
+	justify-content: center;
+}
+
+.Opponents{
+	display: flex;
+	width: 33vw;
+	align-items: center;
+	justify-content: center;
+	left: 0%;
+}
+
+.middle{
+  display: flex;
   flex-direction: column;
   align-items: center;
+	position: relative;
+	width: 33vw;
 }
 
 .Game {
@@ -26,23 +45,13 @@
 }
 
 .visuaPiece{
-  position: absolute;
-  left: 60%;
-  top: 30%;
+  position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 33vw;
 }
-
-/* .whatev {
-  width: 40%;
-  height: 30%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background-image: url("redTetris.png");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 50%;
-  justify-content: center;
-} */
 
 h1 {
   margin-bottom: 20px;

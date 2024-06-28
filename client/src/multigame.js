@@ -14,10 +14,19 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [numberOfPlayer, setNumberOfPlayer] = useState()
 	const [leader, setleader] = useState(false)
 	const location = useLocation();
+	const [Players, setPlayers] = useState([])
+	const [down, setDown] = useState(false);
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
 	}, []);
+
+	useEffect(() => {
+		if (down == true){
+			socket.emit("setHigherPos", checkLastRows(rows), location.pathname, name)
+			setDown(false);
+		}
+	}, [down])
 
 	socket.on('leaderrep', (checkleader, piecesleader) => {
 		setPieces(piecesleader);
@@ -31,6 +40,13 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		console.log("roooom = ", socket.Rooms)
 		if(leader == false)
 			launchGame()
+	})
+
+	socket.once('higherPos', (Players, Url) => {
+		if (Url == location.pathname) {
+			setPlayers(Players.filter(element => element.name != name))
+			console.log(Players.filter(element => element.name != name))
+		}
 	})
 
 	const [rows, setRows] = useState(
@@ -51,7 +67,13 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	  }
 	  return false;
 	};
-  
+
+	const checkLastRows = (rows) => {
+		let y = rows.length - 1;
+	  for (y; rows[y].includes(1); y--) {}
+	  return y;
+	};
+	
   
 	movePieceDownRef.current = useCallback(() => {
 	  if (!gameLaunched) return;
@@ -99,6 +121,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		  }
 		  setScore(score + tmpScore)
 		}
+		setDown(true)
 		setPieceIndex(pieceIndex + 1);
 		setStartPiece(true)
 		setPosition([...position, { x: 4, y: 0 }]);
@@ -356,38 +379,56 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	return (
   
-	  <div className="App">
-	  {gameover == true && 
-	   <h2>Game Over</h2>}
-	  <h3>{name} : {score} </h3>
-	  {gameover == false &&
-		  <div className="board">
-			  {rows.map((row, i) => (
-				<div key={i} className="row">
-				  {row.map((cell, j) => (
-					<div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
-				  ))}
+		<div className="App">
+			<div className="Opponents">
+				{gameover == false && 
+				<div className="board">
+					{Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="row">
+              <div className={`cell ${Players.some(player => player.higherPos === i) ? 'piece' : ''}`}></div>
+							<div className="player-names">
+                {Players.filter(player => player.higherPos === i).map(player => (
+                  <span key={player.name} className="player-name">{player.name}</span>
+                ))}
+              </div>
+            </div>
+          ))}
 				</div>
-			  ))}
-			  <div className="visuaPiece">
-				{gameLaunched == 1 &&
-				  pieces[pieceIndex + 1].map((row, i) => (
-					<div key={i} className="row">
-					  {row.map((cell, j) => (
-						<div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
-					  ))}
-					</div>
-				  ))}
-			  </div>
+				}
 			</div>
-		}
-		{gameover == false && leader &&
-		  <div className="button">
-			<button onClick={launchGame}>Launch Game</button>
-		  </div>
-		}
-	  </div>
-	);
-  }
+			<div className="middle"> 
+				{gameover == true && 
+				<h2>Game Over</h2>}
+				<h3>{name} : {score} </h3>
+				{gameover == false &&
+				<div className="board">
+						{rows.map((row, i) => (
+							<div key={i} className="row">
+								{row.map((cell, j) => (
+									<div key={j} className={`cell ${cell === 1 ? 'piece' : ''}`}></div>
+								))}
+							</div>
+						))}
+					</div>
+					}
+					{gameover == false &&
+						<div className="button">
+							<button onClick={launchGame}>Launch Game</button>
+						</div>
+					}
+			</div>
+			<div className="visuaPiece">
+					{gameLaunched == 1 &&
+						pieces[pieceIndex + 1].map((row, i) => (
+							<div key={i} className="row">
+								{row.map((cell, j) => (
+									<div key={j} className={`cell ${cell === 1 ? 'cellPiece' : ''}`}></div>
+								))}
+							</div>
+						))}
+			</div>
+    </div>
+  );
+}
 
   export default MultiGame

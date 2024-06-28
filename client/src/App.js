@@ -118,7 +118,7 @@ function App() {
         <Route path="/:roomId/:name" element={
           <div>
             <MultiGame pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
-            <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
+            <button onClick={() => changeButtonFunctions.changeButton(cou, setSolo, audio, setPlay)}> Go back </button>
           </div>
         }/>
         )}
