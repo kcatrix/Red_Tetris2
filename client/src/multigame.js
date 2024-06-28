@@ -71,9 +71,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const checkLastRows = (rows) => {
 		let y = rows.length - 1;
 	  for (y; rows[y].includes(1); y--) {}
+		if (y == 20)
+			return 19;
+		else
 	  return y;
 	};
-	
   
 	movePieceDownRef.current = useCallback(() => {
 	  if (!gameLaunched) return;
@@ -381,21 +383,19 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 		<div className="App">
 			<div className="Opponents">
-				{gameover == false && 
-				<div className="board">
-					{Array.from({ length: 20 }).map((_, i) => (
-            <div key={i} className="row">
-              <div className={`cell ${Players.some(player => player.higherPos === i) ? 'piece' : ''}`}></div>
-							<div className="player-names">
-                {Players.filter(player => player.higherPos === i).map(player => (
-                  <span key={player.name} className="player-name">{player.name}</span>
-                ))}
+        {gameover === false && 
+          <div className="board1">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} className="row">
+                <div className={`cell ${Players.some(player => player.higherPos === i && player.higherPos !== 0) ? 'piece' : ''}`}></div>
+                <div className="player-names">
+                  {Players.filter(player => player.higherPos === i && player.higherPos !== 0).map(player => player.name).join(', ')}
+                </div>
               </div>
-            </div>
-          ))}
-				</div>
-				}
-			</div>
+            ))}
+          </div>
+        }
+      </div>
 			<div className="middle"> 
 				{gameover == true && 
 				<h2>Game Over</h2>}

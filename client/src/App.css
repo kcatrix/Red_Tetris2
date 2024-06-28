@@ -11,10 +11,11 @@
 
 .Opponents{
 	display: flex;
+	position: relative;
 	width: 33vw;
 	align-items: center;
 	justify-content: center;
-	left: 0%;
+	left: 10%;
 }
 
 .middle{
@@ -39,6 +40,13 @@
   font-family: 'Roboto', sans-serif;
 }
 
+/* .board1{
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	justify-content: center;
+} */
+
 .piece {
   height: 8vh;
   position: relative;
@@ -51,6 +59,7 @@
 	align-items: center;
 	justify-content: center;
 	width: 33vw;
+	right: 10%;
 }
 
 h1 {
@@ -79,6 +88,22 @@ h1 {
 
 .cell.piece {
   background-color: red;
+}
+
+.player-names {
+  display: inline-block;
+  width: 150px; /* Définir une largeur fixe */
+  white-space: nowrap; /* Empêcher le retour à la ligne */
+  overflow: hidden; /* Masquer le débordement */
+  text-overflow: ellipsis; /* Ajouter des points de suspension si le texte est trop long */
+  vertical-align: top; /* Aligner en haut */
+  margin-left: 5px;
+}
+
+
+.player-name {
+  font-size: 12px;
+  color: white;
 }
 
 .button{

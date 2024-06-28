@@ -106,9 +106,9 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-				if (!Rooms[index].Players)
+				if (typeof(Rooms[index].Players) == undefined)
 					return;
-				 
+	 	 
         const index_player = Rooms[index].Players.findIndex(searchName);
 				
         if (index !== -1 && Rooms[index].Players[index_player].leader) // Check the leader status
