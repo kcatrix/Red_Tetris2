@@ -27,7 +27,7 @@ function App() {
 
   // Connexion au serveur socket.io
   useEffect(() => {
-    const socketIo = io('http://90.5.107.160:4000');
+    const socketIo = io('http://localhost:4000');
     setSocket(socketIo);
 
     socketIo.emit('requestRandomPiece');
@@ -57,13 +57,7 @@ function App() {
       console.log("yo")
       check ? setChangeOk(true) : setChangeOk(false);
       console.log("check = ", check)
-      if (changeOk)
-      {
-        socket.emit('createPlayer', "vier", "gros vier") 
-        navigate(location.pathname)
-      }
-      else
-        navigate("/");
+      navigate("/");
     })
 
     // Nettoyer la connexion socket lors du démontage du composant
