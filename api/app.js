@@ -5,6 +5,7 @@ const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
 const Room = require('./room');
+const Players = require('./players');
 const nmbrPieces = 2000;
 const Rooms = [];
 
@@ -83,9 +84,31 @@ io.on('connection', (socket) => {
         console.log("stop = ", Rooms[Rooms.findIndex(searchUrl)])
     })
 
-    socket.on('createPlayer', (Url, name) => {
+    socket.on('createPlayer', (Url, name) => {                                      //FINDINDEXDAUBé A TOUTE LES SAUCES
         console.log("URL = ", Url)
-        console.log("name ", name)
+        console.log("name =", name)
+        const searchUrl = (element) => element.Url == Url
+        const index = Rooms.findIndex(searchUrl);
+        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)])
+        {
+            Rooms[Rooms.findIndex(searchUrl)].creatNewPlayer(name)
+            console.log(Rooms[Rooms.findIndex(searchUrl)])
+        }
+        else 
+        {
+            console.log("index daubé = ", index)
+        }
+        
     })
 
+    socket.on('leaderornot', (Url, name) => {
+        const searchUrl = (element) => element.Url == Url
+        const searchName = (element) => element.name == name
+        const index = Rooms.findIndex(searchUrl);
+        const index_player = Rooms[index].Players.findIndex(searchName)
+        if (index !== -1 && Rooms[Rooms.findIndex(searchUrl)].Players[index_player].leader) //va checher la valeur de la variable leader dans le player
+            socket.emit('leaderrep', true)
+        else 
+            socket.emit('leaderrep', false)
+    })
 });

@@ -370,4 +370,6 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
 }
 
 
-export default Game;
+
+
+export default Game
