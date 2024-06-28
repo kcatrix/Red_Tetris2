@@ -107,8 +107,6 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-				if (!Rooms[index].Players)
-					return;
 				 
         const index_player = Rooms[index].Players.findIndex(searchName);
 				

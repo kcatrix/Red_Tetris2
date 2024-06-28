@@ -432,7 +432,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 				{gameLaunched == false &&
 					<div>
 						{Playersoff.map((player, index) => (
-						<h2 key={index}>{player}</h2> //pas politique
+						<h2 key={index}>{player}</h2>
 					))}
 					</div>
 				}
