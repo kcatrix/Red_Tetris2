@@ -115,3 +115,10 @@ h1 {
   gap: 10px;
   justify-content: center;
 }
+
+.visuPlayer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 20px;
+}

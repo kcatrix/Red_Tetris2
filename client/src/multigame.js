@@ -422,7 +422,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 						))}
 					</div>
 					}
-					{gameover == false && leader &&
+					{gameover == false && leader && gameLaunched == false &&
 						<div className="button">
 							<button onClick={launchGame}>Launch Game</button>
 						</div>
