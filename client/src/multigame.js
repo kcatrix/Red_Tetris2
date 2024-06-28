@@ -21,13 +21,10 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		socket.emit('leaderornot', location.pathname, name)
 	}, []);
 
-	// socket.on('leaderrep', (checkleader) => {  //help tous crash sur le deuxieme joueur bisous
-	// 	if (checkleader)
-	// 	{
-	// 		console.log("cette homme lead")
-	// 		setleader(true)
-	// 	}
-	// })
+	socket.on('leaderrep', (checkleader) => {
+		if (checkleader)
+			setleader(true)
+	})
 
 	const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))

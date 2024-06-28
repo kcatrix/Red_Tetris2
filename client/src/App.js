@@ -119,13 +119,15 @@ function App() {
     <div className='Game'>
       <h1>Red Tetris</h1>
       <audio id="audio_tag" src={sound} />
-      <Routes> 
+      <Routes>
+        {!noName && (
         <Route path="/:roomId/:name" element={
           <div>
             <MultiGame pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
             <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
           </div>
         }/>
+        )}
         <Route path="/" element={
           <>
             {!noName && !solo && (
