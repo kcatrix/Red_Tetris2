@@ -17,6 +17,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [Players, setPlayers] = useState([])
 	const [Playersoff, setPlayersoff] = useState([])
 	const [down, setDown] = useState(false);
+	const [resultat, setResultat] = useState("Game over")
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
@@ -36,27 +37,33 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	socket.on('launchGame', (Room) => {
-		console.log("in socket.on launchgame", Room)
-		console.log("leader = ", leader)
-		console.log("roooom = ", socket.Rooms)
 		if(leader == false)
+		{
+			socket.emit('changestatusPlayer',  location.pathname, name, true)
 			launchGame()
+		}
 	})
 
 	socket.on('namePlayer', (Players) => {
-		console.log(Players)
 		setPlayersoff(Players.filter(element => element != name))
 	})
 
-	useEffect(() => {
-		console.log("players off = ", Playersoff)
-	}, [Playersoff])
-
+	socket.on('winner', (name_winner) => {
+		if (name_winner == name)
+		{
+			setResultat("winner")
+			setGameLaunched(false)
+		  setGameOver(true)
+		  play ? setPlay(false) : setPlay(true);
+		  play ? audio.pause() : audio.play();
+		  socket.emit("gameStopped", location.pathname)
+		  return gameLaunched
+		}
+	})
 
 	socket.once('higherPos', (Players, Url) => {
 		if (Url == location.pathname) {
 			setPlayers(Players.filter(element => element.name != name))
-			console.log(Players.filter(element => element.name != name))
 		}
 	})
 
@@ -114,6 +121,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
+			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
 		  setGameOver(true)
 		  play ? setPlay(false) : setPlay(true);
@@ -384,8 +392,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	const launchGame = async () => {
 	  setGameLaunched(true);
+	  setResultat("Game over")
 	  if (leader)
+	  {
+		socket.emit('changestatusPlayer',  location.pathname, name, true)
 	  	socket.emit("gameStarted", location.pathname)
+	  }
 	  play ? setPlay(false) : setPlay(true);
 	  play ? audio.pause() : audio.play();
 	};
@@ -409,7 +421,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
       </div>
 			<div className="middle"> 
 				{gameover == true && 
-				<h2>Game Over</h2>}
+				<h2>{resultat}</h2>}
 				<h3>{name} : {score} </h3>
 				{gameover == false &&
 				<div className="board">

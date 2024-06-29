@@ -4,7 +4,7 @@ const Players = require('./players');
 class Room {
 	constructor(name, pieces){
 		this.name = name;
-		this.Players = [new Players(name, true, 0)];
+		this.Players = [new Players(name, true, 0, true)];
 		this.pieces = pieces
 		this.token = this.generateToken();
 		this.Url = this.generateUrl();

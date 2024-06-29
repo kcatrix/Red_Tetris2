@@ -50,22 +50,16 @@ io.on('connection', (socket) => {
 
     socket.on('urlCheck', (checkUrl) => {
         const searchUrl = (element) => element.Url == checkUrl;
-        console.log("check URL BACK ", checkUrl);
-        console.log("rooms = ", Rooms);
-        console.log("");
-
         const index = Rooms.findIndex(searchUrl);
 
         if (index !== -1) {  // Ensure the index is valid
             if (Rooms[index].available === true) {
-                console.log("root valide you know");
                 socket.emit("urlChecked", 1);
             } else {
                 socket.emit("urlChecked", 0);
             }
         } else {
             // Handle case where no matching room is found
-            console.log("Room not found");
             socket.emit("urlChecked", 0);
         }
     });
@@ -75,7 +69,6 @@ io.on('connection', (socket) => {
         const roomIndex = Rooms.findIndex(searchUrl);
         if (Rooms[roomIndex]) {
             Rooms[roomIndex].available = false;
-            console.log("gamestart in back");
             io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
         }
     });
@@ -89,8 +82,6 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createPlayer', (Url, name) => {
-        console.log("URL = ", Url);
-        console.log("name =", name);
         const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
@@ -107,8 +98,8 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-				if (typeof(Rooms[index].Players) == undefined)
-					return;
+				// if (typeof(Rooms[index].Players) == undefined)
+				// 	return;
 	 	 
         const index_player = Rooms[index].Players.findIndex(searchName);
 				
@@ -123,7 +114,6 @@ io.on('connection', (socket) => {
 				const searchName = (element) => element.name == name
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
- 
 				if (Rooms[index] && Rooms[index].Players.length > 1) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
 					const Players = Rooms[index].Players;
@@ -133,5 +123,34 @@ io.on('connection', (socket) => {
 					socket.broadcast.emit('higherPos', Players, Url)
 				}
 		});
+        socket.on('changestatusPlayer', (Url, name, status) => {
+            let winner_index;
+            let nombre_de_joueur
+            const index = Rooms.findIndex(element => element.Url === Url);
+            if (index !== -1) {
+                const index_player = Rooms[index].Players.findIndex(element => element.name === name);
+                if (index_player !== -1) {
+                    Rooms[index].Players[index_player].setIngame(status);
+                    if (!status) {
+                        socket.emit('game over', name);
+                    }
+                    nombre_de_joueur = Rooms[index].Players.length
+                    let activePlayersCount = 0;
+                    for (let i = 0; i < nombre_de_joueur; i++) {
+                        if (Rooms[index].Players[i].ingame == true || Rooms[index].Players[i].ingame == undefined) {
+                            winner_index = i;
+                            activePlayersCount = activePlayersCount + 1
+                        }
+                    }
+                    if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+                        io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
+                    }
+                } else {
+                    console.log('Player not found in the room.');
+                }
+            } else {
+                console.log('Room not found.');
+            }
+        });
 });
 
