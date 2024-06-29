@@ -103,9 +103,10 @@ function App() {
 
   const handleValidation = () => {
     if (tempName.length >= 2 && tempName.length <= 15) {
+      setTempName(tempName.replace(/\s/g, ''))
       setNoName(false);
     } else {
-      alert('Name must be between 4 and 15 characters');
+      alert('Name must be between 2 and 15 characters');
     }
 };
 
