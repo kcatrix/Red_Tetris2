@@ -102,17 +102,18 @@ io.on('connection', (socket) => {
             console.log("index daubé = ", index);
         }
     });
-
+  
     socket.on('leaderornot', (Url, name) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-				if (typeof(Rooms[index].Players) == undefined)
+
+				if (typeof(Rooms[index].Players) === undefined)
 					return;
 	 	 
         const index_player = Rooms[index].Players.findIndex(searchName);
-				
-        if (index !== -1 && Rooms[index].Players[index_player].leader) // Check the leader status
+	 		
+        if (index !== -1 && typeof(Rooms[index].Players[index_player].leader) !== undefined && Rooms[index].Players[index_player].leader) // Check the leader status
             socket.emit('leaderrep', true, Rooms[index].pieces);
         else
             socket.emit('leaderrep', false, Rooms[index].pieces);
@@ -134,6 +135,15 @@ io.on('connection', (socket) => {
 				}
 		});
 
+		socket.on('malus', (number, Url) => {
+			const searchUrl = (element) => element.Url == Url
+
+			const index = Rooms.findIndex(searchUrl);
+
+			if (Rooms[index] && Rooms[index].Players.length > 1)
+				socket.broadcast.emit('malusSent', number)
+		})
+ 
 		socket.on('disconnect', () => {
       console.log('Got disconnect!');
 			Rooms.forEach(room => {

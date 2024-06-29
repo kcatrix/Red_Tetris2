@@ -6,6 +6,7 @@ stop:
 
 resume:
 	docker compose start
+	docker container start -a api_backend
 
 clean:
 	docker compose down
