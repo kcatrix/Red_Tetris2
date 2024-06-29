@@ -411,6 +411,13 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		setGameOver(false)
 		if (leader)
 			socket.emit('all_retry', location.pathname, name)
+		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
+		setPosition(prevPosition => {
+			const newPosition = [...prevPosition];
+			newPosition[pieceIndex] = { x: 4, y: 0 };
+			return newPosition;
+		  });
+		launchGame()
 	}
   
 	return (
