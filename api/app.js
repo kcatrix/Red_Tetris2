@@ -152,5 +152,8 @@ io.on('connection', (socket) => {
                 console.log('Room not found.');
             }
         });
+        socket.on('all_retry', (Url, name) => {
+            io.to(Url).emit('retry', name)
+        })
 });
 

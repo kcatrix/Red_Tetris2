@@ -47,6 +47,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	socket.on('namePlayer', (Players) => {
 		setPlayersoff(Players.filter(element => element != name))
 	})
+	
+	socket.on('retry', (nameleader) => {
+		if (name != nameleader)
+			Retry()
+	})
 
 	socket.on('winner', (name_winner) => {
 		if (name_winner == name)
@@ -401,6 +406,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	  play ? setPlay(false) : setPlay(true);
 	  play ? audio.pause() : audio.play();
 	};
+
+	const Retry = () => {
+		setGameOver(false)
+		if (leader)
+			socket.emit('all_retry', location.pathname, name)
+	}
   
 	return (
   
@@ -422,7 +433,10 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			<div className="middle"> 
 				{gameover == true && 
 				<h2>{resultat}</h2>}
+				{gameover == true && leader &&
+				<button onClick={Retry}>Retry</button>}
 				<h3>{name} : {score} </h3>
+				
 				{gameover == false &&
 				<div className="board">
 						{rows.map((row, i) => (
