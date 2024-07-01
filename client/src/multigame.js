@@ -111,7 +111,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
         }
     }
     // Find the highest row containing '1' from the bottom
-    let highestRowWith1 = -1;
+    let highestRowWith1 = 0;
     for (let y = rows.length - 1; y >= 0; y--) {
         if (newRows[y].includes(1) || newRows[y].includes(2))
             highestRowWith1 = y;            
@@ -120,7 +120,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
     }
 
     // Check if adding malus lines would cause game over
-    if (highestRowWith1 != -1 && highestRowWith1 <= number) {// Condition provoquant le Game Over
+    if (highestRowWith1 != 0 && highestRowWith1 <= number) {// Condition provoquant le Game Over
 		socket.emit('changestatusPlayer',  location.pathname, name, false)
         setGameLaunched(false);
         setGameOver(true);
@@ -135,6 +135,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
         return;
     }
 
+		console.log("inside addmaluslines -> highestRowWith1 = ", highestRowWith1)
+		console.log("lastMalus = ", lastMalus)
 		for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
 					newRows[y - number] = [...rows[y]];
 					// newRows[y] = new Array(rows[0].length).fill(0);

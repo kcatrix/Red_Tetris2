@@ -157,13 +157,8 @@ io.on('connection', (socket) => {
 			const searchUrl = (element) => element.Url == Url
 
 			const index = Rooms.findIndex(searchUrl);
-			console.log("in malusSent before sent")
-			console.log("Rooms = ", Rooms)
-			console.log("index = ", index)
-			console.log("pathname = ", Url)
 
 			if (Rooms[index]){
-				console.log("in malusSent")
 				socket.broadcast.emit('malusSent', number - 1)
 			}
 		})
