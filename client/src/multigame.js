@@ -113,14 +113,14 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
     // Find the highest row containing '1' from the bottom
     let highestRowWith1 = -1;
     for (let y = rows.length - 1; y >= 0; y--) {
-        if (newRows[y].includes(1))
+        if (newRows[y].includes(1) || newRows[y].includes(2))
             highestRowWith1 = y;            
-				else if (!newRows[y].includes(1))
+				else if (newRows[y].includes(0))
 					break;
     }
 
     // Check if adding malus lines would cause game over
-    if (highestRowWith1 <= number) {// Condition provoquant le Game Over
+    if (highestRowWith1 != -1 && highestRowWith1 <= number) {// Condition provoquant le Game Over
 		socket.emit('changestatusPlayer',  location.pathname, name, false)
         setGameLaunched(false);
         setGameOver(true);

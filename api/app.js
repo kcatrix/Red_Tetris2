@@ -164,7 +164,7 @@ io.on('connection', (socket) => {
 
 			if (Rooms[index]){
 				console.log("in malusSent")
-				socket.broadcast.emit('malusSent', number)
+				socket.broadcast.emit('malusSent', number - 1)
 			}
 		})
 
