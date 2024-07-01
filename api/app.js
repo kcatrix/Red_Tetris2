@@ -17,8 +17,11 @@ const io = require('socket.io')(server, {
     cors: {
         origin: "*", // ou spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
-    }
+    },
+    pingInterval: 5000, // Intervalle de ping en millisecondes (5 secondes)
+    pingTimeout: 10000 // Délai avant de considérer le client comme déconnecté (10 secondes)
 });
+
 
 app.use(cors({ origin: 'http://localhost:3000' }));
 
@@ -27,7 +30,11 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('a user connected: ', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log(`Client disconnected with ID: `, socket.id);
+    })
 
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
