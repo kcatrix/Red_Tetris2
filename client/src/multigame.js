@@ -30,7 +30,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
-	}, [Players]);
+	}, []);
 
 
 	useEffect(() => {
@@ -93,10 +93,10 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	}, [malus]);	
 	
-	// socket.on('malusSent', (number) => {
+	socket.on('malusSent', (number) => {
 	
-	// 	addMalusLines(number);
-	// });
+		addMalusLines(number);
+	});
 
 	socket.on('higherPos', (Players, Url) => {
 		if (Url == location.pathname) {
