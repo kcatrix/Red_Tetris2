@@ -517,6 +517,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
 		setPosition(prevPosition => {
 			const newPosition = [...prevPosition];
+			setStartPiece(true)
 			newPosition[pieceIndex] = { x: 4, y: 0 };
 			return newPosition;
 		  });
