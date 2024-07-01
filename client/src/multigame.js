@@ -20,7 +20,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const navigate = useNavigate();
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
-	const [déconnection, setDéconnection] = useState(1)
+
 
 		const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -34,9 +34,23 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 
 	useEffect(() => {
+		const handleAudioEnd = () => {
+		  audio.load();
+		  audio.play();
+		};
+
+		audio.addEventListener('ended', handleAudioEnd);
+	  
+		return () => {
+		  audio.removeEventListener('ended', handleAudioEnd);
+		};
+	  }, []);
+	  
+
+	useEffect(() => {
 		if (down) {
 			let y = 19;
-			for (y; rows[y].includes(1); y--) {}
+			for (y; rows[y].includes(1) || rows[y].includes(2); y--) {}
 	
 			let index = y;
 			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
@@ -71,8 +85,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			setResultat("winner")
 			setGameLaunched(false)
 		  setGameOver(true)
-		  play ? setPlay(false) : setPlay(true);
-		  play ? audio.pause() : audio.play();
+		  toggleAudioPlayback();
 		  socket.emit("gameStopped", location.pathname)
 		  return gameLaunched
 		}
@@ -235,8 +248,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
 		  setGameOver(true)
-		  play ? setPlay(false) : setPlay(true);
-		  play ? audio.pause() : audio.play();
+		  toggleAudioPlayback();
 		  socket.emit("gameStopped", location.pathname)
 		  return gameLaunched
 		}
@@ -516,9 +528,23 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		socket.emit('changestatusPlayer',  location.pathname, name, true)
 	  	socket.emit("gameStarted", location.pathname)
 	  }
-	  play ? setPlay(false) : setPlay(true);
-	  play ? audio.pause() : audio.play();
+	  toggleAudioPlayback();
 	};
+
+	const toggleAudioPlayback = () => {
+		if (play) {
+		  if (audio) {
+			audio.pause();
+		  }
+		} else {
+		  if (audio) {
+			audio.play();
+		  }
+		}
+		setPlay(!play);
+	  };
+	  
+	  
 
 	const Retry = () => {
 		socket.emit('changestatusPlayer',  location.pathname, name, true)
