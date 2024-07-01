@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import Game from './Game';
@@ -28,7 +27,7 @@ function App() {
 
   // Connexion au serveur socket.io
   useEffect(() => {
-    const socketIo = io('http://localhost:4000');
+    const socketIo = io('http://90.5.107.160:4000'); // Utilisez votre adresse publique ici
     setSocket(socketIo);
 
     socketIo.emit('requestRandomPiece');
@@ -85,13 +84,6 @@ function App() {
     }
   }, [noName])
 
-  // useEffect(() => {
-  //   if (gameStart == true)
-  //     socket.emit("gameStarted", location.pathname)
-  //   if (play == true && gameStart == false)
-  //     socket.emit("gameStopped", location.pathname)
-  // }, [gameStart])
-
   const handleInputChange = (event) => {
     setTempName(event.target.value);
   };
@@ -103,7 +95,7 @@ function App() {
     } else {
       alert('Name must be between 2 and 15 characters');
     }
-};
+  };
 
   return (
     <div className='Game'>

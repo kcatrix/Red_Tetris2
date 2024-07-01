@@ -10,17 +10,17 @@ const nmbrPieces = 2000;
 const Rooms = [];
 
 server.listen(port, () =>
-  console.log(`Server running on port ${port}, http://localhost:${port}`)
+  console.log(`Server running on port ${port}, http://90.5.107.160:${port}`)
 );
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "*", // ou spécifiez explicitement votre adresse publique
+        origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'http://90.5.107.160:3000' }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
