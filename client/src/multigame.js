@@ -55,7 +55,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	socket.on('launchGame', (Room) => { // Provient de "gameStarted" du front
 		console.log("in socket.on launchgame", Room)
-		if(leader == false)
+		if (leader == false)
 			launchGame()
 	})
 
@@ -70,7 +70,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		
 			addMalusLines(number);
 		});
-	}, [rows, play, audio]);	
+	}, [rows]);	
 
 	useEffect(() => {
 		socket.on('higherPos', (Players, Url) => {
