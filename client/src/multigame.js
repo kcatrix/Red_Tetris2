@@ -65,7 +65,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	socket.on('winner', (name_winner) => {
-		console.log("ici sa win")
 		if (name_winner == name)
 		{
 			setResultat("winner")
@@ -497,7 +496,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [gameLaunched, movePieceDownRef, Time]);
   
 	const launchGame = async () => {
-		console.log("launch game")
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader)
