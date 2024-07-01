@@ -18,7 +18,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [down, setDown] = useState(false);
 	const [resultat, setResultat] = useState("Game over")
 	const navigate = useNavigate();
-	const [lastMalus, setlastMalus] = useState(0);
+	const [lastMalus, setLastMalus] = useState(0);
 
 		const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -85,7 +85,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	useEffect(() => {
 		socket.emit('malus', (lastMalus));
-		
+
 	}, [lastMalus]);	
 	
 	socket.on('malusSent', (number) => {
@@ -170,7 +170,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			});
 	}
 
-		setlastMalus(number);
+		setLastMalus(number);
 
     // Update the rows state
     setRows([...newRows]);
@@ -249,10 +249,10 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			newScore = score + tmpScore;
 		}
 		let sum = newScore - oldScore;
-		if (sum / 100 > 1) {
-			setlastMalus(sum / 100)
-		}
 		setDown(true)
+		if (sum / 100 > 1) {
+			setLastMalus(sum / 100)
+		}
 		setPieceIndex(pieceIndex + 1);
 		setStartPiece(true)
 		setPosition([...position, { x: 4, y: 0 }]);
