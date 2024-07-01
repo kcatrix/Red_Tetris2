@@ -31,7 +31,37 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`Client disconnected with ID: `, socket.id);
-    })
+
+        // Parcourir toutes les rooms pour trouver le client déconnecté
+        for (let i = 0; i < Rooms.length; i++) {
+            let room = Rooms[i];
+            let playerIndex = room.Players.findIndex(player => player.id === socket.id);
+
+            if (playerIndex !== -1) {
+                // Retirer le joueur de la room
+                let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
+
+                // Notifier les autres joueurs dans la room
+                io.to(room.Url).emit('playerDisconnected', disconnectedPlayer.name);
+
+                // Si la room n'a plus de joueurs, la supprimer
+                if (room.Players.length === 0) {
+                    Rooms.splice(i, 1);
+                    console.log(`Room ${room.name} supprimée car vide.`);
+                } else {
+                    // Si le joueur déconnecté était le leader, assigner un nouveau leader
+                    if (disconnectedPlayer.leader && room.Players.length > 0) {
+                        room.Players[0].leader = true; // Assigner le premier joueur comme nouveau leader
+                        console.log('newLeader', room.Players[0].name)
+                        io.to(room.Url).emit('newLeader', room.Players[0].name);
+                    }
+                }
+
+                break; // Sortir de la boucle car le joueur a été trouvé et traité
+            }
+        }
+    });
+
 
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
