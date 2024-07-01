@@ -11,7 +11,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [score, setScore] = useState(0);
 	const [startPiece, setStartPiece] = useState(true);
 	const [gameover, setGameOver] = useState(false)
-	const [eventSent, setEventSent] = useState(false)
 	const [leader, setleader] = useState(false)
 	const location = useLocation();
 	const [Players, setPlayers] = useState([])
@@ -34,7 +33,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 
 	useEffect(() => {
-		if (down && !eventSent) {
+		if (down) {
 			let y = 19;
 			for (y; rows[y].includes(1); y--) {}
 	
@@ -42,7 +41,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			console.log("higherPos = ", index)
 			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
 			setDown(false);
-			setEventSent(true); // Marquez l'événement comme envoyé
 		}
 	}, [down == true]);
 
@@ -86,18 +84,21 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	useEffect(() => {
-		socket.on('malusSent', (number) => {
-			console.log("malusSent received");
+		socket.emit('malus', (lastMalus));
 		
-			addMalusLines(number);
-		});
-	}, [rows]);	
+	}, [lastMalus]);	
+	
+	socket.on('malusSent', (number) => {
+		console.log("malusSent received");
+	
+		addMalusLines(number);
+	});
 
-		socket.on('higherPos', (Players, Url) => {
-			if (Url == location.pathname) {
-				setPlayers(Players.filter(element => element.name !== name));
-			}
-		});
+	socket.on('higherPos', (Players, Url) => {
+		if (Url == location.pathname) {
+			setPlayers(Players.filter(element => element.name !== name));
+		}
+	});
   
 	const addMalusLines = (number) => {
     const newRows = [...rows];
@@ -249,14 +250,14 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		}
 		let sum = newScore - oldScore;
 		if (sum / 100 > 1) {
-			socket.emit("malus", sum / 100, location.pathname);
+			setlastMalus(sum / 100)
 		}
 		setDown(true)
 		setPieceIndex(pieceIndex + 1);
 		setStartPiece(true)
 		setPosition([...position, { x: 4, y: 0 }]);
 	  } 
-	}, [gameLaunched, pieceIndex, position, rows]);
+	}, [gameLaunched, pieceIndex, position, rows, down, score, lastMalus]);
   
 	const writePiece = (action, piece, position) => {
 	  setRows(prevRows => {
