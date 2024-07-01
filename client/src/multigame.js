@@ -20,13 +20,13 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const navigate = useNavigate();
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
+	const [déconnection, setDéconnection] = useState(1)
 
 		const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
 	);
 
 	let intervalId;
-
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
@@ -76,6 +76,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		  socket.emit("gameStopped", location.pathname)
 		  return gameLaunched
 		}
+	})
+
+
+	socket.on('newLeader', (name_leader) => {
+		if(name_leader == name)
+			setleader(true)
 	})
 
 	useEffect(() => {
