@@ -38,14 +38,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			for (y; rows[y].includes(1); y--) {}
 	
 			let index = y;
-			console.log("higherPos = ", index)
 			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
 			setDown(false);
 		}
 	}, [down == true]);
 
 	socket.on('leaderrep', (checkleader, piecesleader) => { // Provient de "leaderornot" du front
-		console.log("socket leaderrep")
 		setPieces(piecesleader);
 		if (checkleader)
 			setleader(true)
@@ -53,15 +51,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	socket.on('launchGame', (Room) => {
-		console.log("in socket.on launchgame", Room)
-		console.log("leader = ", leader)
-		console.log("roooom = ", socket.Rooms)
 		if(leader == false)
 			launchGame()
 		})
 
 	socket.on('namePlayer', (Players) => {
-		console.log(Players)
 		setPlayersoff(Players.filter(element => element != name))
 	})
 	
@@ -90,7 +84,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [lastMalus]);	
 	
 	socket.on('malusSent', (number) => {
-		console.log("malusSent received");
 	
 		addMalusLines(number);
 	});
@@ -517,6 +510,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	};
 
 	const Retry = () => {
+		socket.emit('changestatusPlayer',  location.pathname, name, true)
 		setGameOver(false)
 		if (leader)
 			socket.emit('all_retry', location.pathname, name)
