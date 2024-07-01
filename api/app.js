@@ -18,8 +18,6 @@ const io = require('socket.io')(server, {
         origin: "*", // ou spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
-    pingInterval: 5000, // Intervalle de ping en millisecondes (5 secondes)
-    pingTimeout: 5000 // Délai avant de considérer le client comme déconnecté (10 secondes)
 });
 
 
