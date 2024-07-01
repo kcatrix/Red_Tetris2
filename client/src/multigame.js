@@ -72,6 +72,14 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		}
 	})
 
+	socket.on('playerDisconnected', (name) => {
+		console.log("Player ", name, " est déconnecter")
+	});
+
+	socket.on('newLeader', (name) => {
+		console.log("new leader is ", name)
+	})
+
 	const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
 	);
