@@ -187,7 +187,7 @@ io.on('connection', (socket) => {
 												activePlayersCount = activePlayersCount + 1
 										}
 								}
-								if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+								if (activePlayersCount == 1 && nombre_de_joueur > 1 && !status) {
 										io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
 								}
 						} else {

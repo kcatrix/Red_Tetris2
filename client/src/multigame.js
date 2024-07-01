@@ -39,14 +39,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			for (y; rows[y].includes(1); y--) {}
 	
 			let index = y;
-			console.log("higherPos = ", index)
 			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
 			setDown(false);
 		}
 	}, [down == true]);
 
 	socket.on('leaderrep', (checkleader, piecesleader) => { // Provient de "leaderornot" du front
-		console.log("socket leaderrep")
 		setPieces(piecesleader);
 		if (checkleader)
 			setleader(true)
@@ -54,15 +52,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	socket.on('launchGame', (Room) => {
-		console.log("in socket.on launchgame", Room)
-		console.log("leader = ", leader)
-		console.log("roooom = ", socket.Rooms)
 		if(leader == false)
 			launchGame()
 		})
 
 	socket.on('namePlayer', (Players) => {
-		console.log(Players)
 		setPlayersoff(Players.filter(element => element != name))
 	})
 	
@@ -94,7 +88,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [malus]);	
 	
 	socket.on('malusSent', (number) => {
-		console.log("malusSent received");
 	
 		addMalusLines(number);
 	});
@@ -127,7 +120,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
     }
 
     // Check if adding malus lines would cause game over
-    if (highestRowWith1 <= number) {
+    if (highestRowWith1 <= number) {// Condition provoquant le Game Over
+		socket.emit('changestatusPlayer',  location.pathname, name, false)
         setGameLaunched(false);
         setGameOver(true);
         if (play) {
@@ -230,6 +224,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
+			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
 		  setGameOver(true)
 		  play ? setPlay(false) : setPlay(true);
@@ -518,12 +513,14 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	};
 
 	const Retry = () => {
+		socket.emit('changestatusPlayer',  location.pathname, name, true)
 		setGameOver(false)
 		if (leader)
 			socket.emit('all_retry', location.pathname, name)
 		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
 		setPosition(prevPosition => {
 			const newPosition = [...prevPosition];
+			setStartPiece(true)
 			newPosition[pieceIndex] = { x: 4, y: 0 };
 			return newPosition;
 		  });
