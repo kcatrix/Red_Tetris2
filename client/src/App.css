@@ -15,7 +15,7 @@
 	width: 33vw;
 	align-items: center;
 	justify-content: center;
-	left: 10%;
+	left: 20%;
 }
 
 .middle{
@@ -91,13 +91,14 @@ h1 {
 }
 
 .player-names {
-  display: inline-block;
+  display: flex;
   width: 150px; /* Définir une largeur fixe */
   white-space: nowrap; /* Empêcher le retour à la ligne */
   overflow: hidden; /* Masquer le débordement */
   text-overflow: ellipsis; /* Ajouter des points de suspension si le texte est trop long */
   vertical-align: top; /* Aligner en haut */
   margin-left: 5px;
+	float: left;
 }
 
 
@@ -114,6 +115,17 @@ h1 {
   flex-direction: row;
   gap: 10px;
   justify-content: center;
+}
+
+.buton.hidden {
+	visibility: hidden;
+}
+
+.cellMalus {
+  border: 1px solid black;
+  width: 20px;
+  height: 20px;
+  background-color: lightgray;
 }
 
 .visuPlayer {

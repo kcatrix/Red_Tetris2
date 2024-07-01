@@ -76,10 +76,10 @@ function App() {
   
   useEffect( () => { // Redirection auto si pas de name nous devont vérifier available !!!!!!!
 
-    if (oldUrl && changeOk)
+    if (changeOk && oldUrl.length > 0)
     {
       const tempUrl = oldUrl
-      setoldUrl()
+      setoldUrl("")
       socket.emit('createPlayer', oldUrl, tempName)
       navigate(tempUrl)
     }
@@ -114,7 +114,6 @@ function App() {
         <Route path="/:roomId/:name" element={
           <div>
             <MultiGame pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
-            <button onClick={() => changeButtonFunctions.changeButton(cou, setSolo, audio, setPlay)}> Go back </button>
           </div>
         }/>
         )}
