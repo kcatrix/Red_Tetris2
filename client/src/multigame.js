@@ -17,6 +17,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [Players, setPlayers] = useState([])
 	const [Playersoff, setPlayersoff] = useState([])
 	const [down, setDown] = useState(false);
+	const [resultat, setResultat] = useState("Game over")
 	const navigate = useNavigate();
 	const [lastMalus, setlastMalus] = useState(0);
 
@@ -53,15 +54,35 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	})
 
-	socket.on('launchGame', (Room) => { // Provient de "gameStarted" du front
+	socket.on('launchGame', (Room) => {
 		console.log("in socket.on launchgame", Room)
-		if (leader == false)
+		console.log("leader = ", leader)
+		console.log("roooom = ", socket.Rooms)
+		if(leader == false)
 			launchGame()
+		})
+
+	socket.on('namePlayer', (Players) => {
+		console.log(Players)
+		setPlayersoff(Players.filter(element => element != name))
+	})
+	
+	socket.on('retry', (nameleader) => {
+		if (name != nameleader)
+			Retry()
 	})
 
-	socket.on('namePlayer', (Players) => { // Provient de "createPlayer" du front	
-		console.log("socket Players")
-		setPlayersoff(Players.filter(element => element != name))
+	socket.on('winner', (name_winner) => {
+		if (name_winner == name)
+		{
+			setResultat("winner")
+			setGameLaunched(false)
+		  setGameOver(true)
+		  play ? setPlay(false) : setPlay(true);
+		  play ? audio.pause() : audio.play();
+		  socket.emit("gameStopped", location.pathname)
+		  return gameLaunched
+		}
 	})
 
 	useEffect(() => {
@@ -72,14 +93,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		});
 	}, [rows]);	
 
-	useEffect(() => {
 		socket.on('higherPos', (Players, Url) => {
 			if (Url == location.pathname) {
 				setPlayers(Players.filter(element => element.name !== name));
-				setEventSent(false); // Réinitialisez l'état pour permettre l'envoi futur
 			}
 		});
-	}, [location.pathname, socket]);	
   
 	const addMalusLines = (number) => {
     const newRows = [...rows];
@@ -181,63 +199,64 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-		if (!gameLaunched) return;
-	
-		const currentPiece = pieces[pieceIndex];
-		const currentPos = position[pieceIndex];
-		const newPos = { ...currentPos, y: currentPos.y + 1 };
-	
-		if (startPiece === true && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
-			writePiece(1, currentPiece, currentPos);
-			setStartPiece(false);
-			return startPiece;
+	  if (!gameLaunched) return;
+	  
+	  const currentPiece = pieces[pieceIndex];
+	  const currentPos = position[pieceIndex];
+	  const newPos = { ...currentPos, y: currentPos.y + 1 };
+  
+	  if (startPiece == true && check1(rows, currentPiece, 0, currentPos, "y") == 0)
+	  {
+		writePiece(1, currentPiece, currentPos)
+		setStartPiece(false)
+		return startPiece;
+	  }
+  
+	  if (check1(rows, currentPiece, 0, currentPos, "y") == 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
+		writePiece(0, currentPiece, currentPos);
+		writePiece(1, currentPiece, newPos);
+		setPosition(prevPosition => {
+		  const newPositions = [...prevPosition];
+		  newPositions[pieceIndex] = newPos;
+		  return newPositions;
+		});
+	  }
+  
+	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
+		  setGameLaunched(false)
+		  setGameOver(true)
+		  play ? setPlay(false) : setPlay(true);
+		  play ? audio.pause() : audio.play();
+		  socket.emit("gameStopped", location.pathname)
+		  return gameLaunched
 		}
-	
-		if (check1(rows, currentPiece, 0, currentPos, "y") === 0) {
-			writePiece(0, currentPiece, currentPos);
-			writePiece(1, currentPiece, newPos);
-			setPosition(prevPosition => {
-				const newPositions = [...prevPosition];
-				newPositions[pieceIndex] = newPos;
-				return newPositions;
-			});
-		} else if (check1(rows, currentPiece, 0, currentPos, "y") === 1) {
-			if (position[pieceIndex].y === 0) {
-				setGameLaunched(false);
-				setGameOver(true);
-				setPlay(false);
-				audio.pause();
-				socket.emit("gameStopped", location.pathname);
-				return;
-			}
-			let newRows = rows;
-			let oldScore = score;
-			let newScore = 0;
-			let tmpScore = 0;
-			for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) {
-				if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
-					newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
-					tmpScore += 100;
-				}
-				if (checkPiece === currentPos.y) {
-					setRows(newRows);
-				}
-				setScore(score + tmpScore);
-				newScore = score + tmpScore;
-			}
-			let sum = newScore - oldScore;
-			if (sum / 100 > 1) {
-				socket.emit("malus", sum / 100, location.pathname);
-			}
-			setDown(true);
-			setPieceIndex(pieceIndex + 1);
-			setStartPiece(true);
-			setPosition([...position, { x: 4, y: 0 }]);
+		let newRows = rows;
+		let oldScore = score;
+		let newScore = 0;
+		let tmpScore = 0;
+		for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
+		  if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
+			newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y)
+			tmpScore += 100;
+		  }
+		  if (checkPiece == currentPos.y){
+			setRows(oldRows => { 
+			  return newRows});
+		  }
+		  setScore(score + tmpScore)
+			newScore = score + tmpScore;
 		}
-	}, [gameLaunched, pieceIndex, position, rows, down, eventSent]);
-	
-
-	
+		let sum = newScore - oldScore;
+		if (sum / 100 > 1) {
+			socket.emit("malus", sum / 100, location.pathname);
+		}
+		setDown(true)
+		setPieceIndex(pieceIndex + 1);
+		setStartPiece(true)
+		setPosition([...position, { x: 4, y: 0 }]);
+	  } 
+	}, [gameLaunched, pieceIndex, position, rows]);
   
 	const writePiece = (action, piece, position) => {
 	  setRows(prevRows => {
@@ -482,11 +501,28 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	const launchGame = async () => {
 	  setGameLaunched(true);
+	  setResultat("Game over")
 	  if (leader)
+	  {
+		socket.emit('changestatusPlayer',  location.pathname, name, true)
 	  	socket.emit("gameStarted", location.pathname)
+	  }
 	  play ? setPlay(false) : setPlay(true);
 	  play ? audio.pause() : audio.play();
 	};
+
+	const Retry = () => {
+		setGameOver(false)
+		if (leader)
+			socket.emit('all_retry', location.pathname, name)
+		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
+		setPosition(prevPosition => {
+			const newPosition = [...prevPosition];
+			newPosition[pieceIndex] = { x: 4, y: 0 };
+			return newPosition;
+		  });
+		launchGame()
+	}
 
 	const toHome = async () => {
 		navigate("/");
@@ -512,8 +548,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
       </div>
 			<div className="middle"> 
 				{gameover == true && 
-				<h2>Game Over</h2>}
+				<h2>{resultat}</h2>}
+				{gameover == true && leader &&
+				<button onClick={Retry}>Retry</button>}
 				<h3>{name} : {score} </h3>
+				
 				{gameover == false &&
 				<div className="board">
 						{rows.map((row, i) => (

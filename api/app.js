@@ -17,7 +17,7 @@ const io = require('socket.io')(server, {
     cors: {
         origin: "*", // ou spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
-    }
+    },
 });
 
 app.use(cors({ origin: 'http://localhost:3000' }));
@@ -27,7 +27,41 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log('a user connected: ', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log(`Client disconnected with ID: `, socket.id);
+
+        // Parcourir toutes les rooms pour trouver le client déconnecté
+        for (let i = 0; i < Rooms.length; i++) {
+            let room = Rooms[i];
+            let playerIndex = room.Players.findIndex(player => player.id === socket.id);
+
+            if (playerIndex !== -1) {
+                // Retirer le joueur de la room
+                let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
+
+                // Notifier les autres joueurs dans la room
+                io.to(room.Url).emit('playerDisconnected', disconnectedPlayer.name);
+
+                // Si la room n'a plus de joueurs, la supprimer
+                if (room.Players.length === 0) {
+                    Rooms.splice(i, 1);
+                    console.log(`Room ${room.name} supprimée car vide.`);
+                } else {
+                    // Si le joueur déconnecté était le leader, assigner un nouveau leader
+                    if (disconnectedPlayer.leader && room.Players.length > 0) {
+                        room.Players[0].leader = true; // Assigner le premier joueur comme nouveau leader
+                        console.log('newLeader', room.Players[0].name)
+                        io.to(room.Url).emit('newLeader', room.Players[0].name);
+                    }
+                }
+
+                break; // Sortir de la boucle car le joueur a été trouvé et traité
+            }
+        }
+    });
+
 
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
@@ -86,6 +120,7 @@ io.on('connection', (socket) => {
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
             Rooms[index].creatNewPlayer(name, socket.id);
+            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
         } else {
@@ -97,9 +132,8 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const searchName = (element) => element.name == name;
         const index = Rooms.findIndex(searchUrl);
-
-				if (typeof(Rooms[index].Players) === undefined)
-					return;
+				// if (typeof(Rooms[index].Players) == undefined)
+				// 	return;
 	 	 
         const index_player = Rooms[index].Players.findIndex(searchName);
 	 		
@@ -114,22 +148,43 @@ io.on('connection', (socket) => {
 				const searchName = (element) => element.name == name
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
- 
 				if (Rooms[index] && Rooms[index].Players.length > 1) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
 					const Players = Rooms[index].Players;
 					socket.broadcast.emit('higherPos', Players, Url)
 				}
 		});
-
-		socket.on('malus', (number, Url) => {
-			const searchUrl = (element) => element.Url == Url
-
-			const index = Rooms.findIndex(searchUrl);
-
-			if (Rooms[index] && Rooms[index].Players.length > 1)
-				socket.broadcast.emit('malusSent', number)
-		})
-
+        socket.on('changestatusPlayer', (Url, name, status) => {
+            let winner_index;
+            let nombre_de_joueur
+            const index = Rooms.findIndex(element => element.Url === Url);
+            if (index !== -1) {
+                const index_player = Rooms[index].Players.findIndex(element => element.name === name);
+                if (index_player !== -1) {
+                    Rooms[index].Players[index_player].setIngame(status);
+                    if (!status) {
+                        socket.emit('game over', name);
+                    }
+                    nombre_de_joueur = Rooms[index].Players.length
+                    let activePlayersCount = 0;
+                    for (let i = 0; i < nombre_de_joueur; i++) {
+                        if (Rooms[index].Players[i].ingame == true || Rooms[index].Players[i].ingame == undefined) {
+                            winner_index = i;
+                            activePlayersCount = activePlayersCount + 1
+                        }
+                    }
+                    if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+                        io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
+                    }
+                } else {
+                    console.log('Player not found in the room.');
+                }
+            } else {
+                console.log('Room not found.');
+            }
+        });
+        socket.on('all_retry', (Url, name) => {
+            io.to(Url).emit('retry', name)
+        })
 });
 

@@ -50,14 +50,11 @@ function App() {
     });
 
     if (Url == "" && location.pathname.length > 1) { // IL FAUT SORTIR TOUS DU USEEFFECT
-      console.log("location.pathname = ", location.pathname)
       setCheckUrl(location.pathname)
     }
 
     socketIo.on("urlChecked", (check) => { // réponse de demande d'accès
-      console.log("yo")
       check ? setChangeOk(true) : setChangeOk(false);
-      console.log("check = ", check)
       navigate("/");
     })
 
@@ -66,7 +63,6 @@ function App() {
   }, [changeOk]);
 
   useEffect( () => { // demande d'acceptation d'accès a room existante
-    console.log("checkUrl = ", checkUrl)
     if (tempName.length == 0)
     {
       setoldUrl(checkUrl)
@@ -74,7 +70,6 @@ function App() {
     }
     if (checkUrl && checkUrl.length > 3) {
       socket.emit("urlCheck", checkUrl)
-      console.log("emit done")
     }
     
   }, [checkUrl])
@@ -103,9 +98,10 @@ function App() {
 
   const handleValidation = () => {
     if (tempName.length >= 2 && tempName.length <= 15) {
+      setTempName(tempName.replace(/\s/g, ''))
       setNoName(false);
     } else {
-      alert('Name must be between 4 and 15 characters');
+      alert('Name must be between 2 and 15 characters');
     }
 };
 
