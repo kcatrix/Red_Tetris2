@@ -73,6 +73,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	})
 
 	socket.on('winner', (name_winner) => {
+		console.log("ici sa win")
 		if (name_winner == name)
 		{
 			setResultat("winner")
@@ -88,7 +89,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	useEffect(() => {
 		socket.on('malusSent', (number) => {
 			console.log("malusSent received");
-		
 			addMalusLines(number);
 		});
 	}, [rows]);	
@@ -121,7 +121,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
     }
 
     // Check if adding malus lines would cause game over
-    if (highestRowWith1 <= number) {
+    if (highestRowWith1 <= number) {// Condition provoquant le Game Over
+		socket.emit('changestatusPlayer',  location.pathname, name, false)
         setGameLaunched(false);
         setGameOver(true);
         if (play) {
@@ -224,6 +225,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
+			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
 		  setGameOver(true)
 		  play ? setPlay(false) : setPlay(true);
