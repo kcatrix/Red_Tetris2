@@ -52,14 +52,11 @@ io.on('connection', (socket) => {
                     // Si le joueur déconnecté était le leader, assigner un nouveau leader
                     if (disconnectedPlayer.leader && room.Players.length > 0) {
                         room.Players[0].leader = true; // Assigner le premier joueur comme nouveau leader
-                        console.log('newLeader', room.Players[0].name)
                         io.to(room.Url).emit('newLeader', room.Players[0].name);
                     }
                 }
-                console.log("Rooms = ", Rooms[i])
                 break; // Sortir de la boucle car le joueur a été trouvé et traité
             }
-            console.log("Rooms = ", Rooms[0])
         }
     });
 
@@ -155,37 +152,54 @@ io.on('connection', (socket) => {
 					socket.broadcast.emit('higherPos', Players, Url)
 				}
 		});
-        socket.on('changestatusPlayer', (Url, name, status) => {
-            let winner_index;
-            let nombre_de_joueur
-            const index = Rooms.findIndex(element => element.Url === Url);
-            if (index !== -1) {
-                const index_player = Rooms[index].Players.findIndex(element => element.name === name);
-                if (index_player !== -1) {
-                    Rooms[index].Players[index_player].setIngame(status);
-                    if (!status) {
-                        socket.emit('game over', name);
-                    }
-                    nombre_de_joueur = Rooms[index].Players.length
-                    let activePlayersCount = 0;
-                    for (let i = 0; i < nombre_de_joueur; i++) {
-                        if (Rooms[index].Players[i].ingame == true || Rooms[index].Players[i].ingame == undefined) {
-                            winner_index = i;
-                            activePlayersCount = activePlayersCount + 1
-                        }
-                    }
-                    if (activePlayersCount == 1 && nombre_de_joueur > 1) {
-                        io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
-                    }
-                } else {
-                    console.log('Player not found in the room.');
-                }
-            } else {
-                console.log('Room not found.');
-            }
-        });
-        socket.on('all_retry', (Url, name) => {
-            io.to(Url).emit('retry', name)
-        })
+
+		socket.on('malus', (number, Url) => {
+			const searchUrl = (element) => element.Url == Url
+
+			const index = Rooms.findIndex(searchUrl);
+			console.log("in malusSent before sent")
+			console.log("Rooms = ", Rooms)
+			console.log("index = ", index)
+			console.log("pathname = ", Url)
+
+			if (Rooms[index]){
+				console.log("in malusSent")
+				socket.broadcast.emit('malusSent', number)
+			}
+		})
+
+		socket.on('changestatusPlayer', (Url, name, status) => {
+				let winner_index;
+				let nombre_de_joueur
+				const index = Rooms.findIndex(element => element.Url === Url);
+				if (index !== -1) {
+						const index_player = Rooms[index].Players.findIndex(element => element.name === name);
+						if (index_player !== -1) {
+								Rooms[index].Players[index_player].setIngame(status);
+								if (!status) {
+										socket.emit('game over', name);
+								}
+								nombre_de_joueur = Rooms[index].Players.length
+								let activePlayersCount = 0;
+								for (let i = 0; i < nombre_de_joueur; i++) {
+										if (Rooms[index].Players[i].ingame == true || Rooms[index].Players[i].ingame == undefined) {
+												winner_index = i;
+												activePlayersCount = activePlayersCount + 1
+										}
+								}
+								if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+										io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
+								}
+						} else {
+								console.log('Player not found in the room.');
+						}
+				} else {
+						console.log('Room not found.');
+				}
+		});
+		
+		socket.on('all_retry', (Url, name) => {
+				io.to(Url).emit('retry', name)
+		})
 });
 
