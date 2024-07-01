@@ -20,7 +20,6 @@ const io = require('socket.io')(server, {
     },
 });
 
-
 app.use(cors({ origin: 'http://localhost:3000' }));
 
 app.get('/', (req, res) => {
@@ -46,7 +45,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name, pieces) => {
-        const room = new Room(name, pieces);
+        const room = new Room(name, pieces, socket.id);
         Rooms.push(room);
         const index = (element) => element.name == name;
         socket.join(room.Url); // Join the room
@@ -90,7 +89,7 @@ io.on('connection', (socket) => {
         const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
-            Rooms[index].creatNewPlayer(name);
+            Rooms[index].creatNewPlayer(name, socket.id);
             // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
