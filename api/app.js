@@ -50,22 +50,16 @@ io.on('connection', (socket) => {
 
     socket.on('urlCheck', (checkUrl) => {
         const searchUrl = (element) => element.Url == checkUrl;
-        console.log("check URL BACK ", checkUrl);
-        console.log("rooms = ", Rooms);
-        console.log("");
-
         const index = Rooms.findIndex(searchUrl);
 
         if (index !== -1) {  // Ensure the index is valid
             if (Rooms[index].available === true) {
-                console.log("root valide you know");
                 socket.emit("urlChecked", 1);
             } else {
                 socket.emit("urlChecked", 0);
             }
         } else {
             // Handle case where no matching room is found
-            console.log("Room not found");
             socket.emit("urlChecked", 0);
         }
     });
@@ -75,7 +69,6 @@ io.on('connection', (socket) => {
         const roomIndex = Rooms.findIndex(searchUrl);
         if (Rooms[roomIndex]) {
             Rooms[roomIndex].available = false;
-            console.log("gamestart in back");
             io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
         }
     });
@@ -89,13 +82,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createPlayer', (Url, name) => {
-        console.log("URL = ", Url);
-        console.log("name =", name);
         const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
             Rooms[index].creatNewPlayer(name, socket.id);
-            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
         } else {
@@ -128,9 +118,6 @@ io.on('connection', (socket) => {
 				if (Rooms[index] && Rooms[index].Players.length > 1) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
 					const Players = Rooms[index].Players;
-					// console.log("Players = ", Players)
-					// for (let i = 0; i < Rooms[index].Players.length; i++)
-					// 	console.log("position of ", Rooms[index].Players[index_player].name, " =  ", Rooms[index].Players[index_player].higherPos)
 					socket.broadcast.emit('higherPos', Players, Url)
 				}
 		});
@@ -143,12 +130,6 @@ io.on('connection', (socket) => {
 			if (Rooms[index] && Rooms[index].Players.length > 1)
 				socket.broadcast.emit('malusSent', number)
 		})
- 
-		socket.on('disconnect', () => {
-      console.log('Got disconnect!');
-			Rooms.forEach(room => {
-				room.removePlayer(socket.id);
-			});
-		});
+
 });
 

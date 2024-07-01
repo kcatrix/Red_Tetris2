@@ -11,22 +11,25 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [score, setScore] = useState(0);
 	const [startPiece, setStartPiece] = useState(true);
 	const [gameover, setGameOver] = useState(false)
-	const [numberOfPlayer, setNumberOfPlayer] = useState()
+	const [eventSent, setEventSent] = useState(false)
 	const [leader, setleader] = useState(false)
 	const location = useLocation();
 	const [Players, setPlayers] = useState([])
 	const [Playersoff, setPlayersoff] = useState([])
 	const [down, setDown] = useState(false);
 	const navigate = useNavigate();
-	const [stop, setStop] = useState(true);
-	const [eventSent, setEventSent] = useState(false);
-	const [malusInfo, setMalusInfo] = useState({ rows: [], piece: null, position: null });
-	const malusInfoRef = useRef(malusInfo);
+	const [lastMalus, setlastMalus] = useState(0);
+
+		const [rows, setRows] = useState(
+	  Array.from({ length: 20 }, () => Array(10).fill(0))
+	);
+
+	let intervalId;
 
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
-	}, []);
+	}, [Players]);
 
 
 	useEffect(() => {
@@ -35,82 +38,61 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			for (y; rows[y].includes(1); y--) {}
 	
 			let index = y;
-			socket.emit("setHigherPos", index, location.pathname, name);
+			console.log("higherPos = ", index)
+			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
 			setDown(false);
 			setEventSent(true); // Marquez l'événement comme envoyé
 		}
-	}, [down, eventSent]);
-	
+	}, [down == true]);
 
-	socket.on('leaderrep', (checkleader, piecesleader) => {
+	socket.on('leaderrep', (checkleader, piecesleader) => { // Provient de "leaderornot" du front
+		console.log("socket leaderrep")
 		setPieces(piecesleader);
 		if (checkleader)
 			setleader(true)
+
 	})
 
-	socket.on('launchGame', (Room) => {
+	socket.on('launchGame', (Room) => { // Provient de "gameStarted" du front
 		console.log("in socket.on launchgame", Room)
-		console.log("leader = ", leader)
-		console.log("roooom = ", socket.Rooms)
 		if(leader == false)
 			launchGame()
 	})
 
-	socket.on('namePlayer', (Players) => {
-		console.log(Players)
+	socket.on('namePlayer', (Players) => { // Provient de "createPlayer" du front	
+		console.log("socket Players")
 		setPlayersoff(Players.filter(element => element != name))
 	})
 
 	useEffect(() => {
 		socket.on('malusSent', (number) => {
 			console.log("malusSent received");
-	
-			const { rows, piece, position } = malusInfoRef.current;
-	
-			addMalusLines(rows, number, piece, position, setRows, play, audio, setPlay, setGameLaunched, setGameOver, gameLaunched, socket);
+		
+			addMalusLines(number);
 		});
-	
-		return () => {
-			socket.off('malusSent'); // Clean up listener on component unmount
-		};
-	}, [play, audio, gameLaunched]);
-	
-	useEffect(() => {
-		console.log("players off = ", Playersoff)
-	}, [Playersoff])
-
+	}, [rows, play, audio]);	
 
 	useEffect(() => {
-		socket.once('higherPos', (Players, Url) => {
-			if (Url === location.pathname) {
+		socket.on('higherPos', (Players, Url) => {
+			if (Url == location.pathname) {
 				setPlayers(Players.filter(element => element.name !== name));
 				setEventSent(false); // Réinitialisez l'état pour permettre l'envoi futur
 			}
 		});
 	}, [location.pathname, socket]);	
-
-	const [rows, setRows] = useState(
-	  Array.from({ length: 20 }, () => Array(10).fill(0))
-	);
   
-	let intervalId;
-  
-  
-	const addMalusLines = (rows, number, piece, position, setRows, play, audio, setPlay, setGameLaunched, setGameOver, gameLaunched, socket) => {
-    let tempRows = [...rows];
-    let lastPosY = position.y + piece.length - 1;
+	const addMalusLines = (number) => {
+    const newRows = [...rows];
+    let newPos = 0; 
 
     // Clear piece from current position in tempRows
-    for (let y = 0; y < piece.length; y++) {
-        for (let x = 0; x < piece[y].length; x++) {
-            if (piece[y][x] === 1) {
-                tempRows[position.y + y][position.x + x] = 0;
+    for (let y = 0; y < pieces.length; y++) {
+        for (let x = 0; x < pieces[y].length; x++) {
+            if (pieces[y][x] === 1) {
+                newRows[position.y + y][position.x + x] = 0;
             }
         }
     }
-
-    const newRows = [...tempRows];
-
     // Find the highest row containing '1' from the bottom
     let highestRowWith1 = -1;
     for (let y = rows.length - 1; y >= 0; y--) {
@@ -121,45 +103,55 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
     }
 
     // Check if adding malus lines would cause game over
-    // if (highestRowWith1 <= number) {
-    //     setGameLaunched(false);
-    //     setGameOver(true);
-    //     if (play) {
-    //         setPlay(false);
-    //         audio.pause();
-    //     } else {
-    //         setPlay(true);
-    //         audio.play();
-    //     }
-    //     socket.emit("gameStopped", location.pathname);
-    //     return;
-    // }
+    if (highestRowWith1 <= number) {
+        setGameLaunched(false);
+        setGameOver(true);
+        if (play) {
+            setPlay(false);
+            audio.pause();
+        } else {
+            setPlay(true);
+            audio.play();
+        }
+        socket.emit("gameStopped", location.pathname);
+        return;
+    }
 
-		for (let y = highestRowWith1; y < rows.length; y++) {
+		for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
 					newRows[y - number] = [...rows[y]];
-					console.log("y - number = ", y - number)
-					console.log("y = ", y )
-					console.log("highestRowWith1 = ", highestRowWith1 )
-					console.log("rows[", y, "] = ", rows[y])
-					console.log("newRows[", y - number, "] = ", newRows[y - number])
-					newRows[y] = new Array(rows[0].length).fill(0);
-					debugger;
+					// newRows[y] = new Array(rows[0].length).fill(0);
+					// debugger;
 			}
 	
 
     // Add malus lines at the bottom
-    for (let y = rows.length - number; y < rows.length; y++) {
+    for (let y = rows.length - (number + lastMalus); y < rows.length - lastMalus; y++) {
         newRows[y] = new Array(rows[0].length).fill(2);
     }
 
     // Restore piece in its original position in newRows
-    for (let y = 0; y < piece.length; y++) {
-        for (let x = 0; x < piece[y].length; x++) {
-            if (piece[y][x] === 1) {
+    for (let y = 0; y < pieces.length; y++) {
+        for (let x = 0; x < pieces[y].length; x++) {
+						if (newPos == 0 && pieces[y][x] === 1)
+							newPos = y;
+            if (pieces.length < rows.length - (number + lastMalus) && pieces[y][x] === 1) {
                 newRows[position.y + y][position.x + x] = 1;
+            }
+            else if (pieces.length >= rows.length - (number + lastMalus) && pieces[y][x] === 1) { // Si 1ere pos de y et suivantes sont >= à rows.length - number, on déplace de number pieces
+                newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
             }
         }
     }
+
+		if (newPos != 0) {
+			setPosition(prevPosition => {
+				const newPositions = [...prevPosition];
+				newPositions[pieceIndex] = newPos;
+				return newPositions;
+			});
+	}
+
+		setlastMalus(number);
 
     // Update the rows state
     setRows([...newRows]);
@@ -180,11 +172,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	};
 
 	const checkLastRows = (rows) => {
-		let y = 19;
-		if (rows && rows[0]) {
-	  	for (y; rows[y].includes(1); y--) {}
-		}
-
+		let y = rows.length - 1;
+	  for (y; rows[y].includes(1); y--) {}
+		if (y == 20)
+			return 19;
+		else
 	  return y;
 	};
   
@@ -236,7 +228,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			let sum = newScore - oldScore;
 			if (sum / 100 > 1) {
 				socket.emit("malus", sum / 100, location.pathname);
-				setStop(false);
 			}
 			setDown(true);
 			setPieceIndex(pieceIndex + 1);
@@ -292,11 +283,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	const sameArray = (array1, array2) => {
 	  if (array1.length !== array2.length) return false;
-	  for (let i = 0; i < array1.length; i++) {
-		if (array1[i].length !== array2[i].length) return false;
-		for (let j = 0; j < array1[i].length; j++) {
-		  if (array1[i][j] !== array2[i][j]) return false;
-		}
+			for (let i = 0; i < array1.length; i++) {
+				if (array1[i].length !== array2[i].length) return false;
+			for (let j = 0; j < array1[i].length; j++) {
+				if (array1[i][j] !== array2[i][j]) return false;
+			}
 	  }
 	  return true;
 	};
