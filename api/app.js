@@ -56,9 +56,10 @@ io.on('connection', (socket) => {
                         io.to(room.Url).emit('newLeader', room.Players[0].name);
                     }
                 }
-
+                console.log("Rooms = ", Rooms[i])
                 break; // Sortir de la boucle car le joueur a été trouvé et traité
             }
+            console.log("Rooms = ", Rooms[0])
         }
     });
 
