@@ -2,17 +2,17 @@ const { url } = require('inspector');
 const Players = require('./players');
 
 class Room {
-	constructor(name, pieces, socketId){
+	constructor(name, pieces, id){
 		this.name = name;
-		this.Players = [new Players(name, true, 0, socketId)];
+		this.Players = [new Players(name, true, 0, true, id)];
 		this.pieces = pieces
 		this.token = this.generateToken();
 		this.Url = this.generateUrl();
 		this.available = true;
 	}
 	
-	creatNewPlayer(name, socketId){
-		this.Players.push(new Players(name, false, 0, socketId))
+	creatNewPlayer(name, id){
+		this.Players.push(new Players(name, false, 0, true, id))
 	}
 
 	generateToken() {

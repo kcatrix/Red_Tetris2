@@ -1,9 +1,10 @@
 class Players {
-	constructor(name, leader, higherPos, socketId) {
+	constructor(name, leader, higherPos, ingame, id) {
 		this.name = name
 		this.leader = leader
 		this.higherPos = higherPos
-		this.socketId = socketId;
+		this.ingame = ingame
+		this.id = id
 	}
 
 	setHigherPos( number ) {
@@ -12,6 +13,10 @@ class Players {
 
 	setLeader() {
 		this.leader = 1;
+	}
+
+	setIngame(status){
+		this.ingame = status
 	}
 
 }
