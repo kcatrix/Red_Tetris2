@@ -211,11 +211,15 @@ io.on('connection', (socket) => {
 		});
 		
 		socket.on('all_retry', (Url, name) => {
-				io.to(Url).emit('retry', name)
+			const searchUrl = (element) => element.Url == Url
+
+			const index = Rooms.findIndex(searchUrl);
+			Rooms[index].map(element => element.setHigherPos(0))
+			io.to(Url).emit('retry', name)
 		})
         socket.on('score_add', (score, name, Url) => {
             const searchUrl = (element) => element.Url == Url
-			const searchName = (element) => element.name == name
+						const searchName = (element) => element.name == name
             const index = Rooms.findIndex(searchUrl);
             const index_player = Rooms[index].Players.findIndex(searchName)
             Rooms[index].Players[index_player].setScore(score)
