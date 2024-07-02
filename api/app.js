@@ -45,9 +45,12 @@ io.on('connection', (socket) => {
                 // Retirer le joueur de la room
                 let old_score = room.Players[playerIndex].scores
                 let old_name = room.Players[playerIndex].name
+                const scoreIndex = ScoresList.findIndex(score => score.name === old_name);
+                if (scoreIndex !== -1) {
+                    ScoresList.splice(scoreIndex, 1);
+                }
                 const score = new Scores(old_name, old_score);
                 ScoresList.push(score)
-                old_score = undefined
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -188,7 +191,6 @@ io.on('connection', (socket) => {
 						const index_player = Rooms[index].Players.findIndex(element => element.name === name);
 						if (index_player !== -1) {
 								Rooms[index].Players[index_player].setIngame(status);
-                                console.log("rooooooommmmmmm = ", Rooms[index].Players[index_player])
 								if (!status) {
 										socket.emit('game over', name);
 								}

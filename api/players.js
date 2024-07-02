@@ -27,7 +27,6 @@ class Players {
 	setIngame(status){
 		this.ingame = status
 	}
-
 }
 
 module.exports = Players;
