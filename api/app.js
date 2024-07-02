@@ -17,12 +17,14 @@ server.listen(port, () =>
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
+        // origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
+        origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+// app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'http://90.5.107.160:3000' }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
@@ -43,9 +45,9 @@ io.on('connection', (socket) => {
                 // Retirer le joueur de la room
                 let old_score = room.Players[playerIndex].scores
                 let old_name = room.Players[playerIndex].name
-                console.log("old score = ", old_score)
                 const score = new Scores(old_name, old_score);
                 ScoresList.push(score)
+                old_score = undefined
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -160,8 +162,6 @@ io.on('connection', (socket) => {
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
 
-				console.log("number = ", number)
-				console.log("highpos = ", Rooms[index].Players[index_player].higherPos)
 
 				if (Rooms[index] && Rooms[index].Players[index_player] ) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
