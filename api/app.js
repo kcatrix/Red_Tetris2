@@ -6,8 +6,10 @@ const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
 const Room = require('./room');
 const Players = require('./players');
+const Scores = require('./scores');
 const nmbrPieces = 2000;
 const Rooms = [];
+const ScoresList = [];
 
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://90.5.107.160:${port}`)
@@ -39,6 +41,10 @@ io.on('connection', (socket) => {
 
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
+                let old_score = room.Players[playerIndex].scores
+                let old_name = room.Players[playerIndex].name
+                const score = new Scores(old_name, old_score);
+                ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -196,5 +202,12 @@ io.on('connection', (socket) => {
 		socket.on('all_retry', (Url, name) => {
 				io.to(Url).emit('retry', name)
 		})
+        socket.on('score_add', (score, name, Url) => {
+            const searchUrl = (element) => element.Url == Url
+			const searchName = (element) => element.name == name
+            const index = Rooms.findIndex(searchUrl);
+            const index_player = Rooms[index].Players.findIndex(searchName)
+            Rooms[index].Players[index_player].setScore(score)
+        })
 });
 

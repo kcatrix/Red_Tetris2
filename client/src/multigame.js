@@ -84,6 +84,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		{
 			setResultat("winner")
 			setGameLaunched(false)
+			socket.emit("score_add", score, name, location.pathname)
+		  setScore(0)
 		  setGameOver(true)
 		  toggleAudioPlayback();
 		  socket.emit("gameStopped", location.pathname)
@@ -107,7 +109,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [malus]);	
 	
 	socket.on('malusSent', (number) => {
-	
 		addMalusLines(number);
 	});
 
@@ -143,6 +144,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		socket.emit('changestatusPlayer',  location.pathname, name, false)
         setGameLaunched(false);
         setGameOver(true);
+		socket.emit("score_add", score, name, location.pathname)
+		setScore(0)
         if (play) {
             setPlay(false);
             audio.pause();
@@ -247,6 +250,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
 			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
+		  socket.emit("score_add", score, name, location.pathname)
+		  setScore(0)
 		  setGameOver(true)
 		  toggleAudioPlayback();
 		  socket.emit("gameStopped", location.pathname)
