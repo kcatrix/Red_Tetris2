@@ -30,7 +30,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	useEffect(() => {
 		socket.emit('leaderornot', location.pathname, name)
-	}, [Players]);
+	}, []);
 
 
 	useEffect(() => {
