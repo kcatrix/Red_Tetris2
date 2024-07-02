@@ -103,20 +103,21 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [])
 
 	useEffect(() => {
-
-	socket.on('winner', (name_winner) => {
-		console.log("socket winner")
-		if (name_winner == name)
-		{
-			setResultat("winner")
-			setGameLaunched(false)
-			socket.emit("score_add", score, name, location.pathname)
-		  setGameOver(true)
-		  toggleAudioPlayback();
-		  socket.emit("gameStopped", location.pathname)
-		  return gameLaunched
-		}
-	})
+		socket.on('winner', (name_winner) => {
+			console.log("socket winner")
+			if (name_winner == name)
+			{
+				setResultat("winner")
+				setGameLaunched(false)
+				socket.emit("score_add", score, name, location.pathname)
+				setScore(0)
+				setGameOver(true)
+				toggleAudioPlayback();
+				socket.emit("gameStopped", location.pathname)
+				return gameLaunched
+			}
+		})
+	}, [])
 
 useEffect(() => {
 	
