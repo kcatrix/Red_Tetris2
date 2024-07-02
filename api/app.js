@@ -145,14 +145,11 @@ io.on('connection', (socket) => {
 
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
-				if (Rooms[index].Players[index_player].higherPos != 0 && Rooms[index].Players[index_player].higherPos <= number + 1)
-					return;
 
 				console.log("number = ", number)
 				console.log("highpos = ", Rooms[index].Players[index_player].higherPos)
 
-				if (Rooms[index] && (Rooms[index].Players[index_player].higherPos == 0 
-					|| Rooms[index].Players[index_player].higherPos > number + 1)) {
+				if (Rooms[index] && Rooms[index].Players[index_player] ) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
 					const Players = Rooms[index].Players;
 					socket.broadcast.emit('higherPos', Players, Url)
