@@ -211,7 +211,10 @@ io.on('connection', (socket) => {
 			const searchUrl = (element) => element.Url == Url
 
 			const index = Rooms.findIndex(searchUrl);
-			Rooms[index].map(element => element.setHigherPos(0))
+			if (Rooms[index])
+				for(let x = 0; x < Rooms[index].Players.length; x++) {
+					Rooms[index].Players[x].setHigherPos(0) 
+			}
 			io.to(Url).emit('retry', name)
 		})
         socket.on('score_add', (score, name, Url) => {
