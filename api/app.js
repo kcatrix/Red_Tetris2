@@ -45,7 +45,6 @@ io.on('connection', (socket) => {
                 // Retirer le joueur de la room
                 let old_score = room.Players[playerIndex].scores
                 let old_name = room.Players[playerIndex].name
-                console.log("old score = ", old_score)
                 const score = new Scores(old_name, old_score);
                 ScoresList.push(score)
                 old_score = undefined
@@ -163,8 +162,6 @@ io.on('connection', (socket) => {
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
 
-				console.log("number = ", number)
-				console.log("highpos = ", Rooms[index].Players[index_player].higherPos)
 
 				if (Rooms[index] && Rooms[index].Players[index_player] ) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)

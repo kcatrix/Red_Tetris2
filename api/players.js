@@ -9,8 +9,6 @@ class Players {
 	}
 
 	setScore ( number ) {
-		console.log("number ", number)
-		console.log("score = ", this.scores)
 		if (number > this.scores || this.scores == undefined)
 		{
 			console.log("ok pour le if")
