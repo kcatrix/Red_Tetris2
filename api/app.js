@@ -6,8 +6,10 @@ const port = process.env.PORT || 4000;
 const Pieces = require('./pieces');
 const Room = require('./room');
 const Players = require('./players');
+const Scores = require('./scores');
 const nmbrPieces = 2000;
 const Rooms = [];
+const ScoresList = [];
 
 server.listen(port, () =>
   console.log(`Server running on port ${port}, http://localhost:${port}`)
@@ -39,6 +41,11 @@ io.on('connection', (socket) => {
 
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
+                let old_score = room.Players[playerIndex].scores
+                let old_name = room.Players[playerIndex].name
+                console.log("old score = ", old_score)
+                const score = new Scores(old_name, old_score);
+                ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -72,7 +79,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name, pieces) => {
-        const room = new Room(name, pieces, socket.id);
+        let existingScore = ScoresList.find(score => score.name === name);
+        if (existingScore)
+            existingScore = existingScore.scores
+        const room = new Room(name, pieces, socket.id, existingScore);
         Rooms.push(room);
         const index = (element) => element.name == name;
         socket.join(room.Url); // Join the room
@@ -114,10 +124,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createPlayer', (Url, name) => {
+        let existingScore = ScoresList.find(score => score.name === name);
+        if (existingScore)
+            existingScore = existingScore.scores
         const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
-            Rooms[index].creatNewPlayer(name, socket.id);
+            Rooms[index].creatNewPlayer(name, socket.id, existingScore);
+            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
         } 
@@ -174,6 +188,7 @@ io.on('connection', (socket) => {
 						const index_player = Rooms[index].Players.findIndex(element => element.name === name);
 						if (index_player !== -1) {
 								Rooms[index].Players[index_player].setIngame(status);
+                                console.log("rooooooommmmmmm = ", Rooms[index].Players[index_player])
 								if (!status) {
 										socket.emit('game over', name);
 								}
@@ -195,5 +210,12 @@ io.on('connection', (socket) => {
 		socket.on('all_retry', (Url, name) => {
 				io.to(Url).emit('retry', name)
 		})
+        socket.on('score_add', (score, name, Url) => {
+            const searchUrl = (element) => element.Url == Url
+			const searchName = (element) => element.name == name
+            const index = Rooms.findIndex(searchUrl);
+            const index_player = Rooms[index].Players.findIndex(searchName)
+            Rooms[index].Players[index_player].setScore(score)
+        })
 });
 
