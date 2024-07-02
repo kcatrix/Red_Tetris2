@@ -178,7 +178,7 @@ io.on('connection', (socket) => {
 
 			const index = Rooms.findIndex(searchUrl);
 
-			if (Rooms[index]){
+			if (Rooms[index] && number > 1){
 				socket.broadcast.emit('malusSent', number - 1)
 			}
 		})

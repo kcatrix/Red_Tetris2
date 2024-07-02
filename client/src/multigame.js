@@ -94,11 +94,15 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [])
 
 	
-	socket.on('retry', (nameleader) => {
-		console.log("socket nameleader")
-		if (name != nameleader)
-			Retry()
-	})
+	useEffect(() => {
+		socket.on('retry', (nameleader) => {
+			console.log("socket nameleader")
+			if (name != nameleader)
+				Retry()
+		})
+	}, [])
+
+	useEffect(() => {
 
 	socket.on('winner', (name_winner) => {
 		console.log("socket winner")
@@ -114,12 +118,14 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		}
 	})
 
-
+useEffect(() => {
+	
 	socket.on('newLeader', (name_leader) => {
 		console.log("socket newleader")
 		if(name_leader == name)
 			setleader(true)
 	})
+}, [])
 
 	useEffect(() => {
 		console.log("socket emit malus")
@@ -131,9 +137,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	}, [malus]);	
 	
-	socket.on('malusSent', (number) => {
-		addMalusLines(number);
-	});
+	useEffect(() => {
+		socket.on('malusSent', (number) => {
+			addMalusLines(number);
+		});
+
+	}, [])
 
 	useEffect(() => {
 	socket.on('higherPos', (Players, Url) => {
