@@ -10,17 +10,17 @@ const nmbrPieces = 2000;
 const Rooms = [];
 
 server.listen(port, () =>
-  console.log(`Server running on port ${port}, http://90.5.107.160:${port}`)
+  console.log(`Server running on port ${port}, http://localhost:${port}`)
 );
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
+        origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 });
 
-app.use(cors({ origin: 'http://90.5.107.160:3000' }));
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
@@ -47,7 +47,6 @@ io.on('connection', (socket) => {
                 // Si la room n'a plus de joueurs, la supprimer
                 if (room.Players.length === 0) {
                     Rooms.splice(i, 1);
-                    console.log(`Room ${room.name} supprimée car vide.`);
                 } else {
                     // Si le joueur déconnecté était le leader, assigner un nouveau leader
                     if (disconnectedPlayer.leader && room.Players.length > 0) {
@@ -101,8 +100,9 @@ io.on('connection', (socket) => {
         const roomIndex = Rooms.findIndex(searchUrl);
         if (Rooms[roomIndex]) {
             Rooms[roomIndex].available = false;
-            io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
-        }
+						// io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
+						io.to(checkUrl).emit('launchGame'); // Emit to the room
+					}
     });
 
     socket.on('gameStopped', (checkUrl) => {
@@ -118,12 +118,9 @@ io.on('connection', (socket) => {
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
             Rooms[index].creatNewPlayer(name, socket.id);
-            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
-        } else {
-            console.log("index daubé = ", index);
-        }
+        } 
     });
   
     socket.on('leaderornot', (Url, name) => {
@@ -142,11 +139,20 @@ io.on('connection', (socket) => {
     })
 
 		socket.on('setHigherPos', (number, Url, name) => {
+
 				const searchUrl = (element) => element.Url == Url
 				const searchName = (element) => element.name == name
+
 				const index = Rooms.findIndex(searchUrl);
 				const index_player = Rooms[index].Players.findIndex(searchName)
-				if (Rooms[index] && Rooms[index].Players.length > 1) {
+				if (Rooms[index].Players[index_player].higherPos != 0 && Rooms[index].Players[index_player].higherPos <= number + 1)
+					return;
+
+				console.log("number = ", number)
+				console.log("highpos = ", Rooms[index].Players[index_player].higherPos)
+
+				if (Rooms[index] && (Rooms[index].Players[index_player].higherPos == 0 
+					|| Rooms[index].Players[index_player].higherPos > number + 1)) {
 					Rooms[index].Players[index_player].setHigherPos(number + 1); // + 1 parce que 1 cran trop haut (?)
 					const Players = Rooms[index].Players;
 					socket.broadcast.emit('higherPos', Players, Url)
@@ -185,12 +191,8 @@ io.on('connection', (socket) => {
 								if (activePlayersCount == 1 && nombre_de_joueur > 1 && !status) {
 										io.to(Url).emit('winner', Rooms[index].Players[winner_index].name);
 								}
-						} else {
-								console.log('Player not found in the room.');
-						}
-				} else {
-						console.log('Room not found.');
-				}
+						} 
+				} 
 		});
 		
 		socket.on('all_retry', (Url, name) => {
