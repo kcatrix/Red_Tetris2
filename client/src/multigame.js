@@ -20,6 +20,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const navigate = useNavigate();
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
+	const [bestScore, setBestScore] = useState();
 
 
 		const [rows, setRows] = useState(
@@ -64,7 +65,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	useEffect(() => {
 
-		socket.on('leaderrep', (checkleader, piecesleader) => { // Provient de "leaderornot" du front
+		socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
+			setBestScore(best)
 			setPieces(piecesleader);
 			if (checkleader)
 				setleader(true)
@@ -283,7 +285,7 @@ useEffect(() => {
 			socket.emit("score_add", score, name, location.pathname)
 			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
-		  setScore(0)
+		  setBestScore(score)
 		  setGameOver(true)
 		  toggleAudioPlayback();
 		  socket.emit("gameStopped", location.pathname)
@@ -560,6 +562,7 @@ useEffect(() => {
 	}, [gameLaunched, movePieceDownRef, Time]);
   
 	const launchGame = async () => {
+	  setScore(0)
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader) {
@@ -631,7 +634,14 @@ useEffect(() => {
 				<h2>{resultat}</h2>}
 				{gameover == true && leader &&
 				<button onClick={Retry}>Retry</button>}
+				<div className='score'>
 				<h3>{name} : {score} </h3>
+				{bestScore &&
+				<div>
+					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best Score : {bestScore} </h4>
+				</div>
+				}
+				</div>
 				
 				{gameover == false &&
 				<div className="board">

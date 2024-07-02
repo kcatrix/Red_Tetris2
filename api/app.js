@@ -152,9 +152,9 @@ io.on('connection', (socket) => {
         const index_player = Rooms[index].Players.findIndex(searchName);
 	 		
         if (index !== -1 && typeof(Rooms[index].Players[index_player].leader) !== undefined && Rooms[index].Players[index_player].leader) // Check the leader status
-            socket.emit('leaderrep', true, Rooms[index].pieces);
+            socket.emit('leaderrep', true, Rooms[index].pieces, Rooms[index].Players[index_player].scores);
         else
-            socket.emit('leaderrep', false, Rooms[index].pieces);
+            socket.emit('leaderrep', false, Rooms[index].pieces, Rooms[index].Players[index_player].scores);
     })
 
 		socket.on('setHigherPos', (number, Url, name) => {
