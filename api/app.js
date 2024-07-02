@@ -43,6 +43,7 @@ io.on('connection', (socket) => {
                 // Retirer le joueur de la room
                 let old_score = room.Players[playerIndex].scores
                 let old_name = room.Players[playerIndex].name
+                console.log("old score = ", old_score)
                 const score = new Scores(old_name, old_score);
                 ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
@@ -79,7 +80,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createGameRoom', (name, pieces) => {
-        const room = new Room(name, pieces, socket.id);
+        let existingScore = ScoresList.find(score => score.name === name);
+        if (existingScore)
+            existingScore = existingScore.scores
+        const room = new Room(name, pieces, socket.id, existingScore);
         Rooms.push(room);
         const index = (element) => element.name == name;
         socket.join(room.Url); // Join the room
@@ -120,10 +124,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createPlayer', (Url, name) => {
+        let existingScore = ScoresList.find(score => score.name === name);
+        if (existingScore)
+            existingScore = existingScore.scores
         const searchUrl = (element) => element.Url == Url;
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
-            Rooms[index].creatNewPlayer(name, socket.id);
+            Rooms[index].creatNewPlayer(name, socket.id, existingScore);
             // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
@@ -177,6 +184,7 @@ io.on('connection', (socket) => {
 						const index_player = Rooms[index].Players.findIndex(element => element.name === name);
 						if (index_player !== -1) {
 								Rooms[index].Players[index_player].setIngame(status);
+                                console.log("rooooooommmmmmm = ", Rooms[index].Players[index_player])
 								if (!status) {
 										socket.emit('game over', name);
 								}

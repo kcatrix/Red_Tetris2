@@ -248,9 +248,9 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
   
 	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
+			socket.emit("score_add", score, name, location.pathname)
 			socket.emit('changestatusPlayer',  location.pathname, name, false)
 		  setGameLaunched(false)
-		  socket.emit("score_add", score, name, location.pathname)
 		  setScore(0)
 		  setGameOver(true)
 		  toggleAudioPlayback();
