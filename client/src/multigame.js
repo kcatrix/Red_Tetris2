@@ -541,6 +541,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			audio.play();
 		  }
 		}
+		audio.pause()
 		setPlay(!play);
 	  };
 	  
