@@ -59,7 +59,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	
 			let index = y;
 			console.log("socket setHigherPo")
-			socket.emit("setHigherPos", index - lastMalus, location.pathname, name);
+			socket.emit("setHigherPos", index, location.pathname, name);
 		}
 	}, [down == true]);
 
@@ -96,7 +96,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [])
 
 	
-		socket.on('retry', (nameleader) => {
+		socket.once('retry', (nameleader) => {
 			console.log("socket nameleader")
 			if (name != nameleader)
 				Retry()
@@ -140,7 +140,9 @@ useEffect(() => {
 	
 	useEffect(() => {
 		socket.on('malusSent', (number) => {
-			addMalusLines(number);
+			if (lastMalus == 0 && lastMalus > number)
+				addMalusLines(number);
+			debugger;
 		});
 
 	}, [])
@@ -154,9 +156,13 @@ useEffect(() => {
 	});
 }, []);
   
-const addMalusLines = (number) => {
+const addMalusLines = async (number) => {
 	const newRows = [...rows];
 	let newPos = 0;
+
+	console.log("--------- inside addMalusLines")
+	console.log("malus = ", number)
+	console.log("lastMalus = ", lastMalus)
 
 	// Clear piece from current position in newRows
 	for (let y = 0; y < pieces.length; y++) {
@@ -201,18 +207,21 @@ const addMalusLines = (number) => {
 	}
 
 	// Add malus lines at the bottom
-	for (let y = rows.length - (number + lastMalus); y < rows.length - lastMalus; y++) {
+	console.log("add malus lines -> y = ", (rows.length - 1) - lastMalus)
+	for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
 			newRows[y] = new Array(rows[0].length).fill(2);
 	}
 
 	// Restore piece in its original position or adjusted position in newRows
-	for (let y = 0; y < pieces.length; y++) {
+	for (let y = pieces.length - 1; y >= 0; y--) {
 			for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
-							if (pieces.length < rows.length - (number + lastMalus)) {
-									newRows[position.y + y][position.x + x] = 1;
-							} else {
-									newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+							if (position.y + pieces.length < rows.length - (number + lastMalus)) {
+									newRows[position.y + y][position.x + x] = 1;								
+							} else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
+								if (newPos == 0)
+									newPos = y;
+								newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
 							}
 					}
 			}
