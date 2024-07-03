@@ -140,7 +140,12 @@ useEffect(() => {
 	
 	useEffect(() => {
 		socket.on('malusSent', (number, limit) => {
-			if (lastMalus == 0 || limit != lastMalus)
+			if (lastMalus == 0 || limit > lastMalus + number)
+				console.log("----- inside malusSent")
+				console.log("lastMalus = ", lastMalus)
+				console.log("limit = ", limit)
+				console.log("number = ", number)
+				debugger;
 				addMalusLines(number);
 		});
 
@@ -156,8 +161,10 @@ useEffect(() => {
 }, []);
   
 const addMalusLines = async (number) => {
-	const newRows = [...rows];
+	setRows((oldRows) => { 
 	let newPos = 0;
+	
+	let newRows = [...oldRows];
 
 	console.log("--------- inside addMalusLines")
 	console.log("malus = ", number)
@@ -201,10 +208,16 @@ const addMalusLines = async (number) => {
 	}
 
 	// Move rows up by 'number' positions
-	for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
+	for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
 			newRows[y - number] = rows[y];
+			console.log("-----tourne")
+			console.log("y = ", y)
+			console.log("newRows[y - number] = ", newRows[y - number])
+			console.log("rows[y] = ", rows[y])
+			console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 	}
-
+	debugger;
+	
 	// Add malus lines at the bottom
 	console.log("add malus lines -> y = ", (rows.length - 1) - lastMalus)
 	for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
@@ -238,7 +251,8 @@ const addMalusLines = async (number) => {
 	setLastMalus(lastMalus + number);
 
 	// Update the rows state
-	setRows(newRows);
+	return newRows;
+	})
 }
 
 
