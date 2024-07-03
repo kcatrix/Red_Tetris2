@@ -96,13 +96,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	}, [])
 
 	
-	useEffect(() => {
 		socket.on('retry', (nameleader) => {
 			console.log("socket nameleader")
 			if (name != nameleader)
 				Retry()
 		})
-	}, [])
 
 	useEffect(() => {
 		socket.on('winner', (name_winner) => {

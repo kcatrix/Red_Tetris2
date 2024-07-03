@@ -90,13 +90,20 @@ function App() {
   };
 
   const handleValidation = () => {
-    if (tempName.length >= 2 && tempName.length <= 15) {
-      setTempName(tempName.replace(/\s/g, ''))
+    // Remplacer les caractères accentués par leurs équivalents non accentués
+    const sanitizedTempName = tempName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+    // Supprimer les autres caractères spéciaux
+    const finalTempName = sanitizedTempName.replace(/[^a-zA-Z0-9]/g, '');
+  
+    if (finalTempName.length >= 2 && finalTempName.length <= 15) {
+      setTempName(finalTempName);
       setNoName(false);
     } else {
       alert('Name must be between 2 and 15 characters');
     }
   };
+  
 
   return (
     <div className='Game'>
