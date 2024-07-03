@@ -173,13 +173,13 @@ io.on('connection', (socket) => {
 				}
 		});
 
-		socket.on('malus', (number, Url) => {
+		socket.on('malus', (number, Url, lastMalus) => {
 			const searchUrl = (element) => element.Url == Url
 
 			const index = Rooms.findIndex(searchUrl);
 
 			if (Rooms[index] && number > 1){
-				socket.broadcast.emit('malusSent', number - 1)
+				socket.broadcast.emit('malusSent', number - 1, lastMalus)
 			}
 		})
 
