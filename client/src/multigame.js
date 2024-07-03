@@ -141,7 +141,7 @@ useEffect(() => {
 	useEffect(() => {
 		socket.on('malusSent', (number, limit) => {
 			if (lastMalus == 0 || limit != lastMalus)
-				addMalusLines(number);
+				await addMalusLines(number);
 		});
 
 	}, [])
@@ -203,7 +203,6 @@ const addMalusLines = async (number) => {
 	// Move rows up by 'number' positions
 	for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
 			newRows[y - number] = rows[y];
-			newRows[y] = new Array(rows[0].length).fill(0)
 	}
 
 	// Add malus lines at the bottom
@@ -239,7 +238,7 @@ const addMalusLines = async (number) => {
 	setLastMalus(lastMalus + number);
 
 	// Update the rows state
-	setRows([...newRows]);
+	setRows(newRows);
 }
 
 
