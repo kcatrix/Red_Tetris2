@@ -140,9 +140,8 @@ useEffect(() => {
 	
 	useEffect(() => {
 		socket.on('malusSent', (number) => {
-			if (lastMalus == 0 && lastMalus > number)
+			if (lastMalus == 0 || lastMalus > number)
 				addMalusLines(number);
-			debugger;
 		});
 
 	}, [])
