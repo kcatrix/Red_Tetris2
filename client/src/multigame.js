@@ -21,6 +21,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
 	const [bestScore, setBestScore] = useState();
+	const [lock, setLock] = useState(false);
 
 
 		const [rows, setRows] = useState(
@@ -86,14 +87,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	}, [])
 
-	useEffect(() => {
 
 		socket.on('namePlayer', (Players) => {
 			console.log("socket namePlayer")
 			setPlayersoff(Players.filter(element => element != name))
 		})
 
-	}, [])
 
 	
 		socket.on('retry', (nameleader) => {
@@ -259,7 +258,7 @@ const addMalusLines = (number) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched) return;
+    if (!gameLaunched || lock) return;
 
     const currentPiece = pieces[pieceIndex];
     const currentPos = position[pieceIndex];
