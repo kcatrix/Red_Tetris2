@@ -17,14 +17,14 @@ server.listen(port, () =>
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
-        // origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
+        // origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
+        origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
-// app.use(cors({ origin: 'http://90.5.107.160:3000' }));
+// app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'http://90.5.107.160:3000' }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
