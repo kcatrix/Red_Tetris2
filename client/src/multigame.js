@@ -130,7 +130,7 @@ useEffect(() => {
 
 	useEffect(() => {
 		console.log("socket emit malus")
-		if (malus > 0){
+		if (malus > 0) {
 			console.log("---- inside lastMalus")
 			console.log("location.pathname = ", location.pathname)
 			socket.emit('malus', malus, location.pathname);
@@ -154,84 +154,86 @@ useEffect(() => {
 	});
 }, []);
   
-	const addMalusLines = (number) => {
-	console.log("rows before =", rows)
-    const newRows = [...rows];
-    let newPos = 0; 
+const addMalusLines = (number) => {
+	const newRows = [...rows];
+	let newPos = 0;
 
-    // Clear piece from current position in tempRows
-    for (let y = 0; y < pieces.length; y++) {
-        for (let x = 0; x < pieces[y].length; x++) {
-            if (pieces[y][x] === 1) {
-                newRows[position.y + y][position.x + x] = 0;
-            }
-        }
-    }
-    // Find the highest row containing '1' from the bottom
-    let highestRowWith1 = 0;
-    for (let y = rows.length - 1; y >= 0; y--) {
-        if (newRows[y].includes(1) || newRows[y].includes(2))
-            highestRowWith1 = y;            
-				else if (newRows[y].includes(0))
-					break;
-    }
-
-    // Check if adding malus lines would cause game over
-    if (highestRowWith1 != 0 && highestRowWith1 <= number) {// Condition provoquant le Game Over
-		socket.emit('changestatusPlayer',  location.pathname, name, false)
-        setGameLaunched(false);
-        setGameOver(true);
-		socket.emit("score_add", score, name, location.pathname)
-		setScore(0)
-        if (play) {
-            setPlay(false);
-            audio.pause();
-        } else {
-            setPlay(true);
-            audio.play();
-        }
-        socket.emit("gameStopped", location.pathname);
-        return;
-    }
-
-		for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
-					newRows[y - number] = [...rows[y]];
+	// Clear piece from current position in newRows
+	for (let y = 0; y < pieces.length; y++) {
+			for (let x = 0; x < pieces[y].length; x++) {
+					if (pieces[y][x] === 1) {
+							newRows[position.y + y][position.x + x] = 0;
+					}
 			}
-	
+	}
 
-    // Add malus lines at the bottom
-    for (let y = rows.length - (number + lastMalus); y < rows.length - lastMalus; y++) {
-        newRows[y] = new Array(rows[0].length).fill(2);
-    }
+	// Find the highest row containing '1' or '2' from the bottom
+	let highestRowWith1 = 0;
+	for (let y = rows.length - 1; y >= 0; y--) {
+			if (newRows[y].includes(1) || newRows[y].includes(2)) {
+					highestRowWith1 = y;
+			} else if (newRows[y].includes(0)) {
+					break;
+			}
+	}
 
-    // Restore piece in its original position in newRows
-    for (let y = 0; y < pieces.length; y++) {
-        for (let x = 0; x < pieces[y].length; x++) {
-						if (newPos == 0 && pieces[y][x] === 1)
-							newPos = y;
-            if (pieces.length < rows.length - (number + lastMalus) && pieces[y][x] === 1) {
-                newRows[position.y + y][position.x + x] = 1;
-            }
-            else if (pieces.length >= rows.length - (number + lastMalus) && pieces[y][x] === 1) { // Si 1ere pos de y et suivantes sont >= à rows.length - number, on déplace de number pieces
-                newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
-            }
-        }
-    }
+	// Check if adding malus lines would cause game over
+	if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
+			socket.emit('changestatusPlayer', location.pathname, name, false);
+			setGameLaunched(false);
+			setGameOver(true);
+			socket.emit("score_add", score, name, location.pathname);
+			setScore(0);
+			if (play) {
+					setPlay(false);
+					audio.pause();
+			} else {
+					setPlay(true);
+					audio.play();
+			}
+			socket.emit("gameStopped", location.pathname);
+			return;
+	}
 
-		if (newPos != 0) {
+	// Move rows up by 'number' positions
+	for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
+			newRows[y - number] = [...rows[y]];
+	}
+
+	// Add malus lines at the bottom
+	for (let y = rows.length - (number + lastMalus); y < rows.length - lastMalus; y++) {
+			newRows[y] = new Array(rows[0].length).fill(2);
+	}
+
+	// Restore piece in its original position or adjusted position in newRows
+	for (let y = 0; y < pieces.length; y++) {
+			for (let x = 0; x < pieces[y].length; x++) {
+					if (pieces[y][x] === 1) {
+							if (pieces.length < rows.length - (number + lastMalus)) {
+									newRows[position.y + y][position.x + x] = 1;
+							} else {
+									newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+							}
+					}
+			}
+	}
+
+	// Update piece position if necessary
+	if (newPos !== 0) {
 			setPosition(prevPosition => {
-				const newPositions = [...prevPosition];
-				newPositions[pieceIndex] = newPos;
-				return newPositions;
+					const newPositions = [...prevPosition];
+					newPositions[pieceIndex] = newPos;
+					return newPositions;
 			});
 	}
 
-		setLastMalus(lastMalus + number);
+	setLastMalus(lastMalus + number);
 
-    // Update the rows state
-    setRows([...newRows]);
-	console.log("rows after = ", newRows)
+	// Update the rows state
+	setRows([...newRows]);
 }
+
+
 
 
 	const equal = (row, number) => {
@@ -257,68 +259,69 @@ useEffect(() => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-	  if (!gameLaunched) return;
-	  
-	  const currentPiece = pieces[pieceIndex];
-	  const currentPos = position[pieceIndex];
-	  const newPos = { ...currentPos, y: currentPos.y + 1 };
-  
-	  if (startPiece == true && check1(rows, currentPiece, 0, currentPos, "y") == 0) {
-			setDown(false);
-			writePiece(1, currentPiece, currentPos)
-			setStartPiece(false)
-			return startPiece;
-	  }
-  
-	  if (check1(rows, currentPiece, 0, currentPos, "y") == 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
-		writePiece(0, currentPiece, currentPos);
-		writePiece(1, currentPiece, newPos);
-		setPosition(prevPosition => {
-		  const newPositions = [...prevPosition];
-		  newPositions[pieceIndex] = newPos;
-		  return newPositions;
-		});
-	  }
-  
-	  else if (check1(rows, currentPiece, 0, currentPos, "y") == 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
-		if (position[pieceIndex].y == 0 ) { // Condition provoquant le Game Over
-			socket.emit("score_add", score, name, location.pathname)
-			socket.emit('changestatusPlayer',  location.pathname, name, false)
-		  setGameLaunched(false)
-		  setBestScore(score)
-		  setGameOver(true)
-		  toggleAudioPlayback();
-		  socket.emit("gameStopped", location.pathname)
-		  return gameLaunched
-		}
-		let newRows = rows;
-		let oldScore = score;
-		let newScore = 0;
-		let tmpScore = 0;
-		for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
-		  if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
-			newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y)
-			tmpScore += 100;
-		  }
-		  if (checkPiece == currentPos.y){
-			setRows(oldRows => { 
-			  return newRows});
-		  }
-		  setScore(score + tmpScore)
-			newScore = score + tmpScore;
-		}
-		let sum = newScore - oldScore;
-		if ( !down ) {
-			setDown(true)
-		}
-		if (sum / 100 > 1) {
-			setMalus(sum / 100)
-		}
-		setPieceIndex(pieceIndex + 1);
-		setStartPiece(true)
-		setPosition([...position, { x: 4, y: 0 }]);
-	  } 
-	}, [gameLaunched, pieceIndex, position, rows, down, malus]);
+    if (!gameLaunched) return;
+
+    const currentPiece = pieces[pieceIndex];
+    const currentPos = position[pieceIndex];
+    const newPos = { ...currentPos, y: currentPos.y + 1 };
+
+    if (startPiece && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
+        setDown(false);
+        writePiece(1, currentPiece, currentPos);
+        setStartPiece(false);
+        return startPiece;
+    }
+
+    if (check1(rows, currentPiece, 0, currentPos, "y") === 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
+        writePiece(0, currentPiece, currentPos);
+        writePiece(1, currentPiece, newPos);
+        setPosition(prevPosition => {
+            const newPositions = [...prevPosition];
+            newPositions[pieceIndex] = newPos;
+            return newPositions;
+        });
+    } else if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+        if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
+            socket.emit("score_add", score, name, location.pathname);
+            socket.emit('changestatusPlayer', location.pathname, name, false);
+            setGameLaunched(false);
+            setBestScore(score);
+            setGameOver(true);
+            toggleAudioPlayback();
+            socket.emit("gameStopped", location.pathname);
+            return gameLaunched;
+        }
+
+        let newRows = rows;
+        let oldScore = score;
+        let newScore = 0;
+        let tmpScore = 0;
+        for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
+            if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
+                newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
+                tmpScore += 100;
+            }
+            if (checkPiece === currentPos.y) {
+                setRows(oldRows => newRows);
+            }
+            setScore(score + tmpScore);
+            newScore = score + tmpScore;
+        }
+
+        let sum = newScore - oldScore;
+        if (!down) {
+            setDown(true);
+        }
+        if (sum / 100 > 1) {
+            setMalus(sum / 100);
+        }
+        setPieceIndex(pieceIndex + 1);
+        setStartPiece(true);
+        setPosition([...position, { x: 4, y: 0 }]);
+    }
+}, [gameLaunched, pieceIndex, position, rows, down, malus, lastMalus]);
+
+
   
 	const writePiece = (action, piece, position) => {
 	  setRows(prevRows => {
