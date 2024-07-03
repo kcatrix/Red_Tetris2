@@ -141,7 +141,7 @@ useEffect(() => {
 	useEffect(() => {
 		socket.on('malusSent', (number, limit) => {
 			if (lastMalus == 0 || limit != lastMalus)
-				await addMalusLines(number);
+				addMalusLines(number);
 		});
 
 	}, [])
