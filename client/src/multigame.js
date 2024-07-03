@@ -155,6 +155,7 @@ useEffect(() => {
 }, []);
   
 	const addMalusLines = (number) => {
+	console.log("rows before =", rows)
     const newRows = [...rows];
     let newPos = 0; 
 
@@ -229,6 +230,7 @@ useEffect(() => {
 
     // Update the rows state
     setRows([...newRows]);
+	console.log("rows after = ", newRows)
 }
 
 
