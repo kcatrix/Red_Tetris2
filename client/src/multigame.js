@@ -133,14 +133,14 @@ useEffect(() => {
 		if (malus > 0) {
 			console.log("---- inside lastMalus")
 			console.log("location.pathname = ", location.pathname)
-			socket.emit('malus', malus, location.pathname);
+			socket.emit('malus', malus, location.pathname, lastMalus);
 		}
 
 	}, [malus]);	
 	
 	useEffect(() => {
-		socket.on('malusSent', (number) => {
-			if (lastMalus == 0)
+		socket.on('malusSent', (number, limit) => {
+			if (lastMalus == 0 || limit != lastMalus)
 				addMalusLines(number);
 		});
 
