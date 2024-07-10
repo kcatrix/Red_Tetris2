@@ -144,15 +144,8 @@ useEffect(() => {
 	
 	useEffect(() => {
 		socket.on('malusSent', (number, limit) => {
-			if (lastMalus == 0 || limit > lastMalus + number)
-				console.log("----- inside malusSent")
-				console.log("lastMalus = ", lastMalus)
-				console.log("limit = ", limit)
-				console.log("number = ", number)
-				debugger;
-				addMalusLines(number);
+			addMalusLines(number);
 		});
-		debugger;
 	}, [lastMalus])
 
 	useEffect(() => {
@@ -170,9 +163,9 @@ const addMalusLines = async (number) => {
 	
 	let newRows = [...oldRows];
 
-	console.log("--------- inside addMalusLines")
-	console.log("malus = ", number)
-	console.log("lastMalus = ", lastMalus)
+	// console.log("--------- inside addMalusLines")
+	// console.log("malus = ", number)
+	// console.log("lastMalus = ", lastMalus)
 
 	// Clear piece from current position in newRows
 	for (let y = 0; y < pieces.length; y++) {
