@@ -21,6 +21,8 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
 	const [bestScore, setBestScore] = useState();
+	const [lastKeyTime, setLastKeyTime] = useState(0);
+	// const keyDelay = 100; // imposer un délai entre les touches
 
 
 		const [rows, setRows] = useState(
@@ -28,11 +30,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	);
 
 	let intervalId;
+	const actualUrl = location.pathname;
 
 	useEffect(() => {
 
-		socket.emit('leaderornot', location.pathname, name)
-		console.log("socket leaderornot")
+		socket.emit('leaderornot', actualUrl, name)
+		// console.log("socket leaderornot")
 
 	}, []);
 
@@ -42,7 +45,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 		  audio.load();
 		  audio.play();
 		};
-		console.log("useeffect audio")
+		// console.log("useeffect audio")
 
 		audio.addEventListener('ended', handleAudioEnd);
 	  
@@ -58,10 +61,11 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			for (y; rows[y].includes(1) || rows[y].includes(2); y--) {}
 	
 			let index = y;
-			console.log("socket setHigherPo")
-			socket.emit("setHigherPos", index, location.pathname, name);
+			// console.log("socket setHigherPo")
+			socket.emit("setHigherPos", index, actualUrl, name);
+			setDown(false)
 		}
-	}, [down == true]);
+	}, [down]);
 
 	useEffect(() => {
 
@@ -70,7 +74,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 			setPieces(piecesleader);
 			if (checkleader)
 				setleader(true)
-			console.log("socket leaderrep")
+			// console.log("socket leaderrep")
 		})
 
 	}, [])
@@ -79,7 +83,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	useEffect(() => {
 
 		socket.on('launchGame', () => {
-			console.log("socket launchgame")
+			// console.log("socket launchgame")
 			if(leader == false)
 				launchGame()
 			})
@@ -89,7 +93,7 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	useEffect(() => {
 
 		socket.on('namePlayer', (Players) => {
-			console.log("socket namePlayer")
+			// console.log("socket namePlayer")
 			setPlayersoff(Players.filter(element => element != name))
 		})
 
@@ -97,23 +101,23 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	
 		socket.once('retry', (nameleader) => {
-			console.log("socket nameleader")
+			// console.log("socket nameleader")
 			if (name != nameleader)
 				Retry()
 		})
 
 	useEffect(() => {
 		socket.on('winner', (name_winner) => {
-			console.log("socket winner")
+			// console.log("socket winner")
 			if (name_winner == name)
 			{
 				setResultat("winner")
 				setGameLaunched(false)
-				socket.emit("score_add", score, name, location.pathname)
+				socket.emit("score_add", score, name, actualUrl)
 				setScore(0)
 				setGameOver(true)
 				toggleAudioPlayback();
-				socket.emit("gameStopped", location.pathname)
+				socket.emit("gameStopped", actualUrl)
 				return gameLaunched
 			}
 		})
@@ -122,46 +126,47 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 useEffect(() => {
 	
 	socket.on('newLeader', (name_leader) => {
-		console.log("socket newleader")
+		// console.log("socket newleader")
 		if(name_leader == name)
 			setleader(true)
 	})
 }, [])
 
 	useEffect(() => {
-		console.log("socket emit malus")
-		if (malus > 0) {
-			console.log("---- inside lastMalus")
-			console.log("location.pathname = ", location.pathname)
-			socket.emit('malus', malus, location.pathname, lastMalus);
+		// console.log("socket emit malus")
+		if (malus > 1) {
+			// console.log("---- inside emit Malus")
+			// console.log("malus = ", malus)
+			socket.emit('malus', malus, actualUrl);
+			setMalus(0);
 		}
-
-	}, [malus]);	
+	}, [malus != 0]);	
 	
 	useEffect(() => {
-		socket.on('malusSent', (number, limit) => {
-			if (lastMalus == 0 || limit != lastMalus)
-				addMalusLines(number);
+		socket.on('malusSent', (number) => {
+			// console.log("---- in maluSent, number = ", number)
+			addMalusLines(number);
+			setLastMalus(oldMalus => oldMalus + number);
 		});
-
-	}, [])
+		debugger;
+	}, [lastMalus])
 
 	useEffect(() => {
-	socket.on('higherPos', (Players, Url) => {
-		console.log("socket higherPos")
-		if (Url == location.pathname) {
-			setPlayers(Players.filter(element => element.name !== name));
-		}
-	});
-}, []);
+		socket.on('higherPos', (Players, Url) => {
+			// console.log("socket higherPos")
+			if (Url == actualUrl) {
+				setPlayers(Players.filter(element => element.name !== name));
+			}
+		});
+	}, [Players]);
   
-const addMalusLines = async (number) => {
+	const addMalusLines = (number) => {
 	const newRows = [...rows];
 	let newPos = 0;
 
-	console.log("--------- inside addMalusLines")
-	console.log("malus = ", number)
-	console.log("lastMalus = ", lastMalus)
+	// console.log("--------- inside addMalusLines")
+	// console.log("malus = ", number)
+	// console.log("lastMalus = ", lastMalus)
 
 	// Clear piece from current position in newRows
 	for (let y = 0; y < pieces.length; y++) {
@@ -184,10 +189,10 @@ const addMalusLines = async (number) => {
 
 	// Check if adding malus lines would cause game over
 	if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
-			socket.emit('changestatusPlayer', location.pathname, name, false);
+			socket.emit('changestatusPlayer', actualUrl, name, false);
 			setGameLaunched(false);
 			setGameOver(true);
-			socket.emit("score_add", score, name, location.pathname);
+			socket.emit("score_add", score, name, actualUrl);
 			setScore(0);
 			if (play) {
 					setPlay(false);
@@ -196,34 +201,51 @@ const addMalusLines = async (number) => {
 					setPlay(true);
 					audio.play();
 			}
-			socket.emit("gameStopped", location.pathname);
+			socket.emit("gameStopped", actualUrl);
 			return;
 	}
 
 	// Move rows up by 'number' positions
-	for (let y = highestRowWith1; y < rows.length - lastMalus; y++) {
-			newRows[y - number] = rows[y];
+	// console.log("-- Move rows up by number position")
+	// console.log("hghestRowsWith1 = ", highestRowWith1)
+	// console.log("goal -> ", rows.length - 1 - lastMalus)
+	// console.log("last malus here = ", lastMalus)
+	for (let y = highestRowWith1; y <= rows.length - lastMalus; y++) {
+		// console.log("row[", y,"] inside copy lines = ", rows[y])
+		// console.log("newRows[", y - number, "] inside copy lines = ", newRows[y - number])
+		newRows[y - number] = rows[y];
 	}
 
 	// Add malus lines at the bottom
-	console.log("add malus lines -> y = ", (rows.length - 1) - lastMalus)
+	// console.log("----- add malus bottom goal  = ", lastMalus + number)
 	for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
-			newRows[y] = new Array(rows[0].length).fill(2);
+		// console.log("add malus lines -> y = ", y)
+		newRows[y] = new Array(rows[0].length).fill(2);
 	}
 
 	// Restore piece in its original position or adjusted position in newRows
-	for (let y = pieces.length - 1; y >= 0; y--) {
+	
+	if (position.y + pieces.length < rows.length - (number + lastMalus)) {
+		for (let y = 0; y < pieces.length; y++) {
 			for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
-							if (position.y + pieces.length < rows.length - (number + lastMalus)) {
-									newRows[position.y + y][position.x + x] = 1;								
-							} else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
-								if (newPos == 0)
-									newPos = y;
-								newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
-							}
-					}
+				if (pieces[y][x] === 1) {
+					if (newPos == 0) 
+						newPos = position.y + y;
+					newRows[position.y + y][position.x + x] = 1;	
+				}							
 			}
+		}
+	}
+	else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
+		for (let y = 0; y < pieces.length; y++) {
+			for (let x = 0; x < pieces[y].length; x++) {
+				if (pieces[y][x] === 1) {
+					if (newPos == 0) 
+						newPos = position.y + y - (number + lastMalus);
+					newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+				}
+			}
+		}
 	}
 
 	// Update piece position if necessary
@@ -235,14 +257,10 @@ const addMalusLines = async (number) => {
 			});
 	}
 
-	setLastMalus(lastMalus + number);
-
 	// Update the rows state
+	// debugger;
 	setRows(newRows);
 }
-
-
-
 
 	const equal = (row, number) => {
 	  return row.every(cell => cell === number);
@@ -274,7 +292,6 @@ const addMalusLines = async (number) => {
     const newPos = { ...currentPos, y: currentPos.y + 1 };
 
     if (startPiece && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
-        setDown(false);
         writePiece(1, currentPiece, currentPos);
         setStartPiece(false);
         return startPiece;
@@ -282,52 +299,53 @@ const addMalusLines = async (number) => {
 
     if (check1(rows, currentPiece, 0, currentPos, "y") === 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
         writePiece(0, currentPiece, currentPos);
-        writePiece(1, currentPiece, newPos);
         setPosition(prevPosition => {
-            const newPositions = [...prevPosition];
-            newPositions[pieceIndex] = newPos;
-            return newPositions;
+					const newPositions = [...prevPosition];
+					newPositions[pieceIndex] = newPos;
+					writePiece(1, currentPiece, newPos);
+          return newPositions;
         });
     } else if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
         if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
-            socket.emit("score_add", score, name, location.pathname);
-            socket.emit('changestatusPlayer', location.pathname, name, false);
+            socket.emit("score_add", score, name, actualUrl);
+            socket.emit('changestatusPlayer', actualUrl, name, false);
             setGameLaunched(false);
             setBestScore(score);
             setGameOver(true);
             toggleAudioPlayback();
-            socket.emit("gameStopped", location.pathname);
+            socket.emit("gameStopped", actualUrl);
             return gameLaunched;
         }
 
-        let newRows = rows;
+        let newRows = [ ...rows];
         let oldScore = score;
         let newScore = 0;
         let tmpScore = 0;
+				let sum = 0;
         for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
             if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
                 newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
                 tmpScore += 100;
             }
             if (checkPiece === currentPos.y) {
-                setRows(oldRows => newRows);
+                setRows(newRows);
             }
             setScore(score + tmpScore);
-            newScore = score + tmpScore;
+            newScore = oldScore + tmpScore;
+						sum = newScore - oldScore;
         }
 
-        let sum = newScore - oldScore;
         if (!down) {
+					if (sum / 100 > 1) {
+							setMalus(sum / 100);
+					}
             setDown(true);
-        }
-        if (sum / 100 > 1) {
-            setMalus(sum / 100);
         }
         setPieceIndex(pieceIndex + 1);
         setStartPiece(true);
         setPosition([...position, { x: 4, y: 0 }]);
     }
-}, [gameLaunched, pieceIndex, position, rows, down, malus, lastMalus]);
+}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down]);
 
 
   
@@ -474,6 +492,11 @@ const addMalusLines = async (number) => {
 	};
   
 	const handleKeyDown = async (event) => {
+
+		// const currentTime = Date.now();
+		// if (currentTime - lastKeyTime < keyDelay) return;
+		// setLastKeyTime(currentTime);
+
 	  if (!gameLaunched || !pieces[pieceIndex]) return;
   
 	  let newPosition = { ...position[pieceIndex] };
@@ -481,20 +504,20 @@ const addMalusLines = async (number) => {
 	  switch (event.key) {
 		case 'ArrowLeft':
 		  newPosition.x -= 1;
-		  if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
-			await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPosition(prevPositions => {
-			  const newPositions = [...prevPositions];
-			  newPositions[pieceIndex] = newPosition;
-			  writePiece(1, pieces[pieceIndex], newPosition);
-			  return newPositions;
-			});
+		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					writePiece(1, pieces[pieceIndex], newPosition);
+					return newPositions;
+				});
 		  }
 		  break;
 		case 'ArrowRight':
 		  newPosition.x += 1;
-		  if (await check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
-			await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
+			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
 			setPosition(prevPositions => {
 			  const newPositions = [...prevPositions];
 			  newPositions[pieceIndex] = newPosition;
@@ -504,49 +527,49 @@ const addMalusLines = async (number) => {
 		  }
 		  break;
 		case 'ArrowUp':
-		  let newPiecePosition = await searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
+		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
 		  newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
 		  const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
 		  // if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
-		  if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPieces(oldPieces => {
-			  const newPieces = [...oldPieces];
-			  newPieces[pieceIndex] = newPiece;
-			  writePiece(1, newPiece, position[pieceIndex]);
-			  return newPieces;
-			});
+		  if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPieces(oldPieces => {
+					const newPieces = [...oldPieces];
+					newPieces[pieceIndex] = newPiece;
+					writePiece(1, newPiece, position[pieceIndex]);
+					return newPieces;
+				});
 		  }
-		  else if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+		  else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				writePiece(1, pieces[pieceIndex], position[pieceIndex]);
 		  }
 		  break;
 		case 'ArrowDown':
 		  newPosition.y += 1;
 		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-			await writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPosition(prevPositions => {
-			  const newPositions = [...prevPositions];
-			  newPositions[pieceIndex] = newPosition;
-			  writePiece(1, pieces[pieceIndex], newPosition);
-			  return newPositions;
-			});
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					writePiece(1, pieces[pieceIndex], newPosition);
+					return newPositions;
+				});
 		  }
 		  break;
 		  case ' ':
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			let tempPosition = { ...position[pieceIndex] };
-			while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
-			  tempPosition.y++;
-			}
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				let tempPosition = { ...position[pieceIndex] };
+				while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
+					tempPosition.y++;
+				}
 			// tempPosition.y--; // Move back one step to the last valid position
-			setPosition(prevPositions => {
-			  const newPositions = [...prevPositions];
-			  newPositions[pieceIndex] = tempPosition;
-			  writePiece(1, pieces[pieceIndex], tempPosition);
-			  return newPositions;
-			});
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = tempPosition;
+					writePiece(1, pieces[pieceIndex], tempPosition);
+					return newPositions;
+				});
 		  break; 
 		default:
 		  break;
@@ -577,9 +600,9 @@ const addMalusLines = async (number) => {
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader) {
-			console.log("socket emit change status && gameStarted")
-			socket.emit('changestatusPlayer',  location.pathname, name, true)
-	  	socket.emit("gameStarted", location.pathname)
+			// console.log("socket emit change status && gameStarted")
+			socket.emit('changestatusPlayer',  actualUrl, name, true)
+	  	socket.emit("gameStarted", actualUrl)
 	  }
 	  toggleAudioPlayback();
 	};
@@ -601,12 +624,12 @@ const addMalusLines = async (number) => {
 	  
 
 	const Retry = () => {
-		console.log("socket emit changestatus")
-		socket.emit('changestatusPlayer', location.pathname, name, true)
+		// console.log("socket emit changestatus")
+		socket.emit('changestatusPlayer', actualUrl, name, true)
 		setGameOver(false)
 		if (leader) {
-			console.log("socket emit all_retry")
-			socket.emit('all_retry', location.pathname, name)
+			// console.log("socket emit all_retry")
+			socket.emit('all_retry', actualUrl, name)
 		}
 		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
 		setPosition(prevPosition => {
@@ -647,7 +670,7 @@ const addMalusLines = async (number) => {
 				<button onClick={Retry}>Retry</button>}
 				<div className='score'>
 				<h3>{name} : {score} </h3>
-				{bestScore &&
+				{bestScore > 0 &&
 				<div>
 					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best Score : {bestScore} </h4>
 				</div>

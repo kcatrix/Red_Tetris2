@@ -17,14 +17,15 @@ server.listen(port, () =>
 
 const io = require('socket.io')(server, {
     cors: {
-        // origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
-        origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
+        origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
+        // origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
+		maxHttpBufferSize: 1e8, pingTimeout: 60000
 });
 
-// app.use(cors({ origin: 'http://localhost:3000' }));
-app.use(cors({ origin: 'http://90.5.107.160:3000' }));
+app.use(cors({ origin: 'http://localhost:3000' }));
+// app.use(cors({ origin: 'http://90.5.107.160:3000' }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
@@ -173,13 +174,13 @@ io.on('connection', (socket) => {
 				}
 		});
 
-		socket.on('malus', (number, Url, lastMalus) => {
+		socket.on('malus', (number, Url) => {
 			const searchUrl = (element) => element.Url == Url
 
 			const index = Rooms.findIndex(searchUrl);
 
 			if (Rooms[index] && number > 1){
-				socket.broadcast.emit('malusSent', number - 1, lastMalus)
+				socket.broadcast.emit('malusSent', number - 1)
 			}
 		})
 
