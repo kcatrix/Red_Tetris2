@@ -143,10 +143,14 @@ useEffect(() => {
 	}, [malus != 0]);	
 	
 	useEffect(() => {
-		socket.on('malusSent', (number) => {
-			// console.log("---- in maluSent, number = ", number)
-			addMalusLines(number);
-			setLastMalus(oldMalus => oldMalus + number);
+		socket.on('malusSent', (number, limit) => {
+			if (lastMalus == 0 || limit > lastMalus + number)
+				console.log("----- inside malusSent")
+				console.log("lastMalus = ", lastMalus)
+				console.log("limit = ", limit)
+				console.log("number = ", number)
+				debugger;
+				addMalusLines(number);
 		});
 		debugger;
 	}, [lastMalus])
@@ -160,13 +164,15 @@ useEffect(() => {
 		});
 	}, [Players]);
   
-	const addMalusLines = (number) => {
-	const newRows = [...rows];
+const addMalusLines = async (number) => {
+	setRows((oldRows) => { 
 	let newPos = 0;
+	
+	let newRows = [...oldRows];
 
-	// console.log("--------- inside addMalusLines")
-	// console.log("malus = ", number)
-	// console.log("lastMalus = ", lastMalus)
+	console.log("--------- inside addMalusLines")
+	console.log("malus = ", number)
+	console.log("lastMalus = ", lastMalus)
 
 	// Clear piece from current position in newRows
 	for (let y = 0; y < pieces.length; y++) {
@@ -206,16 +212,16 @@ useEffect(() => {
 	}
 
 	// Move rows up by 'number' positions
-	// console.log("-- Move rows up by number position")
-	// console.log("hghestRowsWith1 = ", highestRowWith1)
-	// console.log("goal -> ", rows.length - 1 - lastMalus)
-	// console.log("last malus here = ", lastMalus)
-	for (let y = highestRowWith1; y <= rows.length - lastMalus; y++) {
-		// console.log("row[", y,"] inside copy lines = ", rows[y])
-		// console.log("newRows[", y - number, "] inside copy lines = ", newRows[y - number])
-		newRows[y - number] = rows[y];
+	for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
+			newRows[y - number] = rows[y];
+			console.log("-----tourne")
+			console.log("y = ", y)
+			console.log("newRows[y - number] = ", newRows[y - number])
+			console.log("rows[y] = ", rows[y])
+			console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 	}
-
+	debugger;
+	
 	// Add malus lines at the bottom
 	// console.log("----- add malus bottom goal  = ", lastMalus + number)
 	for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
@@ -258,8 +264,8 @@ useEffect(() => {
 	}
 
 	// Update the rows state
-	// debugger;
-	setRows(newRows);
+	return newRows;
+	})
 }
 
 	const equal = (row, number) => {
