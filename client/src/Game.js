@@ -12,6 +12,9 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
   const [startPiece, setStartPiece] = useState(true);
   const [gameover, setGameOver] = useState(false)
   const location = useLocation();
+	const [lastKeyTime, setLastKeyTime] = useState(0);
+	const keyDelay = 30;
+
 
   const [rows, setRows] = useState(
     Array.from({ length: 20 }, () => Array(10).fill(0))
@@ -228,6 +231,11 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
   };
 
   const handleKeyDown = async (event) => {
+
+		const currentTime = Date.now();
+		if (currentTime - lastKeyTime < keyDelay) return;
+		setLastKeyTime(currentTime);
+
     if (!gameLaunched || !pieces[pieceIndex]) return;
 
     let newPosition = { ...position[pieceIndex] };

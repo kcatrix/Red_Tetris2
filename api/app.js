@@ -21,6 +21,7 @@ const io = require('socket.io')(server, {
         origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
+		maxHttpBufferSize: 1e8, pingTimeout: 60000
 });
 
 // app.use(cors({ origin: 'http://localhost:3000' }));
@@ -161,9 +162,11 @@ io.on('connection', (socket) => {
 
 				const searchUrl = (element) => element.Url == Url
 				const searchName = (element) => element.name == name
+                let index_player;
 
 				const index = Rooms.findIndex(searchUrl);
-				const index_player = Rooms[index].Players.findIndex(searchName)
+                if (Rooms[index].Players)
+				    index_player = Rooms[index].Players.findIndex(searchName)
 
 
 				if (Rooms[index] && Rooms[index].Players[index_player] ) {
