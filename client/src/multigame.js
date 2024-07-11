@@ -21,8 +21,6 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 	const [lastMalus, setLastMalus] = useState(0);
 	const [malus, setMalus] = useState(0);
 	const [bestScore, setBestScore] = useState();
-	const [lastKeyTime, setLastKeyTime] = useState(0);
-	// const keyDelay = 100; // imposer un délai entre les touches
 
 
 		const [rows, setRows] = useState(
@@ -90,14 +88,12 @@ function MultiGame({ pieces, setPieces, catalogPieces, play, setPlay, audio, nam
 
 	}, [])
 
-	useEffect(() => {
 
 		socket.on('namePlayer', (Players) => {
 			// console.log("socket namePlayer")
 			setPlayersoff(Players.filter(element => element != name))
 		})
 
-	}, [])
 
 	
 		socket.once('retry', (nameleader) => {
@@ -284,7 +280,7 @@ const addMalusLines = async (number) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched) return;
+    if (!gameLaunched || lock) return;
 
     const currentPiece = pieces[pieceIndex];
     const currentPos = position[pieceIndex];
