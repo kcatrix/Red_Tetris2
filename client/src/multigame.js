@@ -153,7 +153,7 @@ useEffect(() => {
 		});
 	}, [Players]);
   
-const addMalusLines = async (number) => {
+const addMalusLines = (number) => {
 	setRows((oldRows) => { 
 	let newPos = 0;
 	
@@ -280,7 +280,6 @@ const addMalusLines = async (number) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched || lock) return;
 
     const currentPiece = pieces[pieceIndex];
     const currentPos = position[pieceIndex];
@@ -487,6 +486,11 @@ const addMalusLines = async (number) => {
 	};
   
 	const handleKeyDown = (event) => {
+
+		// const currentTime = Date.now();
+		// if (currentTime - lastKeyTime < keyDelay) return;
+		// setLastKeyTime(currentTime);
+
 	  if (!gameLaunched || !pieces[pieceIndex]) return;
   
 	  let newPosition = { ...position[pieceIndex] };
@@ -495,19 +499,17 @@ const addMalusLines = async (number) => {
 		case 'ArrowLeft':
 		  newPosition.x -= 1;
 		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPosition(prevPositions => {
-			  const newPositions = [...prevPositions];
-			  newPositions[pieceIndex] = newPosition;
-			  writePiece(1, pieces[pieceIndex], newPosition);
-			  return newPositions;
-			});
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					writePiece(1, pieces[pieceIndex], newPosition);
+					return newPositions;
+				});
 		  }
 		  break;
 		case 'ArrowRight':
 		  newPosition.x += 1;
-		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
 		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
 			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
 			setPosition(prevPositions => {
@@ -520,34 +522,33 @@ const addMalusLines = async (number) => {
 		  break;
 		case 'ArrowUp':
 		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
-		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
 		  newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
 		  const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
 		  // if (await check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0 && (newPiece.length - 1) + position[pieceIndex].y < rows.length) {
 		  if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPieces(oldPieces => {
-			  const newPieces = [...oldPieces];
-			  newPieces[pieceIndex] = newPiece;
-			  writePiece(1, newPiece, position[pieceIndex]);
-			  return newPieces;
-			});
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPieces(oldPieces => {
+					const newPieces = [...oldPieces];
+					newPieces[pieceIndex] = newPiece;
+					writePiece(1, newPiece, position[pieceIndex]);
+					return newPieces;
+				});
 		  }
 		  else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			writePiece(1, pieces[pieceIndex], position[pieceIndex]);
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				writePiece(1, pieces[pieceIndex], position[pieceIndex]);
 		  }
 		  break;
 		case 'ArrowDown':
 		  newPosition.y += 1;
 		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-			writePiece(0, pieces[pieceIndex], position[pieceIndex]);
-			setPosition(prevPositions => {
-			  const newPositions = [...prevPositions];
-			  newPositions[pieceIndex] = newPosition;
-			  writePiece(1, pieces[pieceIndex], newPosition);
-			  return newPositions;
-			});
+				writePiece(0, pieces[pieceIndex], position[pieceIndex]);
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					writePiece(1, pieces[pieceIndex], newPosition);
+					return newPositions;
+				});
 		  }
 		  break;
 		  case ' ':
@@ -588,7 +589,7 @@ const addMalusLines = async (number) => {
 	  };
 	}, [gameLaunched, movePieceDownRef, Time]);
   
-	const launchGame = async () => {
+	const launchGame = () => {
 	  setScore(0)
 	  setGameLaunched(true);
 	  setResultat("Game over")
@@ -634,7 +635,7 @@ const addMalusLines = async (number) => {
 		launchGame()
 	}
 
-	const toHome = async () => {
+	const toHome = () => {
 		navigate("/");
 	}
 
