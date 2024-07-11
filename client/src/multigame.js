@@ -207,13 +207,13 @@ const addMalusLines = async (number) => {
 	// Move rows up by 'number' positions
 	for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
 			newRows[y - number] = rows[y];
-			console.log("-----tourne")
-			console.log("y = ", y)
-			console.log("newRows[y - number] = ", newRows[y - number])
-			console.log("rows[y] = ", rows[y])
-			console.log("rows.length - lastMalus = ", rows.length - lastMalus)
+			// console.log("-----tourne")
+			// console.log("y = ", y)
+			// console.log("newRows[y - number] = ", newRows[y - number])
+			// console.log("rows[y] = ", rows[y])
+			// console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 	}
-	debugger;
+	// debugger;
 	
 	// Add malus lines at the bottom
 	// console.log("----- add malus bottom goal  = ", lastMalus + number)
