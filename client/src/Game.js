@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import sound from './tetris.mp3';
 
 
-function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, socket }) {
+function Game({ OgPieces, catalogPieces, name, socket }) {
   const [pieceIndex, setPieceIndex] = useState(0);
   const [position, setPosition] = useState([{ x: 4, y: 0}]);
   const [gameLaunched, setGameLaunched] = useState(false);
@@ -13,6 +14,9 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
   const [gameover, setGameOver] = useState(false)
   const location = useLocation();
 	const [lastKeyTime, setLastKeyTime] = useState(0);
+	const audio = document.getElementById("audio_tag");
+	const [play, setPlay] = useState(false);
+	const [pieces, setPieces] = useState([...OgPieces])
 	const keyDelay = 30;
 
 
@@ -344,6 +348,7 @@ function Game({ pieces, setPieces, catalogPieces, play, setPlay, audio, name, so
   return (
 
     <div className="App">
+			<audio id="audio_tag" src={sound} />
 			<div className="Opponents"/>
 			<div className="middle"> 
 				{gameover == true && 

@@ -4,7 +4,7 @@ import Game from './Game';
 import MultiGame from './multigame';
 import io from 'socket.io-client';
 import * as changeButtonFunctions from './components/changeButton'; // Importation de toutes les fonctions
-import sound from './tetris.mp3';
+// import sound from './tetris.mp3';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 
 function App() {
@@ -13,7 +13,6 @@ function App() {
   const [catalogPieces, setCatalogPieces] = useState([]);
   const [solo, setSolo] = useState(false); // Ajout de l'état solo
   const [multi, setMulti] = useState(false); // Ajout de l'état multi
-  const [play, setPlay] = useState(false);
   const [cou, setCou] = useState(false);
   const [Url, setUrl] = useState('');
   const [changeOk, setChangeOk] = useState(false);
@@ -21,14 +20,14 @@ function App() {
   const [checkUrl, setCheckUrl] = useState();
   const [noName, setNoName] = useState(true)
   const [oldUrl, setoldUrl] = useState()
-  const audio = document.getElementById("audio_tag");
+  // const audio = document.getElementById("audio_tag");
   const navigate = useNavigate();
   const location = useLocation();
 
   // Connexion au serveur socket.io
   useEffect(() => {
-    const socketIo = io('http://90.5.107.160:4000'); // Utilisez votre adresse publique ici
-    // const socketIo = io('http://localhost:4000'); // Utilisez votre adresse publique ici
+    // const socketIo = io('http://90.5.107.160:4000'); // Utilisez votre adresse publique ici
+    const socketIo = io('http://localhost:4000'); // Utilisez votre adresse publique ici
     setSocket(socketIo);
 
     socketIo.emit('requestRandomPiece');
@@ -108,12 +107,11 @@ function App() {
   return (
     <div className='Game'>
       <h1>Red Tetris</h1>
-      <audio id="audio_tag" src={sound} />
       <Routes>
         {!noName && (
         <Route path="/:roomId/:name" element={
           <div>
-            <MultiGame pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
+            <MultiGame OgPieces={pieces} catalogPieces={catalogPieces} name={tempName} socket={socket}/>
           </div>
         }/>
         )}
@@ -121,14 +119,14 @@ function App() {
           <>
             {!noName && !solo && (
               <div className="button">
-                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}>Solo</button>
+                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo)}>Solo</button>
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
               </div>
             )}
             {!noName && solo &&
               <div>
-                <Game pieces={pieces} setPieces={setPieces} catalogPieces={catalogPieces} play={play} setPlay={setPlay} audio={audio} name={tempName} socket={socket}/>
-                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo, audio, setPlay)}> Go back </button>
+                <Game OgPieces={pieces} catalogPieces={catalogPieces} name={tempName} socket={socket}/>
+                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo)}> Go back </button>
               </div>
             }
             {noName && (
