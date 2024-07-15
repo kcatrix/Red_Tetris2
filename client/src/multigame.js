@@ -169,7 +169,6 @@ const addMalusLines = (number) => {
 
 		console.log("--------- inside addMalusLines")
 		console.log("malus = ", number)
-		console.log("lastMalus = ", lastMalus)
 
 		// Clear piece from current position in newRows
 		for (let y = 0; y < pieces.length; y++) {
@@ -182,13 +181,18 @@ const addMalusLines = (number) => {
 
 		// Find the highest row containing '1' or '2' from the bottom
 		let highestRowWith1 = 0;
+		let highestRowWith2 = 0;
 		for (let y = rows.length - 1; y >= 0; y--) {
-				if (newRows[y].includes(1) || newRows[y].includes(2)) {
+				if (newRows[y].includes(1))
 						highestRowWith1 = y;
-				} else if (newRows[y].includes(0)) {
+				else if (newRows[y].includes(2))
+					highestRowWith2 = y;
+			 	else if (newRows[y].includes(0))
 						break;
-				}
 		}
+
+		console.log("highestRowWith1 = ", highestRowWith1)
+		console.log("highestRowWith2 = ", highestRowWith2)
 
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
@@ -209,26 +213,21 @@ const addMalusLines = (number) => {
 		}
 
 		// Move rows up by 'number' positions
-		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
+		for (let y = highestRowWith1; y < rows.length - highestRowWith2; y++) {
 				newRows[y - number] = rows[y];
-				console.log("-----tourne")
-				console.log("y = ", y)
-				console.log("newRows[y - number] = ", newRows[y - number])
-				console.log("rows[y] = ", rows[y])
-				console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 		}
 		// debugger;
 		
 		// Add malus lines at the bottom
-		console.log("----- add malus bottom goal  = ", lastMalus + number)
-		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
+		console.log("----- add malus bottom goal  = ", highestRowWith2 + number)
+		for (let y = (rows.length - 1) - highestRowWith2; y > (rows.length - 1) - (highestRowWith2 + number); y--) {
 			console.log("add malus lines -> y = ", y)
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
 
 		// Restore piece in its original position or adjusted position in newRows
 		
-		if (position.y + pieces.length < rows.length - (number + lastMalus)) {
+		if (position.y + pieces.length < rows.length - (number + highestRowWith2)) {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
@@ -239,13 +238,13 @@ const addMalusLines = (number) => {
 				}
 			}
 		}
-		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
+		else if (position.y + pieces.length >= rows.length - (number + highestRowWith2)) {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
 						if (newPos == 0) 
-							newPos = position.y + y - (number + lastMalus);
-						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+							newPos = position.y + y - (number + highestRowWith2);
+						newRows[position.y + y - (number + highestRowWith2)][position.x + x] = 1;
 					}
 				}
 			}
@@ -259,8 +258,6 @@ const addMalusLines = (number) => {
 					return newPositions;
 			});
 		}
-
-		setLastMalus(oldLastMalus => oldLastMalus + number)
 		// Update the rows state
 		return newRows;
 	})
