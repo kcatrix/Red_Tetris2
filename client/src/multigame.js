@@ -25,6 +25,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const audio = document.getElementById("audio_tag");
 	const [play, setPlay] = useState(false);
 	const [pieces, setPieces] = useState([...OgPieces])
+	const [keyDown, setKeyDown] = useState("null")
+	const [tick, setTick] = useState(false)
 
 
 		const [rows, setRows] = useState(
@@ -287,66 +289,67 @@ const addMalusLines = async (number) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched) return;
 
-    const currentPiece = pieces[pieceIndex];
-    const currentPos = position[pieceIndex];
-    const newPos = { ...currentPos, y: currentPos.y + 1 };
+			const currentPiece = pieces[pieceIndex];
+			const currentPos = position[pieceIndex];
+			const newPos = { ...currentPos, y: currentPos.y + 1 };
+	
+			if (startPiece && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
+					writePiece(currentPiece, currentPos, currentPos, 0);
+					setStartPiece(false);
+					return startPiece;
+			}
+			console.log("--- inside movePiece -> tick = ", tick)
+			if (tick && keyDown == "null" && check1(rows, currentPiece, 0, currentPos, "y") === 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
+				handleKeyDown("ArrowDown")
+			}
+			if (!tick && keyDown != "null" && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
+				handleKeyDown(keyDown);
+				setKeyDown("null")
+			}
+			
+			if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
+						socket.emit("score_add", score, name, actualUrl);
+						socket.emit('changestatusPlayer', actualUrl, name, false);
+						setGameLaunched(false);
+						setBestScore(score);
+						setGameOver(true);
+						toggleAudioPlayback();
+						socket.emit("gameStopped", actualUrl);
+						return gameLaunched;
+				}
 
-    if (startPiece && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
-        writePiece(currentPiece, currentPos, currentPos, 0);
-        setStartPiece(false);
-        return startPiece;
-    }
-
-    if (check1(rows, currentPiece, 0, currentPos, "y") === 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
-			setPosition(prevPosition => {
-					const newPositions = [...prevPosition];
-					newPositions[pieceIndex] = newPos;
-					writePiece(currentPiece, currentPos, newPos, 0);
-          return newPositions;
-        });
-    } else if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
-        if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
-            socket.emit("score_add", score, name, actualUrl);
-            socket.emit('changestatusPlayer', actualUrl, name, false);
-            setGameLaunched(false);
-            setBestScore(score);
-            setGameOver(true);
-            toggleAudioPlayback();
-            socket.emit("gameStopped", actualUrl);
-            return gameLaunched;
-        }
-
-        let newRows = [ ...rows];
-        let oldScore = score;
-        let newScore = 0;
-        let tmpScore = 0;
+				let newRows = [ ...rows];
+				let oldScore = score;
+				let newScore = 0;
+				let tmpScore = 0;
 				let sum = 0;
-        for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
-            if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
-                newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
-                tmpScore += 100;
-            }
-            if (checkPiece === currentPos.y) {
-                setRows(newRows);
-            }
-            setScore(score + tmpScore);
-            newScore = oldScore + tmpScore;
+				for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
+						if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
+								newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
+								tmpScore += 100;
+						}
+						if (checkPiece === currentPos.y) {
+								setRows(newRows);
+						}
+						setScore(score + tmpScore);
+						newScore = oldScore + tmpScore;
 						sum = newScore - oldScore;
-        }
+				}
 
-        if (!down) {
+				if (!down) {
 					if (sum / 100 > 1) {
 							setMalus(sum / 100);
 					}
-            setDown(true);
-        }
-        setPieceIndex(pieceIndex + 1);
-        setStartPiece(true);
-        setPosition([...position, { x: 4, y: 0 }]);
-    }
-}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down]);
+						setDown(true);
+				}
+				setPieceIndex(pieceIndex + 1);
+				setStartPiece(true);
+				setPosition([...position, { x: 4, y: 0 }]);
+	
+			}
+}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown]);
 
 
   
@@ -508,7 +511,7 @@ const addMalusLines = async (number) => {
 	  return 0;
 	};
   
-	const handleKeyDown = async (event) => {
+	const handleKeyDown = (keyDown) => {
 
 		// const currentTime = Date.now();
 		// if (currentTime - lastKeyTime < keyDelay) return;
@@ -517,8 +520,10 @@ const addMalusLines = async (number) => {
 	  if (!gameLaunched || !pieces[pieceIndex]) return;
   
 	  let newPosition = { ...position[pieceIndex] };
+
+		console.log("---- inside handleKeyDown -> keyDown = ", keyDown)
   
-	  switch (event.key) {
+	  switch (keyDown != "null" && keyDown) {
 		case 'ArrowLeft':
 		  newPosition.x -= 1;
 		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
@@ -585,25 +590,53 @@ const addMalusLines = async (number) => {
 		  break;
 	  }
 	};
+
+	const saveKeyDown = (event) => {
+		if (event.key == "ArrowDown" || event.key == "ArrowUp" || event.key == "ArrowLeft" ||
+				event.key == "ArrowRight" || event.key == " ")
+		setKeyDown(event.key);
+		else
+			return;
+	}
   
 	useEffect(() => {
-	  document.addEventListener('keydown', handleKeyDown);
+	  document.addEventListener('keydown', saveKeyDown);
   
 	  return () => {
-		document.removeEventListener('keydown', handleKeyDown);
+		document.removeEventListener('keydown', saveKeyDown);
 	  };
-	}, [handleKeyDown]);
+	}, [saveKeyDown]);
   
+	// useEffect(() => {
+	//   if (gameLaunched) {
+	// 		intervalId = setInterval(() => {
+	// 			movePieceDownRef.current();
+	// 		}, Time);
+	//   }
+	//   return () => {
+	// 		if (intervalId) clearInterval(intervalId);
+	//   };
+	// }, [gameLaunched, movePieceDownRef, Time]);
+
 	useEffect(() => {
-	  if (gameLaunched) {
-			intervalId = setInterval(() => {
-				movePieceDownRef.current();
-			}, Time);
-	  }
-	  return () => {
-			if (intervalId) clearInterval(intervalId);
-	  };
-	}, [gameLaunched, movePieceDownRef, Time]);
+		if (gameLaunched){
+			console.log("on est la -> keyDown = ", keyDown, " && tick = ", tick)
+			movePieceDownRef.current()
+	}
+ }, [gameLaunched, keyDown, tick])
+
+
+ useEffect(() => {
+	if (gameLaunched){
+		intervalId = setInterval(() => {
+		 setTick(true)
+		}, Time)
+		return() => {
+			setTick(false)
+			clearInterval(intervalId)
+		}
+	}
+}, [gameLaunched, tick])
   
 	const launchGame = async () => {
 	  setScore(0)
@@ -649,6 +682,7 @@ const addMalusLines = async (number) => {
 	}
 
 	const toHome = async () => {
+		
 		navigate("/");
 	}
 
