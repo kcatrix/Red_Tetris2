@@ -27,7 +27,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [pieces, setPieces] = useState([...OgPieces])
 	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
-	const [stop, setStop] = useState(false)
 
 
 		const [rows, setRows] = useState(
@@ -304,7 +303,7 @@ const addMalusLines = async (number) => {
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
 				handleKeyDown("ArrowDown")
 			}
-			else if (!tick && keyDown != "null" && stop == false) {
+			else if (!tick && keyDown != "null") {
 				handleKeyDown(keyDown);
 				setKeyDown("null")
 			}
@@ -351,7 +350,7 @@ const addMalusLines = async (number) => {
 				setPosition([...position, { x: 4, y: 0 }]);
 	
 			}
-}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown, stop]);
+}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown]);
 
 
   
@@ -523,9 +522,8 @@ const addMalusLines = async (number) => {
 
 	switch (keyDown) {
 		case 'ArrowLeft':
-			if (tick || stop)
+			if (tick)
 				return
-			setStop(true)
 			newPosition.x -= 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
 				setPosition(prevPositions => {
@@ -535,12 +533,10 @@ const addMalusLines = async (number) => {
 					return newPositions;
 				});
 			}
-			setStop(false)
 			break;
 		case 'ArrowRight':
-			if (tick || stop)
+			if (tick)
 				return
-			setStop(true)
 			newPosition.x += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
 				setPosition(prevPositions => {
@@ -550,12 +546,10 @@ const addMalusLines = async (number) => {
 					return newPositions;
 				});
 			}
-			setStop(false)
 			break;
 		case 'ArrowUp':
-			if (tick || stop)
+			if (tick)
 				return
-			setStop(true)
 			let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
 			newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
 			const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
@@ -570,12 +564,8 @@ const addMalusLines = async (number) => {
 			else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 			}
-			setStop(false)
 			break;
 		case 'ArrowDown':
-			if (stop)
-				return
-			setStop(true)
 			newPosition.y += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
 				setPosition(prevPositions => {
@@ -585,12 +575,8 @@ const addMalusLines = async (number) => {
 					return newPositions;
 				});
 			}
-			setStop(false)
 			break;
 			case ' ':
-				if (stop)
-					return
-				setStop(true)
 				let tempPosition = { ...position[pieceIndex] };
 				while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
 					tempPosition.y++;
@@ -602,7 +588,6 @@ const addMalusLines = async (number) => {
 					newPositions[pieceIndex] = tempPosition;
 					return newPositions;
 				});
-				setStop(false)
 			break; 
 		default:
 			break;
@@ -615,7 +600,7 @@ const addMalusLines = async (number) => {
 				event.key == "ArrowRight" || event.key == " ") {
 			setTimeout(() => {
 				setKeyDown(event.key);
-			}, 50)
+			}, 25)
 		}
 		else
 			return;
