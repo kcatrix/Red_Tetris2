@@ -280,7 +280,7 @@ const addMalusLines = async (number) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-    if (!gameLaunched || lock) return;
+    if (!gameLaunched) return;
 
     const currentPiece = pieces[pieceIndex];
     const currentPos = position[pieceIndex];
