@@ -351,8 +351,6 @@ const addMalusLines = (number) => {
 	
 			}
 }, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown]);
-
-
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
 	  setRows(prevRows => {
