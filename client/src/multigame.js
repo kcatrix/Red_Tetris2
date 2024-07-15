@@ -161,7 +161,7 @@ useEffect(() => {
 		});
 	}, [Players]);
   
-const addMalusLines = async (number) => {
+const addMalusLines = (number) => {
 	setRows((oldRows) => { 
 		let newPos = 0;
 		
@@ -512,7 +512,11 @@ const addMalusLines = async (number) => {
 	  return 0;
 	};
   
-	const handleKeyDown = (keyDown) => {
+	const handleKeyDown = (event) => {
+
+		// const currentTime = Date.now();
+		// if (currentTime - lastKeyTime < keyDelay) return;
+		// setLastKeyTime(currentTime);
 
 	if (!gameLaunched || !pieces[pieceIndex]) return;
 
@@ -636,16 +640,15 @@ const addMalusLines = async (number) => {
  useEffect(() => {
 	if (gameLaunched){
 		intervalId = setInterval(() => {
-		 setTick(true)
-		}, Time)
-		return() => {
-			setTick(false)
-			clearInterval(intervalId)
-		}
-	}
-}, [gameLaunched, tick])
+		  movePieceDownRef.current();
+		}, Time);
+	  }
+	  return () => {
+		if (intervalId) clearInterval(intervalId);
+	  };
+	}, [gameLaunched, movePieceDownRef, Time]);
   
-	const launchGame = async () => {
+	const launchGame = () => {
 	  setScore(0)
 	  setGameLaunched(true);
 	  setResultat("Game over")
@@ -688,8 +691,7 @@ const addMalusLines = async (number) => {
 		launchGame()
 	}
 
-	const toHome = async () => {
-		
+	const toHome = () => {
 		navigate("/");
 	}
 
