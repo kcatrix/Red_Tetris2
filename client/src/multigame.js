@@ -167,9 +167,9 @@ const addMalusLines = (number) => {
 		
 		let newRows = [...oldRows];
 
-		// console.log("--------- inside addMalusLines")
-		// console.log("malus = ", number)
-		// console.log("lastMalus = ", lastMalus)
+		console.log("--------- inside addMalusLines")
+		console.log("malus = ", number)
+		console.log("lastMalus = ", lastMalus)
 
 		// Clear piece from current position in newRows
 		for (let y = 0; y < pieces.length; y++) {
@@ -211,18 +211,18 @@ const addMalusLines = (number) => {
 		// Move rows up by 'number' positions
 		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
 				newRows[y - number] = rows[y];
-				// console.log("-----tourne")
-				// console.log("y = ", y)
-				// console.log("newRows[y - number] = ", newRows[y - number])
-				// console.log("rows[y] = ", rows[y])
-				// console.log("rows.length - lastMalus = ", rows.length - lastMalus)
+				console.log("-----tourne")
+				console.log("y = ", y)
+				console.log("newRows[y - number] = ", newRows[y - number])
+				console.log("rows[y] = ", rows[y])
+				console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 		}
 		// debugger;
 		
 		// Add malus lines at the bottom
-		// console.log("----- add malus bottom goal  = ", lastMalus + number)
+		console.log("----- add malus bottom goal  = ", lastMalus + number)
 		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
-			// console.log("add malus lines -> y = ", y)
+			console.log("add malus lines -> y = ", y)
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
 
