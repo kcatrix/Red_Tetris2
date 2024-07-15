@@ -27,6 +27,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [pieces, setPieces] = useState([...OgPieces])
 	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
+	const [stop, setStop] = useState(false)
 
 
 		const [rows, setRows] = useState(
@@ -300,10 +301,10 @@ const addMalusLines = async (number) => {
 					return startPiece;
 			}
 			console.log("--- inside movePiece -> tick = ", tick)
-			if (tick && keyDown == "null" && check1(rows, currentPiece, 0, currentPos, "y") === 0) { // Condition écrivant si il n'y a que des zéros en bas de la pièce
+			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
 				handleKeyDown("ArrowDown")
 			}
-			if (!tick && keyDown != "null" && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
+			else if (!tick && keyDown != "null" && stop == false) {
 				handleKeyDown(keyDown);
 				setKeyDown("null")
 			}
@@ -343,13 +344,14 @@ const addMalusLines = async (number) => {
 							setMalus(sum / 100);
 					}
 						setDown(true);
+						console.log("position[pieceIndex].y = ", position[pieceIndex].y)
 				}
 				setPieceIndex(pieceIndex + 1);
 				setStartPiece(true);
 				setPosition([...position, { x: 4, y: 0 }]);
 	
 			}
-}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown]);
+}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown, stop]);
 
 
   
@@ -513,67 +515,82 @@ const addMalusLines = async (number) => {
   
 	const handleKeyDown = (keyDown) => {
 
-		// const currentTime = Date.now();
-		// if (currentTime - lastKeyTime < keyDelay) return;
-		// setLastKeyTime(currentTime);
+	if (!gameLaunched || !pieces[pieceIndex]) return;
 
-	  if (!gameLaunched || !pieces[pieceIndex]) return;
-  
-	  let newPosition = { ...position[pieceIndex] };
+	let newPosition = { ...position[pieceIndex] };
 
-		console.log("---- inside handleKeyDown -> keyDown = ", keyDown)
-  
-	  switch (keyDown != "null" && keyDown) {
+	console.log("---- inside handleKeyDown -> keyDown = ", keyDown)
+
+	switch (keyDown) {
 		case 'ArrowLeft':
-		  newPosition.x -= 1;
-		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
+			if (tick || stop)
+				return
+			setStop(true)
+			newPosition.x -= 1;
+			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
 					newPositions[pieceIndex] = newPosition;
 					return newPositions;
 				});
-		  }
-		  break;
+			}
+			setStop(false)
+			break;
 		case 'ArrowRight':
-		  newPosition.x += 1;
-		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
+			if (tick || stop)
+				return
+			setStop(true)
+			newPosition.x += 1;
+			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-			  	const newPositions = [...prevPositions];
-			  	newPositions[pieceIndex] = newPosition;
-			  	return newPositions;
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					return newPositions;
 				});
-		  }
-		  break;
+			}
+			setStop(false)
+			break;
 		case 'ArrowUp':
-		  let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
-		  newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
-		  const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-		  if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
+			if (tick || stop)
+				return
+			setStop(true)
+			let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
+			newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
+			const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
+			if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
 				setPieces(oldPieces => {
 					writePiece(newPiece, position[pieceIndex], position[pieceIndex], pieces[pieceIndex]);
 					const newPieces = [...oldPieces];
 					newPieces[pieceIndex] = newPiece;
 					return newPieces;
 				});
-		  }
-		  else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
+			}
+			else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
-		  }
-		  break;
+			}
+			setStop(false)
+			break;
 		case 'ArrowDown':
-		  newPosition.y += 1;
-		  if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+			if (stop)
+				return
+			setStop(true)
+			newPosition.y += 1;
+			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
 					newPositions[pieceIndex] = newPosition;
 					return newPositions;
 				});
-		  }
-		  break;
-		  case ' ':
+			}
+			setStop(false)
+			break;
+			case ' ':
+				if (stop)
+					return
+				setStop(true)
 				let tempPosition = { ...position[pieceIndex] };
 				while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
 					tempPosition.y++;
@@ -585,16 +602,21 @@ const addMalusLines = async (number) => {
 					newPositions[pieceIndex] = tempPosition;
 					return newPositions;
 				});
-		  break; 
+				setStop(false)
+			break; 
 		default:
-		  break;
-	  }
+			break;
+		}
 	};
 
 	const saveKeyDown = (event) => {
-		if (event.key == "ArrowDown" || event.key == "ArrowUp" || event.key == "ArrowLeft" ||
-				event.key == "ArrowRight" || event.key == " ")
-		setKeyDown(event.key);
+
+		if (tick == false && event.key == "ArrowDown" || event.key == "ArrowUp" || event.key == "ArrowLeft" ||
+				event.key == "ArrowRight" || event.key == " ") {
+			setTimeout(() => {
+				setKeyDown(event.key);
+			}, 50)
+		}
 		else
 			return;
 	}
@@ -620,10 +642,10 @@ const addMalusLines = async (number) => {
 
 	useEffect(() => {
 		if (gameLaunched){
-			console.log("on est la -> keyDown = ", keyDown, " && tick = ", tick)
-			movePieceDownRef.current()
+			console.log("useEffect avant movePiece -> keyDown = ", keyDown, " && tick = ", tick)
+			movePieceDownRef.current(tick)
 	}
- }, [gameLaunched, keyDown, tick])
+ }, [gameLaunched, keyDown, tick, movePieceDownRef])
 
 
  useEffect(() => {
