@@ -189,9 +189,11 @@ const addMalusLines = (number) => {
 						break;
 				}
 		}
+		console.log("highestRowWith1 = ", highestRowWith1)
 
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
+			console.log("endddd2")
 				socket.emit('changestatusPlayer', actualUrl, name, false);
 				setGameLaunched(false);
 				setGameOver(true);
@@ -217,6 +219,7 @@ const addMalusLines = (number) => {
 				// console.log("rows[y] = ", rows[y])
 				// console.log("rows.length - lastMalus = ", rows.length - lastMalus)
 		}
+		console.log("rows before add line = ", newRows)
 		// debugger;
 		
 		// Add malus lines at the bottom
@@ -225,7 +228,7 @@ const addMalusLines = (number) => {
 			// console.log("add malus lines -> y = ", y)
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
-
+		console.log("rows afeter add line = ", newRows)
 		// Restore piece in its original position or adjusted position in newRows
 		
 		if (position.y + pieces.length < rows.length - (number + lastMalus)) {
@@ -310,6 +313,7 @@ const addMalusLines = (number) => {
 			
 			if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
+						console.log("endddd")
 						socket.emit("score_add", score, name, actualUrl);
 						socket.emit('changestatusPlayer', actualUrl, name, false);
 						setGameLaunched(false);
