@@ -27,6 +27,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [pieces, setPieces] = useState([...OgPieces])
 	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
+	const [addMalusGo, setAddMalusGo] = useState(0)
 
 
 		const [rows, setRows] = useState(
@@ -39,8 +40,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		socket.emit('leaderornot', actualUrl, name)
-		// console.log("socket leaderornot")
-
 	}, []);
 
 
@@ -50,7 +49,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				audio.load();
 				audio.play();
 			};
-			// console.log("useeffect audio")
 
 			audio.addEventListener('ended', handleAudioEnd);
 			
@@ -67,7 +65,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			for (y; rows[y].includes(1) || rows[y].includes(2); y--) {}
 	
 			let index = y;
-			// console.log("socket setHigherPo")
 			socket.emit("setHigherPos", index, actualUrl, name);
 			setDown(false)
 		}
@@ -80,7 +77,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			setPieces(piecesleader);
 			if (checkleader)
 				setleader(true)
-			// console.log("socket leaderrep")
 		})
 
 	}, [])
@@ -89,7 +85,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		socket.on('launchGame', () => {
-			// console.log("socket launchgame")
 			if(leader == false)
 				launchGame()
 			})
@@ -98,21 +93,16 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 
 
 		socket.on('namePlayer', (Players) => {
-			// console.log("socket namePlayer")
 			setPlayersoff(Players.filter(element => element != name))
 		})
 
-
-	
 		socket.once('retry', (nameleader) => {
-			// console.log("socket nameleader")
 			if (name != nameleader)
 				Retry()
 		})
 
 	useEffect(() => {
 		socket.on('winner', (name_winner) => {
-			// console.log("socket winner")
 			if (name_winner == name)
 			{
 				setResultat("winner")
@@ -130,46 +120,51 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 useEffect(() => {
 	
 	socket.on('newLeader', (name_leader) => {
-		// console.log("socket newleader")
 		if(name_leader == name)
 			setleader(true)
 	})
 }, [])
 
 	useEffect(() => {
-		// console.log("socket emit malus")
 		if (malus > 1) {
-			// console.log("---- inside emit Malus")
-			// console.log("malus = ", malus)
-			socket.emit('malus', malus, actualUrl);
+			console.log("--- malus = ", malus)
+			let trueMalus = malus - 1;
+			socket.emit('malus', trueMalus, actualUrl);
 			setMalus(0);
 		}
-	}, [malus != 0]);	
+	}, [malus]);	
 	
 	useEffect(() => {
-		socket.on('malusSent', (number, limit) => {
-			addMalusLines(number);
+		socket.on('malusSent', (number) => {
+			console.log("-- malusSent ->  malus received = ", number)
+			setAddMalusGo(number)
+			console.log("-- before setLastMalus, lastMalus = ", lastMalus, " && number = ", number)
 		});
-	}, [lastMalus])
+	}, [addMalusGo])
 
 	useEffect(() => {
 		socket.on('higherPos', (Players, Url) => {
-			// console.log("socket higherPos")
 			if (Url == actualUrl) {
 				setPlayers(Players.filter(element => element.name !== name));
 			}
 		});
 	}, [Players]);
   
-const addMalusLines = async (number) => {
+	useEffect(() => {
+		addMalusLines(addMalusGo)
+		setLastMalus(old => old + addMalusGo)
+		setAddMalusGo(0)
+	}, [addMalusGo, lastMalus])
+
+const addMalusLines = (number) => {
 	setRows((oldRows) => { 
 		let newPos = 0;
 		
 		let newRows = [...oldRows];
 
-		// console.log("--------- inside addMalusLines")
-		// console.log("malus = ", number)
-		// console.log("lastMalus = ", lastMalus)
+		console.log("--------- inside addMalusLines")
+		console.log("malus = ", number)
+		console.log("lastMalus = ", lastMalus)
 
 		// Clear piece from current position in newRows
 		for (let y = 0; y < pieces.length; y++) {
@@ -185,7 +180,7 @@ const addMalusLines = async (number) => {
 		for (let y = rows.length - 1; y >= 0; y--) {
 				if (newRows[y].includes(1) || newRows[y].includes(2)) {
 						highestRowWith1 = y;
-				} else if (newRows[y].includes(0)) {
+				} else if (equal(newRows[y], 0)) {
 						break;
 				}
 		}
@@ -210,19 +205,13 @@ const addMalusLines = async (number) => {
 
 		// Move rows up by 'number' positions
 		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
-				newRows[y - number] = rows[y];
-				// console.log("-----tourne")
-				// console.log("y = ", y)
-				// console.log("newRows[y - number] = ", newRows[y - number])
-				// console.log("rows[y] = ", rows[y])
-				// console.log("rows.length - lastMalus = ", rows.length - lastMalus)
+				newRows[y - number] = rows[y];		
 		}
-		// debugger;
 		
 		// Add malus lines at the bottom
-		// console.log("----- add malus bottom goal  = ", lastMalus + number)
+		console.log("----- add malus bottom goal  = ", lastMalus + number)
 		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
-			// console.log("add malus lines -> y = ", y)
+			console.log("add malus lines -> y = ", y)
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
 
@@ -259,8 +248,6 @@ const addMalusLines = async (number) => {
 					return newPositions;
 			});
 		}
-
-		setLastMalus(oldLastMalus => oldLastMalus + number)
 		// Update the rows state
 		return newRows;
 	})
@@ -274,8 +261,10 @@ const addMalusLines = async (number) => {
 	  for (let y = lastY; y >= firstY; y--) {
 			if (equal(rows[y], number)) {
 				return true;
-			}
-	  }
+	  	}
+			else
+				return false
+		}
 	  return false;
 	};
 
@@ -299,7 +288,6 @@ const addMalusLines = async (number) => {
 					setStartPiece(false);
 					return startPiece;
 			}
-			console.log("--- inside movePiece -> tick = ", tick)
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
 				handleKeyDown("ArrowDown")
 			}
@@ -343,14 +331,13 @@ const addMalusLines = async (number) => {
 							setMalus(sum / 100);
 					}
 						setDown(true);
-						console.log("position[pieceIndex].y = ", position[pieceIndex].y)
 				}
 				setPieceIndex(pieceIndex + 1);
 				setStartPiece(true);
 				setPosition([...position, { x: 4, y: 0 }]);
 	
 			}
-}, [gameLaunched, pieceIndex, position, rows, malus, lastMalus, startPiece, down, tick, keyDown]);
+}, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus]);
 
 
   
@@ -398,7 +385,7 @@ const addMalusLines = async (number) => {
 			}
 	  }
 	  if (Time > 100)
-		setTime(Time - 50);
+			setTime(Time - 50);
 	  return newRows;
 	};
   
@@ -518,8 +505,6 @@ const addMalusLines = async (number) => {
 
 	let newPosition = { ...position[pieceIndex] };
 
-	console.log("---- inside handleKeyDown -> keyDown = ", keyDown)
-
 	switch (keyDown) {
 		case 'ArrowLeft':
 			if (tick)
@@ -613,21 +598,9 @@ const addMalusLines = async (number) => {
 		document.removeEventListener('keydown', saveKeyDown);
 	  };
 	}, [saveKeyDown]);
-  
-	// useEffect(() => {
-	//   if (gameLaunched) {
-	// 		intervalId = setInterval(() => {
-	// 			movePieceDownRef.current();
-	// 		}, Time);
-	//   }
-	//   return () => {
-	// 		if (intervalId) clearInterval(intervalId);
-	//   };
-	// }, [gameLaunched, movePieceDownRef, Time]);
 
 	useEffect(() => {
 		if (gameLaunched){
-			console.log("useEffect avant movePiece -> keyDown = ", keyDown, " && tick = ", tick)
 			movePieceDownRef.current(tick)
 	}
  }, [gameLaunched, keyDown, tick, movePieceDownRef])
@@ -650,7 +623,6 @@ const addMalusLines = async (number) => {
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader) {
-			// console.log("socket emit change status && gameStarted")
 			socket.emit('changestatusPlayer',  actualUrl, name, true)
 	  	socket.emit("gameStarted", actualUrl)
 	  }
@@ -671,11 +643,9 @@ const addMalusLines = async (number) => {
 	};  
 
 	const Retry = () => {
-		// console.log("socket emit changestatus")
 		socket.emit('changestatusPlayer', actualUrl, name, true)
 		setGameOver(false)
 		if (leader) {
-			// console.log("socket emit all_retry")
 			socket.emit('all_retry', actualUrl, name)
 		}
 		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
