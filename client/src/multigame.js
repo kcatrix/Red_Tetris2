@@ -510,7 +510,7 @@ const addMalusLines = (number) => {
 	  return 0;
 	};
   
-	const handleKeyDown = (event) => {
+	const handleKeyDown = (keyDown) => {
 
 		// const currentTime = Date.now();
 		// if (currentTime - lastKeyTime < keyDelay) return;
@@ -630,7 +630,7 @@ const addMalusLines = (number) => {
 	useEffect(() => {
 		if (gameLaunched){
 			console.log("useEffect avant movePiece -> keyDown = ", keyDown, " && tick = ", tick)
-			movePieceDownRef.current(tick)
+			movePieceDownRef.current()
 	}
  }, [gameLaunched, keyDown, tick, movePieceDownRef])
 
@@ -638,13 +638,14 @@ const addMalusLines = (number) => {
  useEffect(() => {
 	if (gameLaunched){
 		intervalId = setInterval(() => {
-		  movePieceDownRef.current();
-		}, Time);
+		  setTick(true)
+			}, Time);
 	  }
 	  return () => {
 		if (intervalId) clearInterval(intervalId);
+			setTick(false)
 	  };
-	}, [gameLaunched, movePieceDownRef, Time]);
+	}, [gameLaunched, tick]);
   
 	const launchGame = () => {
 	  setScore(0)
