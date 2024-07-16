@@ -150,11 +150,11 @@ useEffect(() => {
 		});
 	}, [Players]);
   
-	useEffect(() => {
-		addMalusLines(addMalusGo)
-		setLastMalus(old => old + addMalusGo)
-		setAddMalusGo(0)
-	}, [addMalusGo, lastMalus])
+	// useEffect(() => {
+	// 	addMalusLines(addMalusGo)
+	// 	setLastMalus(old => old + addMalusGo)
+	// 	setAddMalusGo(0)
+	// }, [addMalusGo, lastMalus])
 
 const addMalusLines = (number) => {
 	setRows((oldRows) => { 
@@ -279,15 +279,17 @@ const addMalusLines = (number) => {
   
 	movePieceDownRef.current = useCallback(() => {
 
-			const currentPiece = pieces[pieceIndex];
-			const currentPos = position[pieceIndex];
-			const newPos = { ...currentPos, y: currentPos.y + 1 };
-	
-			if (startPiece && check1(rows, currentPiece, 0, currentPos, "y") === 0) {
-					writePiece(currentPiece, currentPos, currentPos, 0);
+			// const currentPiece = pieces[pieceIndex];
+			// const currentPos = position[pieceIndex];
+			// const newPos = { ...currentPos, y: currentPos.y + 1 };
+
+			
+			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					setStartPiece(false);
 					return startPiece;
 			}
+
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
 				handleKeyDown("ArrowDown")
 			}
@@ -296,7 +298,7 @@ const addMalusLines = (number) => {
 				setKeyDown("null")
 			}
 			
-			if (check1(rows, currentPiece, 0, currentPos, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						socket.emit("score_add", score, name, actualUrl);
 						socket.emit('changestatusPlayer', actualUrl, name, false);
@@ -313,12 +315,12 @@ const addMalusLines = (number) => {
 				let newScore = 0;
 				let tmpScore = 0;
 				let sum = 0;
-				for (let checkPiece = currentPos.y + currentPiece.length - 1; checkPiece >= currentPos.y && currentPos.y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
-						if (checkRowsEqual(rows, currentPos.y, checkPiece, 1)) {
-								newRows = deleteLine(newRows, currentPos.y + currentPiece.length - 1, currentPos.y);
+				for (let checkPiece = position[pieceIndex].y + pieces[pieceIndex].length - 1; checkPiece >= position[pieceIndex].y && position[pieceIndex].y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
+						if (checkRowsEqual(rows, position[pieceIndex].y, checkPiece, 1)) {
+								newRows = deleteLine(newRows, position[pieceIndex].y + pieces[pieceIndex].length - 1, position[pieceIndex].y);
 								tmpScore += 100;
 						}
-						if (checkPiece === currentPos.y) {
+						if (checkPiece === position[pieceIndex].y) {
 								setRows(newRows);
 						}
 						setScore(score + tmpScore);
@@ -337,7 +339,7 @@ const addMalusLines = (number) => {
 				setPosition([...position, { x: 4, y: 0 }]);
 	
 			}
-}, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus]);
+}, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
 
 
   
@@ -601,9 +603,14 @@ const addMalusLines = (number) => {
 
 	useEffect(() => {
 		if (gameLaunched){
+			if (addMalusGo) {
+				addMalusLines(addMalusGo)
+				setLastMalus(old => old + addMalusGo)
+				setAddMalusGo(false)
+			}
 			movePieceDownRef.current(tick)
 	}
- }, [gameLaunched, keyDown, tick, movePieceDownRef])
+ }, [gameLaunched, keyDown, tick, movePieceDownRef, addMalusGo])
 
 
  useEffect(() => {
