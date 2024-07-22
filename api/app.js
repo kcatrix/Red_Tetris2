@@ -72,7 +72,6 @@ io.on('connection', (socket) => {
         }
     });
 
-
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
     	const randomPiece = pieces.getallPiece();
@@ -181,8 +180,8 @@ io.on('connection', (socket) => {
 
 			const index = Rooms.findIndex(searchUrl);
 
-			if (Rooms[index] && number > 1){
-				socket.broadcast.emit('malusSent', number - 1)
+			if (Rooms[index]){
+				socket.broadcast.emit('malusSent', number)
 			}
 		})
 
