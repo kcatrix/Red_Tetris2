@@ -159,7 +159,6 @@ useEffect(() => {
 const addMalusLines = (number) => {
 	setRows((oldRows) => { 
 		let newPos = 0;
-		
 		let newRows = [...oldRows];
 
 		console.log("--------- inside addMalusLines")
@@ -216,39 +215,43 @@ const addMalusLines = (number) => {
 		}
 
 		// Restore piece in its original position or adjusted position in newRows
-		
-		if (position.y + pieces.length < rows.length - (number + lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
+		console.log("posotion", position.y)
+		console.log("pieces.length", pieces.length)
+		console.log("position.y + pieces.length", position.y + pieces.length, "rows.length - (number + lastMalus)", rows.length - (number + lastMalus))
+		if (position[pieceIndex].y + pieces[pieceIndex].length < rows.length - (number + lastMalus)) {
+			for (let y = 0; y < pieces[pieceIndex].length; y++) {
+				for (let x = 0; x < pieces[pieceIndex][y].length; x++) {
+					if (pieces[pieceIndex][y][x] === 1) {
 						if (newPos == 0) {
-							newPos = position.y + y;
-							console.log("addmalus -> si piece avant malus, newpos = ", position.y + y - (number + lastMalus))
+							newPos = position[pieceIndex].y + y;
+							console.log("addmalus -> si piece avant malus, newpos = ", position[pieceIndex].y + y - (number + lastMalus))
 						}
-						newRows[position.y + y][position.x + x] = 1;	
+						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
 					}							
 				}
 			}
 		}
-		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
+		else if (position[pieceIndex].y + pieces[pieceIndex].length >= rows.length - (number + lastMalus)) {
+			for (let y = 0; y < pieces[pieceIndex].length; y++) {
+				for (let x = 0; x < pieces[pieceIndex][y].length; x++) {
+					if (pieces[pieceIndex][y][x] === 1) {
 						if (newPos == 0) {
-							newPos = position.y + y - (number + lastMalus);
-							console.log("addmalus -> si piece apres malus, newpos = ", position.y + y - (number + lastMalus))
+							newPos = position[pieceIndex].y + y - (number + lastMalus);
+							console.log("addmalus -> si piece apres malus, newpos = ", position[pieceIndex].y + y - (number + lastMalus))
 						}
-						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+						newRows[position[pieceIndex].y + y - (number + lastMalus)][position[pieceIndex].x + x] = 1;
 					}
 				}
 			}
 		}
 
+		console.log("newPos pupu", newPos)
 		// Update piece position if necessary
-		if (newPos !== 0) {
+		if (newPos != 0) {
 			setPosition(prevPosition => {
 					const newPositions = [...prevPosition];
 					newPositions[pieceIndex].y = newPos;
+					console.log("newPos putooooooo", newPos)
 					return newPositions;
 			});
 		}
