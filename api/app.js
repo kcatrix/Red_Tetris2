@@ -72,7 +72,6 @@ io.on('connection', (socket) => {
         }
     });
 
-
     socket.on('requestRandomPiece', () => {
 		const pieces = new Pieces();
     	const randomPiece = pieces.getallPiece();

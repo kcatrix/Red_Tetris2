@@ -221,8 +221,10 @@ const addMalusLines = (number) => {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
-						if (newPos == 0) 
+						if (newPos == 0) {
 							newPos = position.y + y;
+							console.log("addmalus -> si piece avant malus, newpos = ", position.y + y - (number + lastMalus))
+						}
 						newRows[position.y + y][position.x + x] = 1;	
 					}							
 				}
@@ -232,8 +234,10 @@ const addMalusLines = (number) => {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
-						if (newPos == 0) 
+						if (newPos == 0) {
 							newPos = position.y + y - (number + lastMalus);
+							console.log("addmalus -> si piece apres malus, newpos = ", position.y + y - (number + lastMalus))
+						}
 						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
 					}
 				}
@@ -244,7 +248,7 @@ const addMalusLines = (number) => {
 		if (newPos !== 0) {
 			setPosition(prevPosition => {
 					const newPositions = [...prevPosition];
-					newPositions[pieceIndex] = newPos;
+					newPositions[pieceIndex].y = newPos;
 					return newPositions;
 			});
 		}
@@ -437,6 +441,12 @@ const addMalusLines = (number) => {
 							if (piece[it + y][x] === 1) 
 							tmpPosition = it;
 			
+							if (addMalusGo != 0) {
+								setAddMalusGo(0)
+								console.log("rows[newY+it] = ", rows[newY + it][newX])
+								console.log("rows[newY+it-1] = ", rows[newY + it - 1][newX])
+								debugger;
+							}
 							it = tmpPosition + 1;
 							if (newY + it >= rows.length || rows[newY + it][newX] === 1 || rows[newY + it][newX] === 2) //surment ici
 							{
@@ -603,12 +613,12 @@ const addMalusLines = (number) => {
 
 	useEffect(() => {
 		if (gameLaunched){
+			movePieceDownRef.current(tick)
 			if (addMalusGo) {
 				addMalusLines(addMalusGo)
 				setLastMalus(old => old + addMalusGo)
-				setAddMalusGo(false)
+				// setAddMalusGo(false)
 			}
-			movePieceDownRef.current(tick)
 	}
  }, [gameLaunched, keyDown, tick, movePieceDownRef, addMalusGo])
 
