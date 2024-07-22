@@ -194,9 +194,11 @@ const addMalusLines = (number, position, pieces) => {
 
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
+				console.log("--  game over from addMalus")
 				socket.emit('changestatusPlayer', actualUrl, name, false);
 				setGameLaunched(false);
-				setLastMalus(0);
+				setLastMalus((old) => old = 0);
+				setKeyDown("null")
 				setGameOver(true);
 				socket.emit("score_add", score, name, actualUrl);
 				setScore(0);
@@ -235,7 +237,7 @@ const addMalusLines = (number, position, pieces) => {
 							newPos.y = position.y + y;
 							console.log("addmalus -> si piece avant malus, newpos = ", position.y + y - (number + lastMalus))
 						}
-						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
+						newRows[position.y + y][position.x + x] = 1;	
 					}							
 				}
 			}
@@ -248,7 +250,7 @@ const addMalusLines = (number, position, pieces) => {
 							newPos.y = position.y + y - (number + lastMalus);
 							console.log("addmalus -> si piece apres malus, newpos = ", position.y + y - (number + lastMalus))
 						}
-						newRows[position[pieceIndex].y + y - (number + lastMalus)][position[pieceIndex].x + x] = 1;
+						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
 					}
 				}
 			}
@@ -317,11 +319,13 @@ const addMalusLines = (number, position, pieces) => {
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
+						console.log("game over from normal")
 						socket.emit("score_add", score, name, actualUrl);
 						socket.emit('changestatusPlayer', actualUrl, name, false);
 						setGameLaunched(false);
 						setBestScore(score);
-						setLastMalus(0);
+						setLastMalus((old) => old = 0);
+						setKeyDown("null")
 						setGameOver(true);
 						toggleAudioPlayback();
 						socket.emit("gameStopped", actualUrl);
@@ -456,8 +460,7 @@ const addMalusLines = (number, position, pieces) => {
 							tmpPosition = it;
 			
 							it = tmpPosition + 1;
-							if (newY + it >= rows.length || rows[newY + it][newX] === 1 || rows[newY + it][newX] === 2) //surment ici
-							{
+							if (newY + it >= rows.length || rows[newY + it][newX] === 1 || rows[newY + it][newX] === 2) {
 								return 1;
 							}
 						}
@@ -663,6 +666,8 @@ const addMalusLines = (number, position, pieces) => {
 	};  
 
 	const Retry = () => {
+		setLastMalus(0)
+		setKeyDown("null")
 		socket.emit('changestatusPlayer', actualUrl, name, true)
 		setGameOver(false)
 		if (leader) {
