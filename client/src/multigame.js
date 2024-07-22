@@ -235,7 +235,7 @@ const addMalusLines = (number, position, pieces) => {
 							newPos.y = position.y + y;
 							console.log("addmalus -> si piece avant malus, newpos = ", position.y + y - (number + lastMalus))
 						}
-						newRows[position.y + y][position.x + x] = 1;	
+						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
 					}							
 				}
 			}
@@ -248,12 +248,13 @@ const addMalusLines = (number, position, pieces) => {
 							newPos.y = position.y + y - (number + lastMalus);
 							console.log("addmalus -> si piece apres malus, newpos = ", position.y + y - (number + lastMalus))
 						}
-						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
+						newRows[position[pieceIndex].y + y - (number + lastMalus)][position[pieceIndex].x + x] = 1;
 					}
 				}
 			}
 		}
 
+		console.log("newPos pupu", newPos)
 		// Update piece position if necessary
 		if (newPos !== 0) {
 			console.log("suce -> newPos = ", newPos)
