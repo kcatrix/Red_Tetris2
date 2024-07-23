@@ -199,7 +199,10 @@ const addMalusLines = (number, position, pieces) => {
 				setGameLaunched(false);
 				setLastMalus((old) => old = 0);
 				setKeyDown("null")
+				if (score > bestScore)
+					setBestScore(score);
 				setGameOver(true);
+				setTime(1000)
 				socket.emit("score_add", score, name, actualUrl);
 				setScore(0);
 				if (play) {
@@ -328,6 +331,7 @@ const addMalusLines = (number, position, pieces) => {
 						setLastMalus((old) => old = 0);
 						setKeyDown("null")
 						setGameOver(true);
+						setTime(1000)
 						toggleAudioPlayback();
 						socket.emit("gameStopped", actualUrl);
 						return gameLaunched;
@@ -410,7 +414,7 @@ const addMalusLines = (number, position, pieces) => {
 			}
 	  }
 	  if (Time > 100)
-			setTime(Time - 50);
+			setTime(Time - 100);
 	  return newRows;
 	};
   
