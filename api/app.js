@@ -161,10 +161,10 @@ io.on('connection', (socket) => {
 
 				const searchUrl = (element) => element.Url == Url
 				const searchName = (element) => element.name == name
-                let index_player;
+        let index_player;
 
 				const index = Rooms.findIndex(searchUrl);
-                if (Rooms[index].Players)
+        if (Rooms[index].Players)
 				    index_player = Rooms[index].Players.findIndex(searchName)
 
 

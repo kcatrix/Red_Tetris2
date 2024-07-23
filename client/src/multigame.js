@@ -73,7 +73,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
-			setBestScore(best)
+			if (score > bestScore)
+				setBestScore(best)
 			setPieces(piecesleader);
 			if (checkleader)
 				setleader(true)
@@ -96,7 +97,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			setPlayersoff(Players.filter(element => element != name))
 		})
 
-		socket.once('retry', (nameleader) => {
+		socket.on('retry', (nameleader) => {
 			if (name != nameleader)
 				Retry()
 		})
@@ -265,7 +266,6 @@ const addMalusLines = (number, position, pieces) => {
 					newPositions[pieceIndex] = newPos;
 					return newPositions;
 			});
-			// writePiece(pieces, position, newPos, 0 )
 		}
 		// Update the rows state
 		return newRows;
