@@ -323,7 +323,8 @@ const addMalusLines = (number, position, pieces) => {
 						socket.emit("score_add", score, name, actualUrl);
 						socket.emit('changestatusPlayer', actualUrl, name, false);
 						setGameLaunched(false);
-						setBestScore(score);
+						if (score > bestScore)
+							setBestScore(score);
 						setLastMalus((old) => old = 0);
 						setKeyDown("null")
 						setGameOver(true);
