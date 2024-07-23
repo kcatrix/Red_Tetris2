@@ -322,7 +322,7 @@ const addMalusLines = (number, position, pieces) => {
 			}
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
-				if (tick == false)
+				if (tick == false) // fix potentiel slide bot
 					return
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						console.log("game over from normal")
@@ -468,8 +468,7 @@ const addMalusLines = (number, position, pieces) => {
 							tmpPosition = it;
 			
 							it = tmpPosition + 1;
-							if (newY + it >= rows.length || rows[newY + it][newX] === 1 || rows[newY + it][newX] === 2) { // logique slide last line a fix her
-								console.log("ici")
+							if (newY + it >= rows.length || rows[newY + it][newX] === 1 || rows[newY + it][newX] === 2) { 
 								return 1;
 							}
 						}
