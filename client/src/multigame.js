@@ -28,6 +28,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
 	const [addMalusGo, setAddMalusGo] = useState(0)
+	const [spaceRaised, setSpaceRaised] = useState(false)
 
 
 		const [rows, setRows] = useState(
@@ -43,20 +44,20 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	}, []);
 
 
-	useEffect(() => {
-		if (audio) {
-			const handleAudioEnd = () => {
-				audio.load();
-				audio.play();
-			};
+	// useEffect(() => {    BONUS
+	// 	if (audio) {
+	// 		const handleAudioEnd = () => {
+	// 			audio.load();
+	// 			audio.play();
+	// 		};
 
-			audio.addEventListener('ended', handleAudioEnd);
+	// 		audio.addEventListener('ended', handleAudioEnd);
 			
-			return () => {
-				audio.removeEventListener('ended', handleAudioEnd);
-			};
-		}
-	}, []);
+	// 		return () => {
+	// 			audio.removeEventListener('ended', handleAudioEnd);
+	// 		};
+	// 	}
+	// }, []);
 	  
 
 	useEffect(() => {
@@ -73,8 +74,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
-			if (score > bestScore)
-				setBestScore(best)
+			// if (score > bestScore) // score pour bonus
+			// 	setBestScore(best)
 			setPieces(piecesleader);
 			if (checkleader)
 				setleader(true)
@@ -111,7 +112,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				socket.emit("score_add", score, name, actualUrl)
 				setScore(0)
 				setGameOver(true)
-				toggleAudioPlayback();
+				// toggleAudioPlayback(); BONUS
 				socket.emit("gameStopped", actualUrl)
 				return gameLaunched
 			}
@@ -200,19 +201,19 @@ const addMalusLines = (number, position, pieces) => {
 				setGameLaunched(false);
 				setLastMalus((old) => old = 0);
 				setKeyDown("null")
-				if (score > bestScore)
-					setBestScore(score);
+				// if (score > bestScore) // score pour bonus
+				// 	setBestScore(score);
 				setGameOver(true);
 				setTime(1000)
-				socket.emit("score_add", score, name, actualUrl);
+				// socket.emit("score_add", score, name, actualUrl);
 				setScore(0);
-				if (play) {
-						setPlay(false);
-						audio.pause();
-				} else {
-						setPlay(true);
-						audio.play();
-				}
+				// if (play) {    BONUSSS
+				// 		setPlay(false);
+				// 		audio.pause();
+				// } else {
+				// 		setPlay(true);
+				// 		audio.play();
+				// }
 				socket.emit("gameStopped", actualUrl);
 				return;
 		}
@@ -316,26 +317,30 @@ const addMalusLines = (number, position, pieces) => {
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
 				handleKeyDown("ArrowDown")
 			}
-			else if (!tick && keyDown != "null") {
+			else if (!tick && keyDown != "null" && !spaceRaised) {
 				handleKeyDown(keyDown);
+				if (keyDown == ' ') {
+					setSpaceRaised(true)
+				}
 				setKeyDown("null")
 			}
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
-				if (tick == false) // fix potentiel slide bot
+				if (!spaceRaised && tick == false) { // fix potentiel slide bot
 					return
+				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						console.log("game over from normal")
-						socket.emit("score_add", score, name, actualUrl);
+						// socket.emit("score_add", score, name, actualUrl); BONUS
 						socket.emit('changestatusPlayer', actualUrl, name, false);
 						setGameLaunched(false);
-						if (score > bestScore)
-							setBestScore(score);
+						// if (score > bestScore) BONUS
+						// 	setBestScore(score);
 						setLastMalus((old) => old = 0);
 						setKeyDown("null")
 						setGameOver(true);
 						setTime(1000)
-						toggleAudioPlayback();
+						// toggleAudioPlayback(); BONUS
 						socket.emit("gameStopped", actualUrl);
 						return gameLaunched;
 				}
@@ -353,20 +358,21 @@ const addMalusLines = (number, position, pieces) => {
 						if (checkPiece === position[pieceIndex].y) {
 								setRows(newRows);
 						}
-						setScore(score + tmpScore);
+						setScore(score + tmpScore); Bonus
 						newScore = oldScore + tmpScore;
 						sum = newScore - oldScore;
 				}
 
 				if (!down) {
-					if (sum / 100 > 1) {
+					if (sum / 100 > 1) {  // modification vitesse pour bonus only
 							setMalus(sum / 100);
 					}
 						setDown(true);
 				}
+				if (spaceRaised)
+					setSpaceRaised(false)
 				setPieceIndex(pieceIndex + 1);
 				setStartPiece(true);
-				setKeyDown("null")
 				setPosition([...position, { x: 4, y: 0 }]);
 			}
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
@@ -416,8 +422,8 @@ const addMalusLines = (number, position, pieces) => {
 				newRows.unshift(Array(10).fill(0));
 			}
 	  }
-	  if (Time > 100)
-			setTime(Time - 100);
+	  // if (Time > 100)  BONUS
+		// 	setTime(Time - 100);
 	  return newRows;
 	};
   
@@ -661,7 +667,7 @@ const addMalusLines = (number, position, pieces) => {
 			socket.emit('changestatusPlayer',  actualUrl, name, true)
 	  	socket.emit("gameStarted", actualUrl)
 	  }
-	  toggleAudioPlayback();
+	  // toggleAudioPlayback(); BONUS
 	};
 
 	const toggleAudioPlayback = () => {
@@ -724,7 +730,8 @@ const addMalusLines = (number, position, pieces) => {
 				{gameover == true && leader &&
 				<button onClick={Retry}>Retry</button>}
 				<div className='score'>
-				<h3>{name} : {score} </h3>
+{/*				<h3>{name} : {score} </h3>   Pour Bonus ! */} 
+				<h3>{name}</h3>
 				{bestScore > 0 &&
 				<div>
 					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best Score : {bestScore} </h4>
