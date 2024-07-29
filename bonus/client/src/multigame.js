@@ -43,23 +43,6 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 		socket.emit('leaderornot', actualUrl, name)
 	}, []);
 
-
-	// useEffect(() => {    BONUS
-	// 	if (audio) {
-	// 		const handleAudioEnd = () => {
-	// 			audio.load();
-	// 			audio.play();
-	// 		};
-
-	// 		audio.addEventListener('ended', handleAudioEnd);
-			
-	// 		return () => {
-	// 			audio.removeEventListener('ended', handleAudioEnd);
-	// 		};
-	// 	}
-	// }, []);
-	  
-
 	useEffect(() => {
 		if (down) {
 			let y = 19;
@@ -74,11 +57,10 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
-			// if (score > bestScore) // score pour bonus
-			// 	setBestScore(best)
 			setPieces(piecesleader);
+			setBestScore(best);
 			if (checkleader)
-				setleader(true)
+				setleader(true);
 		})
 
 	}, [])
@@ -110,9 +92,11 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				setResultat("winner")
 				setGameLaunched(false)
 				socket.emit("score_add", score, name, actualUrl)
+				if (score > bestScore)
+					setBestScore(score)
 				setScore(0)
 				setGameOver(true)
-				// toggleAudioPlayback(); BONUS
+				toggleAudioPlayback();
 				socket.emit("gameStopped", actualUrl)
 				return gameLaunched
 			}
@@ -166,13 +150,6 @@ const addMalusLines = (number, position, pieces) => {
 		
 		let newRows = [...oldRows];
 
-		console.log("--------- inside addMalusLines")
-		console.log("malus = ", number)
-		console.log("lastMalus = ", lastMalus)
-		console.log("position = ", position)
-		console.log("position.x = ", position.x)
-		console.log("position.y = ", position.y)
-
 		// Clear piece from current position in newRows
 		for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
@@ -182,7 +159,6 @@ const addMalusLines = (number, position, pieces) => {
 						}
 				}
 		}
-		// debugger;
 
 		// Find the highest row containing '1' or '2' from the bottom
 		let highestRowWith1 = 0;
@@ -201,19 +177,11 @@ const addMalusLines = (number, position, pieces) => {
 				setGameLaunched(false);
 				setLastMalus((old) => old = 0);
 				setKeyDown("null")
-				// if (score > bestScore) // score pour bonus
-				// 	setBestScore(score);
 				setGameOver(true);
 				setTime(1000)
-				// socket.emit("score_add", score, name, actualUrl);
+				if (score > bestScore)
+					setBestScore(score)
 				setScore(0);
-				// if (play) {    BONUSSS
-				// 		setPlay(false);
-				// 		audio.pause();
-				// } else {
-				// 		setPlay(true);
-				// 		audio.play();
-				// }
 				socket.emit("gameStopped", actualUrl);
 				return;
 		}
@@ -224,15 +192,12 @@ const addMalusLines = (number, position, pieces) => {
 		}
 		
 		// Add malus lines at the bottom
-		console.log("----- add malus bottom goal  = ", lastMalus + number)
 		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
-			console.log("add malus lines -> y = ", y)
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
 
 		// Restore piece in its original position or adjusted position in newRows
 		
-		console.log("newPos ? ", newPos)
 
 		if (position.y + pieces.length < rows.length - (number + lastMalus)) {
 			for (let y = 0; y < pieces.length; y++) {
@@ -240,7 +205,6 @@ const addMalusLines = (number, position, pieces) => {
 					if (pieces[y][x] === 1) {
 						if (newPos.y == 0 && position.y != 0) {
 							newPos.y = position.y + y;
-							console.log("addmalus -> si piece avant malus, newpos = ", position.y + y - (number + lastMalus))
 						}
 						newRows[position.y + y][position.x + x] = 1;	
 					}							
@@ -253,7 +217,6 @@ const addMalusLines = (number, position, pieces) => {
 					if (pieces[y][x] === 1) {
 						if (newPos.y == 0) {
 							newPos.y = position.y + y - (number + lastMalus);
-							console.log("addmalus -> si piece apres malus, newpos = ", position.y + y - (number + lastMalus))
 						}
 						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
 					}
@@ -261,10 +224,8 @@ const addMalusLines = (number, position, pieces) => {
 			}
 		}
 
-		console.log("newPos pupu", newPos)
 		// Update piece position if necessary
 		if (newPos !== 0) {
-			console.log("suce -> newPos = ", newPos)
 			setPosition(prevPosition => {
 					const newPositions = [...prevPosition];
 					newPositions[pieceIndex] = newPos;
@@ -301,12 +262,6 @@ const addMalusLines = (number, position, pieces) => {
 	};
   
 	movePieceDownRef.current = useCallback(() => {
-
-
-			// const currentPiece = pieces[pieceIndex];
-			// const currentPos = position[pieceIndex];
-			// const newPos = { ...currentPos, y: currentPos.y + 1 };
-
 			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
@@ -331,16 +286,14 @@ const addMalusLines = (number, position, pieces) => {
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						console.log("game over from normal")
-						// socket.emit("score_add", score, name, actualUrl); BONUS
 						socket.emit('changestatusPlayer', actualUrl, name, false);
 						setGameLaunched(false);
-						// if (score > bestScore) BONUS
-						// 	setBestScore(score);
 						setLastMalus((old) => old = 0);
-						setKeyDown("null")
+						setKeyDown("null");
+						if (score > bestScore)
+							setBestScore(score)
 						setGameOver(true);
 						setTime(1000)
-						// toggleAudioPlayback(); BONUS
 						socket.emit("gameStopped", actualUrl);
 						return gameLaunched;
 				}
@@ -358,16 +311,16 @@ const addMalusLines = (number, position, pieces) => {
 						if (checkPiece === position[pieceIndex].y) {
 								setRows(newRows);
 						}
-						setScore(score + tmpScore); Bonus
+						setScore(score + tmpScore); // Score
 						newScore = oldScore + tmpScore;
 						sum = newScore - oldScore;
 				}
 
 				if (!down) {
-					if (sum / 100 > 1) {  // modification vitesse pour bonus only
+					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score fait
 							setMalus(sum / 100);
 					}
-						setDown(true);
+						setDown(true); // Indique si la pièce a touché le sol
 				}
 				if (spaceRaised)
 					setSpaceRaised(false)
@@ -422,8 +375,8 @@ const addMalusLines = (number, position, pieces) => {
 				newRows.unshift(Array(10).fill(0));
 			}
 	  }
-	  // if (Time > 100)  BONUS
-		// 	setTime(Time - 100);
+	  if (Time > 100)
+			setTime(Time - 100);
 	  return newRows;
 	};
   
@@ -437,7 +390,7 @@ const addMalusLines = (number, position, pieces) => {
 			}
 	  }
 	}
-  
+
 	const sameArray = (array1, array2) => {
 	  if (array1.length !== array2.length) return false;
 			for (let i = 0; i < array1.length; i++) {
@@ -538,10 +491,6 @@ const addMalusLines = (number, position, pieces) => {
   
 	const handleKeyDown = (keyDown) => {
 
-		// const currentTime = Date.now();
-		// if (currentTime - lastKeyTime < keyDelay) return;
-		// setLastKeyTime(currentTime);
-
 	if (!gameLaunched || !pieces[pieceIndex]) return;
 
 	let newPosition = { ...position[pieceIndex] };
@@ -607,7 +556,6 @@ const addMalusLines = (number, position, pieces) => {
 				while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
 					tempPosition.y++;
 				}
-			// tempPosition.y--; // Move back one step to the last valid position
 				writePiece(pieces[pieceIndex], position[pieceIndex], tempPosition, 0);
 				setPosition(prevPositions => {
 					const newPositions = [...prevPositions];
@@ -667,7 +615,7 @@ const addMalusLines = (number, position, pieces) => {
 			socket.emit('changestatusPlayer',  actualUrl, name, true)
 	  	socket.emit("gameStarted", actualUrl)
 	  }
-	  // toggleAudioPlayback(); BONUS
+	  toggleAudioPlayback();
 	};
 
 	const toggleAudioPlayback = () => {
@@ -730,8 +678,7 @@ const addMalusLines = (number, position, pieces) => {
 				{gameover == true && leader &&
 				<button onClick={Retry}>Retry</button>}
 				<div className='score'>
-{/*				<h3>{name} : {score} </h3>   Pour Bonus ! */} 
-				<h3>{name}</h3>
+				<h3>{name} : {score} </h3>
 				{bestScore > 0 &&
 				<div>
 					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best Score : {bestScore} </h4>

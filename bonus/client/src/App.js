@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import Game from './Game';
 import MultiGame from './multigame';
 import io from 'socket.io-client';
 import * as changeButtonFunctions from './components/changeButton'; // Importation de toutes les fonctions
@@ -11,7 +10,6 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [pieces, setPieces] = useState([]); // Array to hold the pieces
   const [catalogPieces, setCatalogPieces] = useState([]);
-  const [solo, setSolo] = useState(false); // Ajout de l'état solo
   const [multi, setMulti] = useState(false); // Ajout de l'état multi
   const [cou, setCou] = useState(false);
   const [Url, setUrl] = useState('');
@@ -19,7 +17,9 @@ function App() {
   const [tempName, setTempName] = useState(''); // État temporaire pour l'input
   const [checkUrl, setCheckUrl] = useState();
   const [noName, setNoName] = useState(true)
+  const [showHighScore, setShowHighScore] = useState(false)
   const [oldUrl, setoldUrl] = useState()
+	const [scoresList, setScoresList] = useState([{name: 0, scores: 0}])
   // const audio = document.getElementById("audio_tag");
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +60,17 @@ function App() {
     // Nettoyer la connexion socket lors du démontage du composant
     return () => socketIo.disconnect();
   }, [changeOk]);
+
+	useEffect(() => {
+		console.log("police de showhighscore = ", showHighScore)
+		if (showHighScore) {
+			socket.emit("highScore")
+			socket.on("highScoreSorted", (scoreSorted) => {
+				console.log("scoreSorted = ", scoreSorted)
+				setScoresList(scoreSorted);
+			})
+		}
+	}, [showHighScore])
 
   useEffect( () => { // demande d'acceptation d'accès a room existante
     if (tempName.length == 0)
@@ -117,18 +128,12 @@ function App() {
         )}
         <Route path="/" element={
           <>
-            {!noName && !solo && (
+            {!noName && (
               <div className="button">
-                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo)}>Solo</button>
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
+                <button onClick={() => changeButtonFunctions.coucou(showHighScore, setShowHighScore, socket, 0, 0)}>High Score</button>
               </div>
             )}
-            {!noName && solo &&
-              <div>
-                <Game OgPieces={pieces} catalogPieces={catalogPieces} name={tempName} socket={socket}/>
-                <button onClick={() => changeButtonFunctions.changeButton(solo, setSolo)}> Go back </button>
-              </div>
-            }
             {noName && (
               <div>
                 <input type="text" id="name" placeholder="Add your name" name="name" required
@@ -136,6 +141,23 @@ function App() {
                 <button onClick={handleValidation}>Validate</button>
               </div>
             )}
+						{showHighScore && (
+							<div>
+							{!scoresList && (
+								<span> No Score Yet </span>
+							)}
+							{scoresList && (
+								<div className="row">
+									{scoresList.map((score, i) => {
+										<div key={i} classname="player-name">
+											<p> {score.name} : {score.scores} </p>
+										</div>
+									})}
+									{/* <button onClick={setShowHighScore(false)}> Go Back </button> */}
+								</div>
+							)}
+							</div>
+						)}
           </>
         }/>
       </Routes>

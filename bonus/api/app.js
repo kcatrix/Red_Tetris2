@@ -221,12 +221,19 @@ io.on('connection', (socket) => {
 			}
 			io.to(Url).emit('retry', name)
 		})
-        socket.on('score_add', (score, name, Url) => {
-            const searchUrl = (element) => element.Url == Url
-						const searchName = (element) => element.name == name
-            const index = Rooms.findIndex(searchUrl);
-            const index_player = Rooms[index].Players.findIndex(searchName)
-            Rooms[index].Players[index_player].setScore(score)
-        })
+
+		socket.on('score_add', (score, name, Url) => {
+			const searchUrl = (element) => element.Url == Url
+			const searchName = (element) => element.name == name
+			const index = Rooms.findIndex(searchUrl);
+			const index_player = Rooms[index].Players.findIndex(searchName)
+			Rooms[index].Players[index_player].setScore(score)
+		})
+
+		socket.on('highScore', () => {
+			socket.emit("highScoreSorted", ScoresList)
+
+		})
+
 });
 
