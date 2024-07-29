@@ -131,7 +131,7 @@ function App() {
             {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
-                <button onClick={() => changeButtonFunctions.coucou(showHighScore, setShowHighScore, socket, 0, 0)}>High Score</button>
+                <button onClick={() => setShowHighScore(false)}>High Score</button>
               </div>
             )}
             {noName && !showHighScore && (
@@ -154,7 +154,7 @@ function App() {
 										</div>
 									})}
 									<div className="button">
-										<button onClick={() => changeButtonFunctions.coucou(showHighScore, setShowHighScore, socket, 0, 0)}> Go Back </button>
+										<button onClick={() => setShowHighScore(false)}> Go Back </button>
 									</div>
 								</div>
 							)}
