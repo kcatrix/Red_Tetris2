@@ -131,7 +131,7 @@ function App() {
             {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
-                <button onClick={() => setShowHighScore(false)}>High Score</button>
+                <button onClick={() => setShowHighScore(true)}>High Score</button>
               </div>
             )}
             {noName && !showHighScore && (
