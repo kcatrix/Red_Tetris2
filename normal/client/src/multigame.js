@@ -358,7 +358,7 @@
 							if (checkPiece === position[pieceIndex].y) {
 									setRows(newRows);
 							}
-							setScore(score + tmpScore); Bonus
+							setScore(score + tmpScore);
 							newScore = oldScore + tmpScore;
 							sum = newScore - oldScore;
 					}
