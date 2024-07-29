@@ -41,22 +41,10 @@ io.on('connection', (socket) => {
         for (let i = 0; i < Rooms.length; i++) {
             let room = Rooms[i];
             let playerIndex = room.Players.findIndex(player => player.id === socket.id);
-						let nature;
-						if  (room.Players.length() > 1)
-							nature = "multi"
-						else if (room.Players.length() == 1)
-							nature = "solo"
+
 
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
-                let old_score = room.Players[playerIndex].scores
-                let old_name = room.Players[playerIndex].name
-                const scoreIndex = ScoresList.findIndex(score => score.name === old_name);
-                if (scoreIndex !== -1) {
-                    ScoresList.splice(scoreIndex, 1);
-                }
-                const score = new Scores(old_name, old_score, nature);
-                ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -228,16 +216,43 @@ io.on('connection', (socket) => {
 		})
 
 		socket.on('score_add', (score, name, Url) => {
+			console.log("---- start score_add")
+			console.log("name = ", name, " && score = ", score)
 			const searchUrl = (element) => element.Url == Url
 			const searchName = (element) => element.name == name
 			const index = Rooms.findIndex(searchUrl);
 			const index_player = Rooms[index].Players.findIndex(searchName)
+			let nature;
+			if  (Rooms[index].Players.length > 1)
+				nature = "multi"
+			else if (Rooms[index].Players.length == 1)
+				nature = "solo"
+			// let old_score = Rooms[index].Players[playerIndex].scores
+			const scoreIndex = ScoresList.findIndex(score => score.name === name);
+			console.log("-- before ScoresList")
+			console.log("score = ", score)
+			console.log("Index de ScoresList = ",scoreIndex)
+			if (scoreIndex !== -1 && score > ScoresList[scoreIndex].score) { // Si score existant et que nouveau score meilleur
+				console.log("-- inside ScoresList")
+				console.log("score = ", score)
+				console.log("ScoresList = ", ScoresList[scoreIndex].score)
+				ScoresList.splice(scoreIndex, 1);
+				let newScore = new Scores(name, score, nature)
+				ScoresList.push(newScore)
+			}
+			else if (scoreIndex === -1) { // si score n'existe pas
+				console.log("inside scoreIndex === -1")
+				if (score) {
+					console.log("name = ", name, " && score = ", score, " && nature = ", nature)
+					let newScore = new Scores(name, score, nature)
+					ScoresList.push(newScore)
+				}
+			}
 			Rooms[index].Players[index_player].setScore(score)
 		})
 
 		socket.on('highScore', () => {
 			socket.emit("highScoreSorted", ScoresList)
-
 		})
 
 });

@@ -143,8 +143,8 @@ function App() {
             )}
 						{showHighScore && (
 							<div>
-							{!scoresList && (
-								<span> No Score Yet </span>
+							{scoresList.length == 0 && (
+								<p> No Score Yet </p>
 							)}
 							{scoresList && (
 								<div className="row">

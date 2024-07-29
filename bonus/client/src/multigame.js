@@ -9,7 +9,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [gameLaunched, setGameLaunched] = useState(false);
 	const movePieceDownRef = useRef();
 	const [Time, setTime] = useState(1000);
-	const [score, setScore] = useState(0);
+	const score = useRef();
 	const [startPiece, setStartPiece] = useState(true);
 	const [gameover, setGameOver] = useState(false)
 	const [leader, setleader] = useState(false)
@@ -90,12 +90,14 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			if (name_winner == name)
 			{
 				setResultat("winner")
-				setGameLaunched(false)
-				socket.emit("score_add", score, name, actualUrl)
-				if (score > bestScore)
-					setBestScore(score)
+				console.log(" ---- in Winner")
+				console.log("name = ", name, " && score = ", score.current)
+				socket.emit("score_add", score.current, name, actualUrl)
+				if (score.current > bestScore)
+					setBestScore(score.current)
 				// setScore(0)
 				setGameOver(true)
+				setGameLaunched(false)
 				toggleAudioPlayback();
 				socket.emit("gameStopped", actualUrl)
 				return gameLaunched
@@ -174,15 +176,15 @@ const addMalusLines = (number, position, pieces) => {
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 				console.log("--  game over from addMalus")
 				socket.emit('changestatusPlayer', actualUrl, name, false);
-				socket.emit("score_add", score, name, actualUrl);
+				socket.emit("score_add", score.current, name, actualUrl);
 				setGameLaunched(false);
 				setLastMalus((old) => old = 0);
 				setKeyDown("null")
 				setGameOver(true);
 				setTime(1000)
-				if (score > bestScore)
-					setBestScore(score)
-				setScore(0);
+				if (score.current > bestScore)
+					setBestScore(score.current)
+				score.current.current = 0;
 				socket.emit("gameStopped", actualUrl);
 				return;
 		}
@@ -288,13 +290,13 @@ const addMalusLines = (number, position, pieces) => {
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						console.log("game over from normal")
 						socket.emit('changestatusPlayer', actualUrl, name, false);
-						socket.emit("score_add", score, name, actualUrl);
+						socket.emit("score_add", score.current, name, actualUrl);
 						setGameLaunched(false);
 						setLastMalus((old) => old = 0);
 						setKeyDown("null");
-						if (score > bestScore)
-							setBestScore(score)
-						setScore(0)
+						if (score.current > bestScore)
+							setBestScore(score.current)
+						score.current = 0 // En modifiant score.current ici, le perdant affichera un score.current a 0 et le best score.current sera affiché meme si il n'y a pas eu de précédent
 						setGameOver(true);
 						setTime(1000)
 						socket.emit("gameStopped", actualUrl);
@@ -302,7 +304,7 @@ const addMalusLines = (number, position, pieces) => {
 				}
 
 				let newRows = [ ...rows];
-				let oldScore = score;
+				let oldScore = score.current;
 				let newScore = 0;
 				let tmpScore = 0;
 				let sum = 0;
@@ -313,14 +315,16 @@ const addMalusLines = (number, position, pieces) => {
 						}
 						if (checkPiece === position[pieceIndex].y) {
 								setRows(newRows);
+								score.current = score.current + tmpScore; // score.current
+								console.log(" --- Après modif score.current")
+								console.log("score = ", score, " && tmpScore = ", tmpScore)
+								newScore = oldScore + tmpScore;
+								sum = newScore - oldScore;
 						}
-						setScore(score + tmpScore); // Score
-						newScore = oldScore + tmpScore;
-						sum = newScore - oldScore;
 				}
 
 				if (!down) {
-					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score fait
+					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
 							setMalus(sum / 100);
 					}
 						setDown(true); // Indique si la pièce a touché le sol
@@ -611,7 +615,7 @@ const addMalusLines = (number, position, pieces) => {
 	}, [gameLaunched, tick]);
   
 	const launchGame = () => {
-	  setScore(0)
+	  score.current = 0
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader) {
@@ -681,10 +685,10 @@ const addMalusLines = (number, position, pieces) => {
 				{gameover == true && leader &&
 				<button onClick={Retry}>Retry</button>}
 				<div className='score'>
-				<h3>{name} : {score} </h3>
+				<h3>{name} : {score.current} </h3>
 				{bestScore > 0 &&
 				<div>
-					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best Score : {bestScore} </h4>
+					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best score : {bestScore} </h4>
 				</div>
 				}
 				</div>
