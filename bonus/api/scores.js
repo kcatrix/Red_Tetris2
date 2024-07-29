@@ -1,7 +1,8 @@
 class Scores {
-	constructor(name, scores) {
+	constructor(name, scores, nature) {
 		this.name = name
 		this.scores = scores
+		this.nature = nature
 	}
 }
 

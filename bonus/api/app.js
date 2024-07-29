@@ -41,6 +41,11 @@ io.on('connection', (socket) => {
         for (let i = 0; i < Rooms.length; i++) {
             let room = Rooms[i];
             let playerIndex = room.Players.findIndex(player => player.id === socket.id);
+						let nature;
+						if  (room.Players.length() > 1)
+							nature = "multi"
+						else if (room.Players.length() == 1)
+							nature = "solo"
 
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
@@ -50,7 +55,7 @@ io.on('connection', (socket) => {
                 if (scoreIndex !== -1) {
                     ScoresList.splice(scoreIndex, 1);
                 }
-                const score = new Scores(old_name, old_score);
+                const score = new Scores(old_name, old_score, nature);
                 ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 

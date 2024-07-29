@@ -19,7 +19,7 @@ function App() {
   const [noName, setNoName] = useState(true)
   const [showHighScore, setShowHighScore] = useState(false)
   const [oldUrl, setoldUrl] = useState()
-	const [scoresList, setScoresList] = useState([{name: 0, scores: 0}])
+	const [scoresList, setScoresList] = useState([{name: 0, scores: 0, nature: ""}])
   // const audio = document.getElementById("audio_tag");
   const navigate = useNavigate();
   const location = useLocation();
@@ -128,13 +128,13 @@ function App() {
         )}
         <Route path="/" element={
           <>
-            {!noName && (
+            {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
                 <button onClick={() => changeButtonFunctions.coucou(showHighScore, setShowHighScore, socket, 0, 0)}>High Score</button>
               </div>
             )}
-            {noName && (
+            {noName && !showHighScore && (
               <div>
                 <input type="text" id="name" placeholder="Add your name" name="name" required
                   minLength="4" maxLength="15" size="10" value={tempName} onChange={handleInputChange} />
@@ -150,10 +150,12 @@ function App() {
 								<div className="row">
 									{scoresList.map((score, i) => {
 										<div key={i} classname="player-name">
-											<p> {score.name} : {score.scores} </p>
+											<h1> {score.name} : {score.scores} --- {score.nature} </h1>
 										</div>
 									})}
-									{/* <button onClick={setShowHighScore(false)}> Go Back </button> */}
+									<div className="button">
+										<button onClick={() => changeButtonFunctions.coucou(showHighScore, setShowHighScore, socket, 0, 0)}> Go Back </button>
+									</div>
 								</div>
 							)}
 							</div>

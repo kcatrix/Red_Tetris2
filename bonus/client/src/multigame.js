@@ -94,7 +94,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				socket.emit("score_add", score, name, actualUrl)
 				if (score > bestScore)
 					setBestScore(score)
-				setScore(0)
+				// setScore(0)
 				setGameOver(true)
 				toggleAudioPlayback();
 				socket.emit("gameStopped", actualUrl)
@@ -174,6 +174,7 @@ const addMalusLines = (number, position, pieces) => {
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 				console.log("--  game over from addMalus")
 				socket.emit('changestatusPlayer', actualUrl, name, false);
+				socket.emit("score_add", score, name, actualUrl);
 				setGameLaunched(false);
 				setLastMalus((old) => old = 0);
 				setKeyDown("null")
@@ -287,11 +288,13 @@ const addMalusLines = (number, position, pieces) => {
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						console.log("game over from normal")
 						socket.emit('changestatusPlayer', actualUrl, name, false);
+						socket.emit("score_add", score, name, actualUrl);
 						setGameLaunched(false);
 						setLastMalus((old) => old = 0);
 						setKeyDown("null");
 						if (score > bestScore)
 							setBestScore(score)
+						setScore(0)
 						setGameOver(true);
 						setTime(1000)
 						socket.emit("gameStopped", actualUrl);
