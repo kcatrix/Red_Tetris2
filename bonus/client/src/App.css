@@ -139,3 +139,30 @@ h1 {
   flex-direction: row;
   gap: 25px;
  }
+
+ .grid-container {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr); /* 3 colonnes de largeur égale */
+	gap: 1px; /* espace entre les éléments */
+	padding: 1px;
+	/* border-bottom: 1px solid #ccc; */
+	background-color: antiquewhite;
+ }
+
+
+ .item1, .item2, .item3 {
+	padding: 10px;
+	/* color: black; */
+	background-color: #282c34; /* couleur de fond pour les éléments */
+	/* border: 1px solid #ddd; bordure légère pour les éléments */
+}
+
+ .jtem1, .jtem2, .jtem3 {
+	/* color: black; */
+	padding: 5px;
+	background-color: #282c34; /* couleur de fond pour les éléments */
+	/* border: 1px solid #ddd; bordure légère pour les éléments */
+	font-style: italic;
+	font-weight: 1000;
+	color: red;
+}

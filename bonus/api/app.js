@@ -228,14 +228,18 @@ io.on('connection', (socket) => {
 			else if (Rooms[index].Players.length == 1)
 				nature = "solo"
 			// let old_score = Rooms[index].Players[playerIndex].scores
-			const scoreIndex = ScoresList.findIndex(score => score.name === name);
+			const scoreIndex = ScoresList.findIndex(score => score.name === name && score.nature === nature);
 			console.log("-- before ScoresList")
 			console.log("score = ", score)
-			console.log("Index de ScoresList = ",scoreIndex)
-			if (scoreIndex !== -1 && score > ScoresList[scoreIndex].score) { // Si score existant et que nouveau score meilleur
+			console.log("Index de ScoresList = ", scoreIndex)
+			if (scoreIndex !== -1)
+				console.log("ScoresList[scoreIndex].score = ", ScoresList[scoreIndex].scores)
+
+			if (scoreIndex !== -1 && score > ScoresList[scoreIndex].scores ) { // Si score existant et que nouveau score meilleur
 				console.log("-- inside ScoresList")
 				console.log("score = ", score)
-				console.log("ScoresList = ", ScoresList[scoreIndex].score)
+				console.log("nature = ",nature ," et score.nature = ", ScoresList[scoreIndex].nature)
+				console.log("ScoresList = ", ScoresList[scoreIndex].scores)
 				ScoresList.splice(scoreIndex, 1);
 				let newScore = new Scores(name, score, nature)
 				ScoresList.push(newScore)
@@ -252,8 +256,11 @@ io.on('connection', (socket) => {
 		})
 
 		socket.on('highScore', () => {
+			function compareNumbers(a, b) {
+				return b.scores - a.scores;
+			}
+			ScoresList.sort(compareNumbers)
 			socket.emit("highScoreSorted", ScoresList)
 		})
-
 });
 

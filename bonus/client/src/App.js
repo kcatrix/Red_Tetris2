@@ -147,15 +147,24 @@ function App() {
 								<p> No Score Yet </p>
 							)}
 							{scoresList && (
-								<div className="row">
-									{scoresList.map((score, i) => {
-										<div key={i} classname="player-name">
-											<h1> {score.name} : {score.scores} --- {score.nature} </h1>
+								<div>
+									<div>
+										<div className='grid-container'>
+											<div className="jtem1">  Player's Name </div>
+											<div className="jtem2">	Best score </div>
+											<div className="jtem3"> Type </div>
 										</div>
-									})}
-									<div className="button">
-										<button onClick={() => setShowHighScore(false)}> Go Back </button>
-									</div>
+										{scoresList.map((score, i) => (
+											<div key={i} className='grid-container'>
+												<div className="item1">  {score.name} </div>
+												<div className="item2">	{score.scores} </div>
+												<div className="item3"> {score.nature} </div>
+											</div>
+										))}
+										<div className="button">
+											<button onClick={() => setShowHighScore(false)}> Go Back </button>
+										</div>
+										</div>
 								</div>
 							)}
 							</div>
