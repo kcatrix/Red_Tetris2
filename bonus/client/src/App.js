@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { configureStore } from '@reduxjs/toolkit'
 import './App.css';
 import MultiGame from './multigame';
 import io from 'socket.io-client';
