@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { configureStore } from '@reduxjs/toolkit'
+import { on, off, selectShowHighScore } from "./reducers/showHighScoreSlice"
 import './App.css';
 import MultiGame from './multigame';
 import io from 'socket.io-client';
 import * as changeButtonFunctions from './components/changeButton'; // Importation de toutes les fonctions
 // import sound from './tetris.mp3';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 function App() {
   const [socket, setSocket] = useState(null);
@@ -18,12 +19,14 @@ function App() {
   const [tempName, setTempName] = useState(''); // État temporaire pour l'input
   const [checkUrl, setCheckUrl] = useState();
   const [noName, setNoName] = useState(true)
-  const [showHighScore, setShowHighScore] = useState(false)
+  // const [showHighScore, setShowHighScore] = useState(false)
   const [oldUrl, setoldUrl] = useState()
 	const [scoresList, setScoresList] = useState([{name: 0, scores: 0, nature: ""}])
   // const audio = document.getElementById("audio_tag");
   const navigate = useNavigate();
   const location = useLocation();
+	const dispatch = useDispatch();
+	const showHighScore = useSelector(selectShowHighScore)
 
   // Connexion au serveur socket.io
   useEffect(() => {
@@ -132,7 +135,7 @@ function App() {
             {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
-                <button onClick={() => setShowHighScore(true)}>High Score</button>
+                <button onClick={() => dispatch(on())}>High Score</button>
               </div>
             )}
             {noName && !showHighScore && (
@@ -163,7 +166,7 @@ function App() {
 											</div>
 										))}
 										<div className="button">
-											<button onClick={() => setShowHighScore(false)}> Go Back </button>
+											<button onClick={() => dispatch(off())}> Go Back </button>
 										</div>
 										</div>
 								</div>
