@@ -7,6 +7,7 @@ import * as changeButtonFunctions from './components/changeButton'; // Importati
 // import sound from './tetris.mp3';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { HighScoreBoard } from './components/HighScoreBoard';
 
 function App() {
   const [socket, setSocket] = useState(null);
@@ -19,14 +20,14 @@ function App() {
   const [tempName, setTempName] = useState(''); // État temporaire pour l'input
   const [checkUrl, setCheckUrl] = useState();
   const [noName, setNoName] = useState(true)
-  // const [showHighScore, setShowHighScore] = useState(false)
+  const [showHighScore, setShowHighScore] = useState(false)
   const [oldUrl, setoldUrl] = useState()
-	const [scoresList, setScoresList] = useState([{name: 0, scores: 0, nature: ""}])
+	const [scoresList, setScoresList] = useState([])
   // const audio = document.getElementById("audio_tag");
   const navigate = useNavigate();
   const location = useLocation();
 	const dispatch = useDispatch();
-	const showHighScore = useSelector(selectShowHighScore)
+	// const showHighScore = useSelector(selectShowHighScore)
 
   // Connexion au serveur socket.io
   useEffect(() => {
@@ -66,11 +67,9 @@ function App() {
   }, [changeOk]);
 
 	useEffect(() => {
-		console.log("police de showhighscore = ", showHighScore)
 		if (showHighScore) {
 			socket.emit("highScore")
 			socket.on("highScoreSorted", (scoreSorted) => {
-				console.log("scoreSorted = ", scoreSorted)
 				setScoresList(scoreSorted);
 			})
 		}
@@ -135,7 +134,7 @@ function App() {
             {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
-                <button onClick={() => dispatch(on())}>High Score</button>
+                <button onClick={() => setShowHighScore(true)}>High Score</button>
               </div>
             )}
             {noName && !showHighScore && (
@@ -146,32 +145,7 @@ function App() {
               </div>
             )}
 						{showHighScore && (
-							<div>
-							{scoresList.length == 0 && (
-								<p> No Score Yet </p>
-							)}
-							{scoresList && (
-								<div>
-									<div>
-										<div className='grid-container'>
-											<div className="jtem1">  Player's Name </div>
-											<div className="jtem2">	Best score </div>
-											<div className="jtem3"> Type </div>
-										</div>
-										{scoresList.map((score, i) => (
-											<div key={i} className='grid-container'>
-												<div className="item1">  {score.name} </div>
-												<div className="item2">	{score.scores} </div>
-												<div className="item3"> {score.nature} </div>
-											</div>
-										))}
-										<div className="button">
-											<button onClick={() => dispatch(off())}> Go Back </button>
-										</div>
-										</div>
-								</div>
-							)}
-							</div>
+							<HighScoreBoard scoresList={scoresList} setShowHighScore={setShowHighScore}/>
 						)}
           </>
         }/>

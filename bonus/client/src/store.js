@@ -1,8 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit'
-import showHighScoreSlice from "./reducers/showHighScoreSlice"
+import { socketMiddleware } from './middleware/socketMiddleware'
 
 export const store = configureStore({
-  reducer: {
-    showHighScore: showHighScoreSlice,
-  },
+	middleware(getDefaultMiddleware) {
+    return getDefaultMiddleware().concat([socketMiddleware]);
+	} 
 })
