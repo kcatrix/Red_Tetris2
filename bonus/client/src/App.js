@@ -8,11 +8,12 @@ import * as changeButtonFunctions from './components/changeButton'; // Importati
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { HighScoreBoard } from './components/HighScoreBoard';
+import { selectRandomPiece } from "./reducers/randomPieceSlice";
 
 function App() {
-  const [socket, setSocket] = useState(null);
-  const [pieces, setPieces] = useState([]); // Array to hold the pieces
-  const [catalogPieces, setCatalogPieces] = useState([]);
+  // const [socket, setSocket] = useState(null);
+	const pieces = useSelector(selectRandomPiece);
+	const [catalogPieces, setCatalogPieces] = useState([]);
   const [multi, setMulti] = useState(false); // Ajout de l'état multi
   const [cou, setCou] = useState(false);
   const [Url, setUrl] = useState('');
@@ -32,14 +33,14 @@ function App() {
   // Connexion au serveur socket.io
   useEffect(() => {
     // const socketIo = io('http://90.5.107.160:4000'); // Utilisez votre adresse publique ici
-    const socketIo = io('http://localhost:4000'); // Utilisez votre adresse publique ici
-    setSocket(socketIo);
+    // const socketIo = io('http://localhost:4000'); // Utilisez votre adresse publique ici
+    // setSocket(socketIo);
 
-    socketIo.emit('requestRandomPiece');
+    // socketIo.emit('requestRandomPiece');
 
-    socketIo.on('randomPiece', (randomPiece) => {
-      setPieces(randomPiece); // Add the randomPiece to the pieces array
-    });
+    // socketIo.on('randomPiece', (randomPiece) => {
+    //   setPieces(randomPiece); // Add the randomPiece to the pieces array
+    // });
 
     socketIo.emit('allPieces');
 
