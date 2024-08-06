@@ -1,9 +1,11 @@
 import React from 'react';
 import '../App.css';
+import { useDispatch } from 'react-redux';
+import { showHighScoreOff } from '../reducers/showHighScoreSlice';
 
-export const HighScoreBoard = ({scoresList, setShowHighScore}) => {
+export const HighScoreBoard = ({scoresList}) => {
 
-	// const dispatch = useDispatch();
+	const dispatch = useDispatch();
 
 	const titleGrid = () => (
 
@@ -31,7 +33,7 @@ export const HighScoreBoard = ({scoresList, setShowHighScore}) => {
 				<div>
 					<p> No Score Yet </p>
 					<div className="button">
-						<button onClick={() => setShowHighScore(false)}> Go Back </button>
+						<button onClick={() => dispatch(showHighScoreOff())}> Go Back </button>
 					</div>
 				</div>
 			 : (
@@ -40,7 +42,7 @@ export const HighScoreBoard = ({scoresList, setShowHighScore}) => {
 						{titleGrid()}
 						{displayGrid()}
 						<div className="button">
-						<button onClick={() => setShowHighScore(false)}> Go Back </button>
+						<button onClick={() => dispatch(showHighScoreOff())}> Go Back </button>
 						</div>
 					</div>
 				</div>

@@ -7,8 +7,8 @@ const randomPieceSlice = createSlice({
 	name: 'randomPiece',
 	initialState,
 	reducers: {
-		allPieceAdded(state, action) {
-			state.value = (action.payload)
+		allPieceAdded(action) {
+			return action.payload; // Remplacer l'état actuel par le tableau de pièces
 		}
 	}
 
