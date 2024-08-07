@@ -7,7 +7,7 @@ const catalogPiecesSlice = createSlice ({
 	name: 'catalogPieces',
 	initialState,
 	reducers: {
-		fillCatalog(action){
+		fillCatalog(state, action){
 			return action.payload
 		}
 	}
@@ -16,4 +16,4 @@ const catalogPiecesSlice = createSlice ({
 export const { fillCatalog } = catalogPiecesSlice.actions
 export default catalogPiecesSlice.reducer
 
-export const selectCatalogPieces = (state) => state.catalogPieces.value
+export const selectCatalogPieces = (state) => state.catalogPieces

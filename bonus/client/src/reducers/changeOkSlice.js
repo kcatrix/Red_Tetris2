@@ -7,10 +7,10 @@ const changeOkSlice = createSlice({
 	initialState,
 	reducers:{
 		changeOkOn(state){
-			state = true;
+			return true;
 		},
 		changeOkOff(state){
-			state = false;
+			return false;
 		}
 	}
 })

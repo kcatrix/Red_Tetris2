@@ -7,10 +7,10 @@ const showHighScoreSlice = createSlice({
 	initialState,
 	reducers:{
 		showHighScoreOn(state){
-			state = true;
+			return true;
 		},
 		showHighScoreOff(state){
-			state = false;
+			return false;
 		}
 	}
 })

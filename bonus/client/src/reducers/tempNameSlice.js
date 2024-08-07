@@ -7,7 +7,7 @@ const tempNameSlice = createSlice({
 	initialState,
 	reducers: {
 		changeTempName(state, action) {
-			state = action.payload
+			return action.payload
 		}
 	}
 })

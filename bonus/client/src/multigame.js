@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import sound from './tetris.mp3';
+import { selectUrl } from './reducers/urlSlice';
+import { selectPiece } from './reducers/pieceSlice';
+import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
 
 
 function MultiGame({ OgPieces, catalogPieces, name, socket }) {
+
+	const url = useSelector(selectUrl);
+	const pieces = useSelector(selectPiece);
+	const retrySignal = useSelector(selectRetrySignal)
 	const [pieceIndex, setPieceIndex] = useState(0);
 	const [position, setPosition] = useState([{ x: 4, y: 0}]);
 	const [gameLaunched, setGameLaunched] = useState(false);
@@ -24,11 +32,11 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const [bestScore, setBestScore] = useState();
 	const audio = document.getElementById("audio_tag");
 	const [play, setPlay] = useState(false);
-	const [pieces, setPieces] = useState([...OgPieces])
 	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
 	const [addMalusGo, setAddMalusGo] = useState(0)
 	const [spaceRaised, setSpaceRaised] = useState(false)
+	const dispatch = useDispatch();
 
 
 		const [rows, setRows] = useState(
@@ -38,52 +46,41 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	let intervalId;
 	const actualUrl = location.pathname;
 
-	useEffect(() => {
+	useEffect(() => { // remplacable par un dispatch({ message a la con })
 
-		socket.emit('leaderornot', actualUrl, name)
+		dispatch({ type: 'LEADER_OR_NOT' })
 	}, []);
 
-	useEffect(() => {
+	useEffect(() => { // continuité du useEffect du dessus
+
+		dispatch({ type: 'LEADER_REP' }) // avec variable url et tempName
+	}, [])
+
+	useEffect(() => { // lors du dispatch de down, je peux utiliser le middleWare
 		if (down) {
-			let y = 19;
-			for (y; rows[y].includes(1) || rows[y].includes(2); y--) {}
-	
-			let index = y;
-			socket.emit("setHigherPos", index, actualUrl, name);
+			dispatch({ type: 'SET_HIGHER_POS' })
 			setDown(false)
 		}
 	}, [down]);
 
-	useEffect(() => {
-
-		socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
-			setPieces(piecesleader);
-			setBestScore(best);
-			if (checkleader)
-				setleader(true);
-		})
-
+	useEffect(() => { // un peu de mal a imaginer comment catch cette socket, remplacer par un dispatch ? 
+		// Peut être setInterval peut aider a boucler sur action dispatch
+		dispatch({ type: 'LAUNCH_GAME' })
+		toggleAudioPlayback();
 	}, [])
 
+	dispatch({ type: 'NAME_PLAYER' })
+
+	dispatch({ type: 'RETRY' })
 
 	useEffect(() => {
+		if (retrySignal)
+			Retry();
+		dispatch(retrySignalOff())
+	}, [retrySignal])
 
-		socket.on('launchGame', () => {
-			if(leader == false)
-				launchGame()
-			})
-
-	}, [])
-
-
-		socket.on('namePlayer', (Players) => {
-			setPlayersoff(Players.filter(element => element != name))
-		})
-
-		socket.on('retry', (nameleader) => {
-			if (name != nameleader)
-				Retry()
-		})
+	// ----- La suite des événements !! 
+	// Aussi penser a foutre le nez dans Retry() pourvoir ce qui doit aller dans le store
 
 	useEffect(() => {
 		socket.on('winner', (name_winner) => {
@@ -615,7 +612,7 @@ const addMalusLines = (number, position, pieces) => {
 	}, [gameLaunched, tick]);
   
 	const launchGame = () => {
-	  score.current = 0
+	  score.current = 0 // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	  setGameLaunched(true);
 	  setResultat("Game over")
 	  if (leader) {

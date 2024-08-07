@@ -108,7 +108,6 @@ io.on('connection', (socket) => {
         const roomIndex = Rooms.findIndex(searchUrl);
         if (Rooms[roomIndex]) {
             Rooms[roomIndex].available = false;
-						// io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
 						io.to(checkUrl).emit('launchGame'); // Emit to the room
 					}
     });

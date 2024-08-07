@@ -7,10 +7,10 @@ const multiSlice = createSlice({
 	initialState,
 	reducers:{
 		multiOn(state){
-			state = true;
+			return true;
 		},
 		multiOff(state){
-			state = false;
+			return false;
 		}
 	}
 })

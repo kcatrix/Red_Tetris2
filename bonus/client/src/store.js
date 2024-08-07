@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import socketMiddleware from './middleware/socketMiddleware'
-import randomPieceSlice from './reducers/randomPieceSlice'
+import pieceSlice from './reducers/pieceSlice'
 import catalogPiecesSlice from './reducers/catalogPiecesSlice'
 import multiSlice from './reducers/multiSlice'
 import urlSlice, { changeUrl } from './reducers/urlSlice'
@@ -12,10 +12,18 @@ import showHighScoreSlice from './reducers/showHighScoreSlice'
 import scoreListSlice from './reducers/scoreListSlice'
 import noNameSlice from './reducers/noNameSlice'
 import oldUrlSlice from './reducers/oldUrlSlice'
+import leaderSlice from './reducers/leaderSlice'
+import bestScoreSlice from './reducers/bestScoreSlice'
+import rowsSlice from './reducers/rowsSlice'
+import gameLaunchedSlice from './reducers/gameLaunchedSlice'
+import scoreSlice from './reducers/scoreSlice'
+import resultatsSlice from './reducers/resultatsSlice'
+import playersOffSlice from './reducers/playersOffSlice'
+import retrySignalSlice from './reducers/retrySignalSlice'
 
 export const store = configureStore({
 	reducer: {
-		randomPiece: randomPieceSlice,
+		piece: pieceSlice,
 		catalogPieces: catalogPiecesSlice,
 		multi: multiSlice,
 		url: urlSlice,
@@ -28,6 +36,14 @@ export const store = configureStore({
 		noName: noNameSlice,
 		checkUrl: checkUrlSlice,
 		oldUrl: oldUrlSlice,
+		leader: leaderSlice,
+		bestScore: bestScoreSlice,
+		rows: rowsSlice,
+		gameLaunched: gameLaunchedSlice,
+		score: scoreSlice,
+		resultats: resultatsSlice,
+		playersOff: playersOffSlice,
+		retrySignal: retrySignalSlice,
 		
 	},
 	middleware(getDefaultMiddleware) {

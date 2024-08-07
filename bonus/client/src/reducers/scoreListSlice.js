@@ -7,7 +7,7 @@ const scoreListSlice = createSlice({
 	name: 'scoreList',
 	initialState,
 	reducers: {
-		changeScoreList(action) {
+		changeScoreList(state, action) {
 			return action.payload
 		}
 	}
@@ -17,4 +17,4 @@ const scoreListSlice = createSlice({
 export const { changeScoreList } = scoreListSlice.actions;
 export default scoreListSlice.reducer
 
-export const selectScoreList = (state) => state.scoreList.value
+export const selectScoreList = (state) => state.scoreList

@@ -7,10 +7,10 @@ const noName = createSlice({
 	initialState,
 	reducers:{
 		noNameOn(state){
-			state = true;
+			return true;
 		},
 		noNameOff(state){
-			state = false;
+			return false;
 		}
 	}
 })

@@ -7,10 +7,10 @@ const createRoomSlice = createSlice({
 	initialState,
 	reducers:{
 		createRoomOn(state){
-			state = true;
+			return true;
 		},
 		createRoomOff(state){
-			state = false;
+			return false;
 		}
 	}
 })

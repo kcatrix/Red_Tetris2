@@ -7,7 +7,7 @@ const checkUrlSlice = createSlice({
 	initialState,
 	reducers: {
 		changeCheckUrl(state, action) {
-			state = action.payload
+			return action.payload
 		}
 	}
 })
