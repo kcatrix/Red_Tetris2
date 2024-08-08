@@ -71,11 +71,11 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 
 	dispatch({ type: 'NAME_PLAYER' })
 
-	dispatch({ type: 'RETRY' })
+	dispatch({ type: 'RETRY_SIGNAL' })
 
 	useEffect(() => {
 		if (retrySignal)
-			Retry();
+			dispatch({ type: 'RETRY_GAMES' })
 		dispatch(retrySignalOff())
 	}, [retrySignal])
 

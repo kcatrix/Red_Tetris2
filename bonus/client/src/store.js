@@ -20,6 +20,11 @@ import scoreSlice from './reducers/scoreSlice'
 import resultatsSlice from './reducers/resultatsSlice'
 import playersOffSlice from './reducers/playersOffSlice'
 import retrySignalSlice from './reducers/retrySignalSlice'
+import lastMalusSlice from './reducers/lastMalusSlice'
+import keyDownSlice from './reducers/keyDownSlice'
+import gameOverSlice from './reducers/gameOverSlice'
+import pieceIndexSlice from './reducers/pieceIndexSlice'
+import startPieceSlice from './reducers/startPieceSlice'
 
 export const store = configureStore({
 	reducer: {
@@ -44,6 +49,11 @@ export const store = configureStore({
 		resultats: resultatsSlice,
 		playersOff: playersOffSlice,
 		retrySignal: retrySignalSlice,
+		lastMalus: lastMalusSlice,
+		keyDown: keyDownSlice,
+		gameOver: gameOverSlice,
+		pieceIndex: pieceIndexSlice,
+		startPiece: startPieceSlice,
 		
 	},
 	middleware(getDefaultMiddleware) {

@@ -12,16 +12,40 @@ import { gameLaunchedOn } from '../reducers/gameLaunchedSlice';
 import { retrySignalOn } from '../reducers/retrySignalSlice';
 import { changeResultats } from '../reducers/resultatsSlice';
 import { fillPlayersOff } from '../reducers/playersOffSlice';
+import { modifyLastMalus } from '../reducers/lastMalusSlice';
+import { changeKeyDown } from '../reducers/keyDownSlice';
+import { gameOverOff } from '../reducers/gameOverSlice';
+import { modifyRows } from '../reducers/rowsSlice';
+import { startPieceOn } from '../reducers/startPieceSlice';
 
-const launchGame = (state) => {
+const launchGame = (state, store) => {
 	
-	state.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
-	state.dispatch(gameLaunchedOn(true));
-	state.dispatch(changeResultats("Game over"));
+	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
+	store.dispatch(gameLaunchedOn(true));
+	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
 		socket.emit("gameStarted", state.url)
 	}
+}
+
+const Retry = (state, store) => {
+
+	store.dispatch(modifyLastMalus(0))
+	store.dispatch(changeKeyDown("null"))
+	socket.emit('changestatusPlayer', state.url, state.tempName, true)
+	store.dispatch(gameOverOff(false))
+	if (state.leader) {
+		socket.emit('all_retry', state.url, state.tempName)
+	}
+	store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
+	setPosition(prevPosition => { // New Poistion a penseer -> Probablement créer reducer a 3 actions 
+		const newPosition = [...prevPosition];
+		store.dispatch(startPieceOn(true))
+		newPosition[state.pieceIndex] = { x: 4, y: 0 };
+		return newPosition;
+		});
+	launchGame()
 }
 
 const socketMiddleware = (() => {
@@ -57,8 +81,8 @@ const socketMiddleware = (() => {
         const state = store.getState();
         socket.emit('createGameRoom', state.tempName, state.randomPiece);
 				socket.on('GiveUrl', (givenUrl) => {
-					state.dispatch(changeUrl(givenUrl));
-					state.dispatch(multiOn());
+					store.dispatch(changeUrl(givenUrl));
+					store.dispatch(multiOn());
 				});
         break;
       }
@@ -66,7 +90,7 @@ const socketMiddleware = (() => {
 				const state = store.getState();
         socket.emit('highScore');
 				socket.on('highScoreSorted', (scoreSorted) => {
-					state.dispatch(changeScoreList(scoreSorted));
+					store.dispatch(changeScoreList(scoreSorted));
 				});
         break
       }
@@ -74,7 +98,7 @@ const socketMiddleware = (() => {
         const state = store.getState();
         socket.emit('urlCheck', state.checkUrl);
 				socket.on('urlChecked', (check) => { // réponse de demande d'accès
-					check ? state.dispatch(changeOkOn()) : state.dispatch(changeOkOff());
+					check ? store.dispatch(changeOkOn()) : store.dispatch(changeOkOff());
 				});
         break;
       }
@@ -89,12 +113,12 @@ const socketMiddleware = (() => {
         break;
       }
 			case 'LEADER_REP': {
-				const state = store.getState();
+				// const state = store.getState();
 				socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
-					state.dispatch(fillPiece(piecesleader));
-					state.dispatch(modifyBestScore(best));
+					store.dispatch(fillPiece(piecesleader));
+					store.dispatch(modifyBestScore(best));
 					if (checkleader)
-						state.dispatch(leaderOn(true));
+						store.dispatch(leaderOn(true));
 				}) 
 				break;
 			}
@@ -111,22 +135,30 @@ const socketMiddleware = (() => {
 				const state = store.getState();
 				socket.on('launchGame', () => {
 					if(state.leader == false)
-						launchGame()
+						launchGame(state, store)
 					})
 				break;
 			}
 			case 'NAME_PLAYER': {
 				const state = store.getState();
 				socket.on('namePlayer', (Players) => {
-					state.dispatch(fillPlayersOff(Players.filter(element => element != state.tempName)))
+					store.dispatch(fillPlayersOff(Players.filter(element => element != state.tempName)))
 				})
 				break;
 			}
-			case 'RETRY': {
+			case 'RETRY_SIGNAL': {
 				const state = store.getState();
 				socket.on('retry', (nameleader) => {
 					if (state.tempName != nameleader)
-						state.dispatch(retrySignalOn())
+						store.dispatch(retrySignalOn())
+				})
+				break;
+			}
+			case 'RETRY_GAMES': {
+				const state = store.getState();
+				socket.on('retry', (nameleader) => {
+					if (state.tempName != nameleader)
+						store.dispatch(retrySignalOn())
 				})
 				break;
 			}
