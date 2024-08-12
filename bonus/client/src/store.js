@@ -25,6 +25,9 @@ import keyDownSlice from './reducers/keyDownSlice'
 import gameOverSlice from './reducers/gameOverSlice'
 import pieceIndexSlice from './reducers/pieceIndexSlice'
 import startPieceSlice from './reducers/startPieceSlice'
+import positionsSlice from './reducers/positionsSlice'
+import musicSlice from './reducers/musicSlice'
+import malusSlice from './reducers/malusSlice'
 
 export const store = configureStore({
 	reducer: {
@@ -54,6 +57,9 @@ export const store = configureStore({
 		gameOver: gameOverSlice,
 		pieceIndex: pieceIndexSlice,
 		startPiece: startPieceSlice,
+		positions: positionsSlice,
+		music: musicSlice,
+		malus: malusSlice,
 		
 	},
 	middleware(getDefaultMiddleware) {

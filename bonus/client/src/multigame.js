@@ -5,11 +5,13 @@ import sound from './tetris.mp3';
 import { selectUrl } from './reducers/urlSlice';
 import { selectPiece } from './reducers/pieceSlice';
 import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
+import { selectMusic, musicOff } from './reducers/musicSlice';
 
 
 function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 
 	const url = useSelector(selectUrl);
+	const music = useSelector(selectMusic)
 	const pieces = useSelector(selectPiece);
 	const retrySignal = useSelector(selectRetrySignal)
 	const [pieceIndex, setPieceIndex] = useState(0);
@@ -39,7 +41,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	const dispatch = useDispatch();
 
 
-		const [rows, setRows] = useState(
+	const [rows, setRows] = useState(
 	  Array.from({ length: 20 }, () => Array(10).fill(0))
 	);
 
@@ -66,8 +68,12 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => { // un peu de mal a imaginer comment catch cette socket, remplacer par un dispatch ? 
 		// Peut être setInterval peut aider a boucler sur action dispatch
 		dispatch({ type: 'LAUNCH_GAME' })
-		toggleAudioPlayback();
 	}, [])
+
+	useEffect(() => {
+		if (music == true)
+			toggleAudioPlayback();
+	}, [music])
 
 	dispatch({ type: 'NAME_PLAYER' })
 
@@ -79,38 +85,19 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 		dispatch(retrySignalOff())
 	}, [retrySignal])
 
-	// ----- La suite des événements !! 
-	// Aussi penser a foutre le nez dans Retry() pourvoir ce qui doit aller dans le store
 
 	useEffect(() => {
-		socket.on('winner', (name_winner) => {
-			if (name_winner == name)
-			{
-				setResultat("winner")
-				console.log(" ---- in Winner")
-				console.log("name = ", name, " && score = ", score.current)
-				socket.emit("score_add", score.current, name, actualUrl)
-				if (score.current > bestScore)
-					setBestScore(score.current)
-				// setScore(0)
-				setGameOver(true)
-				setGameLaunched(false)
-				toggleAudioPlayback();
-				socket.emit("gameStopped", actualUrl)
-				return gameLaunched
-			}
-		})
+		dispatch({ type: 'WINNER'})
 	}, [])
 
-useEffect(() => {
-	
-	socket.on('newLeader', (name_leader) => {
-		if(name_leader == name)
-			setleader(true)
-	})
-}, [])
+	useEffect(() => {
+		
+		dispatch({ type: 'NEW_LEADER'})
+	}, [])
 
 	useEffect(() => {
+
+		dispatch({ type: 'MALUS' })
 		if (malus > 1) {
 			console.log("--- malus = ", malus)
 			let trueMalus = malus - 1;
@@ -119,7 +106,10 @@ useEffect(() => {
 		}
 	}, [malus]);	
 	
+		// ----- La suite des événements !! 
+
 	useEffect(() => {
+
 		socket.on('malusSent', (number) => {
 			console.log("-- malusSent ->  malus received = ", number)
 			setAddMalusGo(number)
@@ -633,6 +623,7 @@ const addMalusLines = (number, position, pieces) => {
 		  }
 		}
 		setPlay(!play);
+		dispatch(musicOff())
 	};  
 
 	const Retry = () => {

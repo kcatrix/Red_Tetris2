@@ -8,15 +8,18 @@ import { changeScoreList } from '../reducers/scoreListSlice';
 import { leaderOn } from '../reducers/leaderSlice';
 import { modifyBestScore } from '../reducers/bestScoreSlice';
 import { modifyScore } from '../reducers/scoreSlice';
-import { gameLaunchedOn } from '../reducers/gameLaunchedSlice';
+import { gameLaunchedOff, gameLaunchedOn } from '../reducers/gameLaunchedSlice';
 import { retrySignalOn } from '../reducers/retrySignalSlice';
 import { changeResultats } from '../reducers/resultatsSlice';
 import { fillPlayersOff } from '../reducers/playersOffSlice';
 import { modifyLastMalus } from '../reducers/lastMalusSlice';
 import { changeKeyDown } from '../reducers/keyDownSlice';
-import { gameOverOff } from '../reducers/gameOverSlice';
+import { gameOverOff, gameOverOn } from '../reducers/gameOverSlice';
 import { modifyRows } from '../reducers/rowsSlice';
 import { startPieceOn } from '../reducers/startPieceSlice';
+import { resetPositions } from '../reducers/positionsSlice';
+import { musicOn } from '../reducers/musicSlice';
+import { modifyMalus } from '../reducers/malusSlice';
 
 const launchGame = (state, store) => {
 	
@@ -27,6 +30,7 @@ const launchGame = (state, store) => {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
 		socket.emit("gameStarted", state.url)
 	}
+	store.dispatch(musicOn())
 }
 
 const Retry = (state, store) => {
@@ -39,13 +43,9 @@ const Retry = (state, store) => {
 		socket.emit('all_retry', state.url, state.tempName)
 	}
 	store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
-	setPosition(prevPosition => { // New Poistion a penseer -> Probablement créer reducer a 3 actions 
-		const newPosition = [...prevPosition];
-		store.dispatch(startPieceOn(true))
-		newPosition[state.pieceIndex] = { x: 4, y: 0 };
-		return newPosition;
-		});
-	launchGame()
+	store.dispatch(resetPositions(state.pieceIndex))
+	store.dispatch(startPieceOn())
+	launchGame(state, store)
 }
 
 const socketMiddleware = (() => {
@@ -76,9 +76,11 @@ const socketMiddleware = (() => {
       return () => socket.disconnect();
     }
 
+		const state = store.getState();
+
+
     switch (action.type) {
       case 'createRoom/createRoomOn': {
-        const state = store.getState();
         socket.emit('createGameRoom', state.tempName, state.randomPiece);
 				socket.on('GiveUrl', (givenUrl) => {
 					store.dispatch(changeUrl(givenUrl));
@@ -87,7 +89,6 @@ const socketMiddleware = (() => {
         break;
       }
       case 'showHighScore/showHighScoreOn': {
-				const state = store.getState();
         socket.emit('highScore');
 				socket.on('highScoreSorted', (scoreSorted) => {
 					store.dispatch(changeScoreList(scoreSorted));
@@ -95,7 +96,6 @@ const socketMiddleware = (() => {
         break
       }
       case 'URL_CHECK': {
-        const state = store.getState();
         socket.emit('urlCheck', state.checkUrl);
 				socket.on('urlChecked', (check) => { // réponse de demande d'accès
 					check ? store.dispatch(changeOkOn()) : store.dispatch(changeOkOff());
@@ -103,17 +103,14 @@ const socketMiddleware = (() => {
         break;
       }
       case 'CREATE_PLAYER': {
-        const state = store.getState();
         socket.emit('createPlayer', state.oldUrl, state.tempName);
         break;
       }
       case 'LEADER_OR_NOT': {
-        const state = store.getState();
         socket.emit('leaderornot', state.url, state.tempName)
         break;
       }
 			case 'LEADER_REP': {
-				// const state = store.getState();
 				socket.on('leaderrep', (checkleader, piecesleader, best) => { // Provient de "leaderornot" du front
 					store.dispatch(fillPiece(piecesleader));
 					store.dispatch(modifyBestScore(best));
@@ -123,7 +120,6 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'SET_HIGHER_POS': {
-				const state = store.getState();
 				let y = 19;
 				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {}
 		
@@ -132,7 +128,6 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'LAUNCH_GAME': {
-				const state = store.getState();
 				socket.on('launchGame', () => {
 					if(state.leader == false)
 						launchGame(state, store)
@@ -140,14 +135,12 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'NAME_PLAYER': {
-				const state = store.getState();
 				socket.on('namePlayer', (Players) => {
 					store.dispatch(fillPlayersOff(Players.filter(element => element != state.tempName)))
 				})
 				break;
 			}
 			case 'RETRY_SIGNAL': {
-				const state = store.getState();
 				socket.on('retry', (nameleader) => {
 					if (state.tempName != nameleader)
 						store.dispatch(retrySignalOn())
@@ -155,14 +148,43 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'RETRY_GAMES': {
-				const state = store.getState();
-				socket.on('retry', (nameleader) => {
-					if (state.tempName != nameleader)
-						store.dispatch(retrySignalOn())
+				if (state.retrySignal == true)
+					Retry(state, store)
+				break;
+			}
+			case 'WINNER': {
+				socket.on('winner', (name_winner) => {
+					if (name_winner == state.tempName)
+					{
+						store.dispatch(changeResultats("winner"))
+						socket.emit("score_add", state.score, state.tempName, state.url)
+						if (state.score > state.bestScore)
+							store.dispatch(modifyBestScore(state.score))
+						store.dispatch(modifyScore(0))
+						store.dispatch(gameOverOn())
+						store.dispatch(gameLaunchedOff())
+						store.dispatch(musicOn())
+						socket.emit("gameStopped", state.url)
+						return state.gameLaunched
+					}
 				})
 				break;
 			}
-
+			case 'NEW_LEADER': {
+				socket.on('newLeader', (name_leader) => {
+					if(name_leader == tempName)
+						leaderOn()
+				})
+				break;
+			}
+			case 'MALUS': {
+				if (state.malus > 1) {
+					let trueMalus = state.malus - 1;
+					socket.emit('malus', trueMalus, state.url);
+					store.dispatch(modifyMalus(0));
+				}
+				break;
+			}
       // Ajoutez d'autres cas selon les besoins
       default:
         break;
