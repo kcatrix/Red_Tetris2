@@ -12,11 +12,17 @@ const positionsSlice = createSlice({
 				const pieceIndex = action.payload;
 				newPosition[pieceIndex] = { x: 4, y: 0 };
 				return newPosition;
+			},
+			modifyPositions(state, action) {
+				const { newPos, pieceIndex } = action.payload
+				const newPositions = [...state];
+				newPositions[pieceIndex] = newPos;
+				return newPositions;
 			}
 		}
 });
 
-export const { resetPositions } = positionsSlice.actions;
+export const { resetPositions, modifyPositions } = positionsSlice.actions;
 export default positionsSlice.reducer;
 
 export const selectPositions = (state) => state.positions

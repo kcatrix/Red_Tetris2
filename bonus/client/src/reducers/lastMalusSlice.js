@@ -8,11 +8,14 @@ const lastMalusSlice = createSlice({
 	reducers: {
 		modifyLastMalus: (state, action) => {
 			return action.payload;
+		},
+		addLastMalus: (state, action) => {
+			return state + action.payload;
 		}
 	}
 })
 
-export const { modifyLastMalus } = lastMalusSlice.actions;
+export const { modifyLastMalus, addLastMalus } = lastMalusSlice.actions;
 export default lastMalusSlice.reducer
 
 export const selectLastMalus = (state) => state.lastMalus

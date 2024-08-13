@@ -98,134 +98,24 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	useEffect(() => {
 
 		dispatch({ type: 'MALUS' })
-		if (malus > 1) {
-			console.log("--- malus = ", malus)
-			let trueMalus = malus - 1;
-			socket.emit('malus', trueMalus, actualUrl);
-			setMalus(0);
-		}
 	}, [malus]);	
 	
 		// ----- La suite des événements !! 
 
 	useEffect(() => {
 
-		socket.on('malusSent', (number) => {
-			console.log("-- malusSent ->  malus received = ", number)
-			setAddMalusGo(number)
-			console.log("-- before setLastMalus, lastMalus = ", lastMalus, " && number = ", number)
-		});
+		dispatch({ type: 'MALUS_SENT' })
 	}, [addMalusGo])
 
 	useEffect(() => {
-		socket.on('higherPos', (Players, Url) => {
-			if (Url == actualUrl) {
-				setPlayers(Players.filter(element => element.name !== name));
-			}
-		});
+
+		dispatch({ type: 'HIGHER_POS' })
 	}, [Players]);
   
 	useEffect(() => {
-		if (addMalusGo) {
-			addMalusLines(addMalusGo, position[pieceIndex], pieces[pieceIndex])
-			setLastMalus(old => old + addMalusGo)
-			setAddMalusGo(0)
-		}
+
+		dispatch({ type: 'ADD_MALUS_LINES' })
 	}, [addMalusGo, lastMalus])
-
-const addMalusLines = (number, position, pieces) => {
-	setRows((oldRows) => { 
-		let newPos = {x: position.x, y: 0};
-		
-		let newRows = [...oldRows];
-
-		// Clear piece from current position in newRows
-		for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-						if (pieces[y][x] === 1) {
-								console.log("position.y (", position.y, ")  + y (", y,") = ", position.y + y)
-								newRows[position.y + y][position.x + x] = 0;
-						}
-				}
-		}
-
-		// Find the highest row containing '1' or '2' from the bottom
-		let highestRowWith1 = 0;
-		for (let y = rows.length - 1; y >= 0; y--) {
-				if (newRows[y].includes(1) || newRows[y].includes(2)) {
-						highestRowWith1 = y;
-				} else if (equal(newRows[y], 0)) {
-						break;
-				}
-		}
-
-		// Check if adding malus lines would cause game over
-		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
-				console.log("--  game over from addMalus")
-				socket.emit('changestatusPlayer', actualUrl, name, false);
-				socket.emit("score_add", score.current, name, actualUrl);
-				setGameLaunched(false);
-				setLastMalus((old) => old = 0);
-				setKeyDown("null")
-				setGameOver(true);
-				setTime(1000)
-				if (score.current > bestScore)
-					setBestScore(score.current)
-				score.current.current = 0;
-				socket.emit("gameStopped", actualUrl);
-				return;
-		}
-
-		// Move rows up by 'number' positions
-		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
-				newRows[y - number] = rows[y];		
-		}
-		
-		// Add malus lines at the bottom
-		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
-			newRows[y] = new Array(rows[0].length).fill(2);
-		}
-
-		// Restore piece in its original position or adjusted position in newRows
-		
-
-		if (position.y + pieces.length < rows.length - (number + lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
-						if (newPos.y == 0 && position.y != 0) {
-							newPos.y = position.y + y;
-						}
-						newRows[position.y + y][position.x + x] = 1;	
-					}							
-				}
-			}
-		}
-		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
-						if (newPos.y == 0) {
-							newPos.y = position.y + y - (number + lastMalus);
-						}
-						newRows[position.y + y - (number + lastMalus)][position.x + x] = 1;
-					}
-				}
-			}
-		}
-
-		// Update piece position if necessary
-		if (newPos !== 0) {
-			setPosition(prevPosition => {
-					const newPositions = [...prevPosition];
-					newPositions[pieceIndex] = newPos;
-					return newPositions;
-			});
-		}
-		// Update the rows state
-		return newRows;
-	})
-}
 
 	const equal = (row, number) => {
 	  return row.every(cell => cell === number);
@@ -242,14 +132,15 @@ const addMalusLines = (number, position, pieces) => {
 	  return false;
 	};
 
-	const checkLastRows = (rows) => {
-		let y = rows.length - 1;
-	  for (y; rows[y].includes(1); y--) {}
-		if (y == 20)
-			return 19;
-		else
-	  return y;
-	};
+	// Not used
+	// const checkLastRows = (rows) => {
+	// 	let y = rows.length - 1;
+	//   for (y; rows[y].includes(1); y--) {}
+	// 	if (y == 20)
+	// 		return 19;
+	// 	else
+	//   return y;
+	// };
   
 	movePieceDownRef.current = useCallback(() => {
 			
