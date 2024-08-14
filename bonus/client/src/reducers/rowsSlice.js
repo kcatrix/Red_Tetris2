@@ -4,7 +4,7 @@ const initialState = Array.from({ length: 20 }, () => Array(10).fill(0))
 
 const rowsSlice = createSlice ({
 
-	name: 'rowsPieces',
+	name: 'rows',
 	initialState,
 	reducers: {
 		modifyRows(state, action){
@@ -13,7 +13,7 @@ const rowsSlice = createSlice ({
 	}
 })
 
-export const { modifyRows } = rowsPiecesSlice.actions
+export const { modifyRows } = rowsSlice.actions
 export default rowsSlice.reducer
 
 export const selectRows = (state) => state.rows

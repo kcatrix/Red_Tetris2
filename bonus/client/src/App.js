@@ -70,7 +70,7 @@ function App() {
 			dispatch(changeUrl(oldUrl));
 			dispatch(changeOldUrl(""));
 			dispatch({ type: 'CREATE_PLAYER' });
-			navigate(tempUrl);
+			navigate(url);
 		}
 	}, [noName]);
 
@@ -83,7 +83,6 @@ function App() {
     const finalTempName = sanitizedTempName.replace(/[^a-zA-Z0-9]/g, '');
 
     if (finalTempName.length >= 2 && finalTempName.length <= 15) {
-      console.log("finaltempname = ", finalTempName);
       dispatch(changeTempName(finalTempName));
       dispatch(noNameOff());
     } else {
@@ -98,7 +97,7 @@ function App() {
 				{!noName && (
         	<Route path="/:roomId/:name" element={
           	<div>
-							<MultiGame OgPieces={pieces} catalogPieces={catalogPieces} name={tempName} socket={socket}/>
+							<MultiGame/>
          	 </div>
         	}/>
         )}
@@ -107,7 +106,7 @@ function App() {
             {!noName && !showHighScore && (
               <div className="button">
                 <button onClick={() => dispatch(createRoomOn())}>Create Room</button>
-                <button onClick={() => dispatch(showHighScoreOn(true))}>High Score</button>
+                <button onClick={() => dispatch(showHighScoreOn())}>High Score</button>
               </div>
             )}
             {noName && !showHighScore && (

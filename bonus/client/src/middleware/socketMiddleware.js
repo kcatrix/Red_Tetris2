@@ -39,7 +39,23 @@ const checkRowsEqual = (rows, firstY, lastY, number) => {
 	return false;
 };
 
-const launchGame = (state, store) => {
+const resetGameOver = (state, store, socket) => {
+
+	socket.emit('changestatusPlayer', state.url, state.tempName, false);
+	socket.emit("score_add", state.score, state.tempName, state.url);
+	store.dispatch(gameLaunchedOff());
+	store.dispatch(modifyLastMalus(0));
+	store.dispatch(changeKeyDown("null"))
+	store.dispatch(gameOverOn());
+	store.dispatch(modifyTime(1000))
+	if (state.score > state.bestScore)
+		store.dispatch(modifyBestScore(store.score))
+	store.dispatch(modifyScore(0));
+	socket.emit("gameStopped", state.url);
+	return state.gameLaunched;
+}
+
+const launchGame = (state, store, socket) => {
 	
 	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	store.dispatch(gameLaunchedOn(true));
@@ -51,7 +67,7 @@ const launchGame = (state, store) => {
 	store.dispatch(musicOn())
 }
 
-const Retry = (state, store) => {
+const Retry = (state, store, socket) => {
 
 	store.dispatch(modifyLastMalus(0))
 	store.dispatch(changeKeyDown("null"))
@@ -66,15 +82,13 @@ const Retry = (state, store) => {
 	launchGame(state, store)
 }
 
-const addMalusLines = (state, store) => {
-	// initialement dans setRows, on va modifier cela
-	// setRows((oldRows) => { 
-		let newPos = {x: state.position.x, y: 0};
+const addMalusLines = (state, store, socket) => {
+		let newPos = {x: state.positions.x, y: 0};
 		
 		let newRows = [...state.rows];
 		let pieces = state.pieces
 		let pieceIndex = state.pieceIndex
-		let position = state.position
+		let position = state.positions
 		let rows = state.rows
 		let number = state.addMalusGo
 
@@ -100,18 +114,7 @@ const addMalusLines = (state, store) => {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 				console.log("--  game over from addMalus")
-				socket.emit('changestatusPlayer', state.url, state.tempName, false);
-				socket.emit("score_add", state.score, state.tempName, state.url);
-				store.dispatch(gameLaunchedOff());
-				store.dispatch(modifyLastMalus(0));
-				store.dispatch(changeKeyDown("null"))
-				store.dispatch(gameOverOn());
-				store.dispatch(modifyTime(1000))
-				if (state.score > state.bestScore)
-					store.dispatch(modifyBestScore(store.score))
-				store.dispatch(modifyScore(0));
-				socket.emit("gameStopped", state.url);
-				return;
+				resetGameOver(state, store, socket)
 		}
 
 		// Move rows up by 'number' positions
@@ -193,7 +196,7 @@ const socketMiddleware = (() => {
 
     switch (action.type) {
       case 'createRoom/createRoomOn': {
-        socket.emit('createGameRoom', state.tempName, state.randomPiece);
+        socket.emit('createGameRoom', state.tempName, state.piece);
 				socket.on('GiveUrl', (givenUrl) => {
 					store.dispatch(changeUrl(givenUrl));
 					store.dispatch(multiOn());
@@ -227,7 +230,7 @@ const socketMiddleware = (() => {
 					store.dispatch(fillPiece(piecesleader));
 					store.dispatch(modifyBestScore(best));
 					if (checkleader)
-						store.dispatch(leaderOn(true));
+						store.dispatch(leaderOn());
 				}) 
 				break;
 			}
@@ -242,7 +245,7 @@ const socketMiddleware = (() => {
 			case 'LAUNCH_GAME': {
 				socket.on('launchGame', () => {
 					if(state.leader == false)
-						launchGame(state, store)
+						launchGame(state, store, socket)
 					})
 				break;
 			}
@@ -261,7 +264,7 @@ const socketMiddleware = (() => {
 			}
 			case 'RETRY_GAMES': {
 				if (state.retrySignal == true)
-					Retry(state, store)
+					Retry(state, store, socket)
 				break;
 			}
 			case 'WINNER': {
@@ -284,7 +287,7 @@ const socketMiddleware = (() => {
 			}
 			case 'NEW_LEADER': {
 				socket.on('newLeader', (name_leader) => {
-					if(name_leader == tempName)
+					if(name_leader == state.tempName)
 						leaderOn()
 				})
 				break;
@@ -317,6 +320,14 @@ const socketMiddleware = (() => {
 					store.dispatch(addLastMalus(state.addMalusGo))
 					store.dispatch(modifyAddMalusGo(0))
 				}
+				break;
+			}
+			case 'GAME_OVER': {
+				resetGameOver(state, store, socket)
+				break;
+			}
+			case 'LAUNCH_CLICK': {
+				launchGame(state, store, socket)
 				break;
 			}
       // Ajoutez d'autres cas selon les besoins

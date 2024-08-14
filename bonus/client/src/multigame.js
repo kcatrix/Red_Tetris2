@@ -3,41 +3,62 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import sound from './tetris.mp3';
 import { selectUrl } from './reducers/urlSlice';
-import { selectPiece } from './reducers/pieceSlice';
+import { selectPiece, modifyPiece } from './reducers/pieceSlice';
 import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
 import { selectMusic, musicOff } from './reducers/musicSlice';
+import { selectStartPiece, startPieceOff, startPieceOn } from './reducers/startPieceSlice';
+import { modifyRows } from './reducers/rowsSlice';
+import { modifyTime, addTime, selectTime } from './reducers/timeSlice';
+import { modifyPositions, newPositions, resetPositions, selectPositions } from './reducers/positionsSlice';
+import { changeKeyDown, selectKeyDown } from './reducers/keyDownSlice';
+import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
+import { selectTempName } from './reducers/tempNameSlice';
+import { addScore, selectScore } from './reducers/scoreSlice';
+import { modifyPieceIndex, selectPieceIndex } from './reducers/pieceIndexSlice';
+import { selectGameLaunched } from './reducers/gameLaunchedSlice';
+import { selectGameOver } from './reducers/gameOverSlice';
+import { selectLeader } from './reducers/leaderSlice';
+import { selectPlayers } from './reducers/playersSlice';
+import { selectPlayersOff } from './reducers/playersOffSlice';
+import { selectResultats } from './reducers/resultatsSlice';
+import { selectLastMalus } from './reducers/lastMalusSlice';
+import { modifyMalus, selectMalus } from './reducers/malusSlice';
+import { selectBestScore } from './reducers/bestScoreSlice';
+import { selectAddMalusGo } from './reducers/addMalusGoSlice';
 
 
-function MultiGame({ OgPieces, catalogPieces, name, socket }) {
+function MultiGame() {
 
+	const name = useSelector(selectTempName)
 	const url = useSelector(selectUrl);
 	const music = useSelector(selectMusic)
 	const pieces = useSelector(selectPiece);
+	const catalogPieces = useSelector(selectCatalogPieces)
 	const retrySignal = useSelector(selectRetrySignal)
-	const [pieceIndex, setPieceIndex] = useState(0);
-	const [position, setPosition] = useState([{ x: 4, y: 0}]);
-	const [gameLaunched, setGameLaunched] = useState(false);
-	const movePieceDownRef = useRef();
-	const [Time, setTime] = useState(1000);
-	const score = useRef();
-	const [startPiece, setStartPiece] = useState(true);
-	const [gameover, setGameOver] = useState(false)
-	const [leader, setleader] = useState(false)
-	const location = useLocation();
-	const [Players, setPlayers] = useState([])
-	const [Playersoff, setPlayersoff] = useState([])
-	const [down, setDown] = useState(false);
-	const [resultat, setResultat] = useState("Game over")
-	const navigate = useNavigate();
-	const [lastMalus, setLastMalus] = useState(0);
-	const [malus, setMalus] = useState(0);
-	const [bestScore, setBestScore] = useState();
-	const audio = document.getElementById("audio_tag");
+	const score = useSelector(selectScore);
+	const pieceIndex = useSelector(selectPieceIndex);
+	const position = useSelector(selectPositions);
+	const gameLaunched = useSelector(selectGameLaunched);
+	const Time = useSelector(selectTime);
+	const startPiece = useSelector(selectStartPiece);
+	const gameover = useSelector(selectGameOver)
+	const leader = useSelector(selectLeader)
+	const Players = useSelector(selectPlayers)
+	const Playersoff = useSelector(selectPlayersOff)
+	const resultat = useSelector(selectResultats)
+	const lastMalus = useSelector(selectLastMalus);
+	const malus = useSelector(selectMalus);
+	const bestScore = useSelector(selectBestScore);
+	const keyDown = useSelector(selectKeyDown)
+	const addMalusGo = useSelector(selectAddMalusGo)
 	const [play, setPlay] = useState(false);
-	const [keyDown, setKeyDown] = useState("null")
 	const [tick, setTick] = useState(false)
-	const [addMalusGo, setAddMalusGo] = useState(0)
+	const [down, setDown] = useState(false);
 	const [spaceRaised, setSpaceRaised] = useState(false)
+	const audio = document.getElementById("audio_tag");
+	const movePieceDownRef = useRef();
+	const location = useLocation();
+	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
 
@@ -146,7 +167,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
-					setStartPiece(false);
+					dispatch(startPieceOff());
 					return startPiece;
 			}
 
@@ -158,7 +179,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				if (keyDown == ' ') {
 					setSpaceRaised(true)
 				}
-				setKeyDown("null")
+				dispatch(changeKeyDown("null"))
 			}
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
@@ -166,19 +187,20 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 					return
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
-						console.log("game over from normal")
-						socket.emit('changestatusPlayer', actualUrl, name, false);
-						socket.emit("score_add", score.current, name, actualUrl);
-						setGameLaunched(false);
-						setLastMalus((old) => old = 0);
-						setKeyDown("null");
-						if (score.current > bestScore)
-							setBestScore(score.current)
-						score.current = 0 // En modifiant score.current ici, le perdant affichera un score.current a 0 et le best score.current sera affiché meme si il n'y a pas eu de précédent
-						setGameOver(true);
-						setTime(1000)
-						socket.emit("gameStopped", actualUrl);
-						return gameLaunched;
+						// console.log("game over from normal")
+						dispatch({ type: 'GAME_OVER'})
+						// socket.emit('changestatusPlayer', actualUrl, name, false);
+						// socket.emit("score_add", score.current, name, actualUrl);
+						// setGameLaunched(false);
+						// setLastMalus((old) => old = 0);
+						// setKeyDown("null");
+						// if (score.current > bestScore)
+						// 	setBestScore(score.current)
+						// score.current = 0 // En modifiant score.current ici, le perdant affichera un score.current a 0 et le best score.current sera affiché meme si il n'y a pas eu de précédent
+						// setGameOver(true);
+						// setTime(1000)
+						// socket.emit("gameStopped", actualUrl);
+						// return gameLaunched;
 				}
 
 				let newRows = [ ...rows];
@@ -193,9 +215,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 						}
 						if (checkPiece === position[pieceIndex].y) {
 								setRows(newRows);
-								score.current = score.current + tmpScore; // score.current
-								console.log(" --- Après modif score.current")
-								console.log("score = ", score, " && tmpScore = ", tmpScore)
+								dispatch(addScore(tmpScore)); // score.current
 								newScore = oldScore + tmpScore;
 								sum = newScore - oldScore;
 						}
@@ -203,23 +223,23 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 
 				if (!down) {
 					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
-							setMalus(sum / 100);
+							dispatch(modifyMalus(sum / 100));
 					}
 						setDown(true); // Indique si la pièce a touché le sol
 				}
 				if (spaceRaised)
 					setSpaceRaised(false)
-				setPieceIndex(pieceIndex + 1);
-				setStartPiece(true);
-				setPosition([...position, { x: 4, y: 0 }]);
+				dispatch(modifyPieceIndex(pieceIndex + 1));
+				dispatch(startPieceOn());
+				dispatch(newPositions());
 			}
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
 
 
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
-	  setRows(prevRows => {
-			let newRows = [...prevRows];
+	  // setRows(prevRows => {
+			let newRows = [...rows];
 
 			if (oldPiece == 0) {
 				for (let y = 0; y < piece.length; y++) {
@@ -248,8 +268,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 					}
 				}
 			}
-			return newRows;
-	  });
+			dispatch(modifyRows(newRows));
 	};
   
 	const deleteLine = (rows, start, end) => {
@@ -261,7 +280,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			}
 	  }
 	  if (Time > 100)
-			setTime(Time - 100);
+			dispatch(addTime(-100));
 	  return newRows;
 	};
   
@@ -386,12 +405,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				return
 			newPosition.x -= 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
-				setPosition(prevPositions => {
-					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-					const newPositions = [...prevPositions];
-					newPositions[pieceIndex] = newPosition;
-					return newPositions;
-				});
+				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+				dispatch.modifyPositions(newPosition, pieceIndex)
 			}
 			break;
 		case 'ArrowRight':
@@ -399,12 +414,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				return
 			newPosition.x += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
-				setPosition(prevPositions => {
-					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-					const newPositions = [...prevPositions];
-					newPositions[pieceIndex] = newPosition;
-					return newPositions;
-				});
+				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+				dispatch(modifyPositions(newPosition, pieceIndex))
 			}
 			break;
 		case 'ArrowUp':
@@ -414,12 +425,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 			newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
 			const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
 			if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
-				setPieces(oldPieces => {
-					writePiece(newPiece, position[pieceIndex], position[pieceIndex], pieces[pieceIndex]);
-					const newPieces = [...oldPieces];
-					newPieces[pieceIndex] = newPiece;
-					return newPieces;
-				});
+				writePiece(newPiece, position[pieceIndex], position[pieceIndex], pieces[pieceIndex]);
+				dispatch(modifyPiece())
 			}
 			else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
@@ -428,12 +435,8 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 		case 'ArrowDown':
 			newPosition.y += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-				setPosition(prevPositions => {
-					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-					const newPositions = [...prevPositions];
-					newPositions[pieceIndex] = newPosition;
-					return newPositions;
-				});
+				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+				dispatch(modifyPositions(newPosition, pieceIndex))
 			}
 			break;
 			case ' ':
@@ -442,11 +445,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 					tempPosition.y++;
 				}
 				writePiece(pieces[pieceIndex], position[pieceIndex], tempPosition, 0);
-				setPosition(prevPositions => {
-					const newPositions = [...prevPositions];
-					newPositions[pieceIndex] = tempPosition;
-					return newPositions;
-				});
+				dispatch(modifyPositions(tempPosition, pieceIndex))
 			break; 
 		default:
 			break;
@@ -458,7 +457,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 		if (tick == false && down == false && event.key == "ArrowDown" || event.key == "ArrowUp" || event.key == "ArrowLeft" ||
 				event.key == "ArrowRight" || event.key == " ") {
 			setTimeout(() => {
-				setKeyDown(event.key);
+				dispatch(changeKeyDown(event.key));
 			}, 25)
 		}
 		else
@@ -493,13 +492,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	}, [gameLaunched, tick]);
   
 	const launchGame = () => {
-	  score.current = 0 // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
-	  setGameLaunched(true);
-	  setResultat("Game over")
-	  if (leader) {
-			socket.emit('changestatusPlayer',  actualUrl, name, true)
-	  	socket.emit("gameStarted", actualUrl)
-	  }
+		dispatch({ type: 'LAUNCH_CLICK' })
 	  toggleAudioPlayback();
 	};
 
@@ -518,22 +511,25 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 	};  
 
 	const Retry = () => {
-		setLastMalus(0)
-		setKeyDown("null")
-		socket.emit('changestatusPlayer', actualUrl, name, true)
-		setGameOver(false)
-		if (leader) {
-			socket.emit('all_retry', actualUrl, name)
-		}
-		setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
-		setPosition(prevPosition => {
-			const newPosition = [...prevPosition];
-			setStartPiece(true)
-			newPosition[pieceIndex] = { x: 4, y: 0 };
-			return newPosition;
-		  });
-		launchGame()
+		dispatch({ type: 'RETRY_SIGNAL' })
 	}
+	// const Retry = () => {
+	// 	setLastMalus(0)
+	// 	setKeyDown("null")
+	// 	socket.emit('changestatusPlayer', actualUrl, name, true)
+	// 	setGameOver(false)
+	// 	if (leader) {
+	// 		socket.emit('all_retry', actualUrl, name)
+	// 	}
+	// 	setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
+	// 	setPosition(prevPosition => {
+	// 		const newPosition = [...prevPosition];
+	// 		setStartPiece(true)
+	// 		newPosition[pieceIndex] = { x: 4, y: 0 };
+	// 		return newPosition;
+	// 	  });
+	// 	launchGame()
+	// }
 
 	const toHome = () => {
 		navigate("/");
@@ -549,9 +545,9 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
           <div className="board1">
             {Array.from({ length: 20 }).map((_, i) => (
               <div key={i} className="row">
-                <div className={`cell ${Players.some(player => player.higherPos === i && player.higherPos !== 0) ? 'piece' : ''}`}></div>
+                {/* <div className={`cell ${Players.some(player => player.higherPos === i && player.higherPos !== 0) ? 'piece' : ''}`}></div> */}
                 <div className="player-names">
-                  {Players.filter(player => player.higherPos === i && player.higherPos !== 0).map(player => player.name).join(', ')}
+                  {/* {Players.filter(player => player.higherPos === i && player.higherPos !== 0).map(player => player.name).join(', ')} */}
                 </div>
               </div>
             ))}
@@ -562,9 +558,10 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 				{gameover == true && 
 				<h2>{resultat}</h2>}
 				{gameover == true && leader &&
-				<button onClick={Retry}>Retry</button>}
+				<button onClick={Retry()}>Retry</button>}
 				<div className='score'>
-				<h3>{name} : {score.current} </h3>
+				<h3> {name} : {score} </h3>
+				{/* <h3> {name} </h3> */}
 				{bestScore > 0 &&
 				<div>
 					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best score : {bestScore} </h4>
@@ -604,7 +601,7 @@ function MultiGame({ OgPieces, catalogPieces, name, socket }) {
 						Playersoff.map((player, index) => (
 						<h2 key={index}>{player}</h2>
 					))}
-					</div>
+				</div>
 			</div>
     </div>
   );

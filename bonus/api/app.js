@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('requestRandomPiece', () => {
-		const pieces = new Pieces();
+			const pieces = new Pieces();
     	const randomPiece = pieces.getallPiece();
     	socket.emit('randomPiece', randomPiece);
     });
@@ -156,7 +156,7 @@ io.on('connection', (socket) => {
         let index_player;
 
 				const index = Rooms.findIndex(searchUrl);
-        if (Rooms[index].Players)
+        if (Rooms[index] && Rooms[index].Players)
 				    index_player = Rooms[index].Players.findIndex(searchName)
 
 
