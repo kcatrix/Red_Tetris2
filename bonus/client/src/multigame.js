@@ -96,15 +96,16 @@ function MultiGame() {
 			toggleAudioPlayback();
 	}, [music])
 
-	dispatch({ type: 'NAME_PLAYER' })
+	if (!gameLaunched)
+		dispatch({ type: 'NAME_PLAYER' })
 
-	dispatch({ type: 'RETRY_SIGNAL' })
+	// dispatch({ type: 'RETRY_SIGNAL' })
 
-	useEffect(() => {
-		if (retrySignal)
-			dispatch({ type: 'RETRY_GAMES' })
-		dispatch(retrySignalOff())
-	}, [retrySignal])
+	// useEffect(() => {
+	// 	if (retrySignal)
+	// 		dispatch({ type: 'RETRY_GAMES' })
+	// 	dispatch(retrySignalOff())
+	// }, [retrySignal])
 
 
 	useEffect(() => {
@@ -164,17 +165,20 @@ function MultiGame() {
 	// };
   
 	movePieceDownRef.current = useCallback(() => {
+	// const movePieceDownRef = () => {
 			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+					console.log("apparition premiere piece")
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					dispatch(startPieceOff());
-					return startPiece;
 			}
 
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
+				console.log("arrow down auto")
 				handleKeyDown("ArrowDown")
 			}
 			else if (!tick && keyDown != "null" && !spaceRaised) {
+				console.log("touche presse")
 				handleKeyDown(keyDown);
 				if (keyDown == ' ') {
 					setSpaceRaised(true)
@@ -183,6 +187,7 @@ function MultiGame() {
 			}
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+				console.log("on a recontré un mur -> ", rows)
 				if (!spaceRaised && tick == false) { // fix potentiel slide bot
 					return
 				}
@@ -233,19 +238,30 @@ function MultiGame() {
 				dispatch(startPieceOn());
 				dispatch(newPositions());
 			}
+	// }
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
+
 
 
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
 	  // setRows(prevRows => {
 			let newRows = [...rows];
+			console.log("-- inside writePiece, oldPosition = ", oldPosition)
+			console.log("piece = ", piece)
+			console.log("newPosition = ", newPosition)
+			console.log("oldPiece = ", oldPiece)
 
 			if (oldPiece == 0) {
+				console.log("piece.length -> ", piece.length)
 				for (let y = 0; y < piece.length; y++) {
 					for (let x = 0; x < piece[y].length; x++) {
-						if (piece[y][x] === 1) 
+						if (piece[y][x] === 1){
+							console.log("piece -> ", piece, " && x -> ", x, " && y -> ", y)
+							console.log("oldPosition.y (", oldPosition.y, ") + y (", y,") = ", oldPosition.y + y)
+							console.log("oldPosition.x (", oldPosition.x, ") + x (", x,") = ", oldPosition.x + x)
 							newRows[oldPosition.y + y][oldPosition.x + x] = 0;
+						}
 					}
 				}
 			}
@@ -398,6 +414,7 @@ function MultiGame() {
 	if (!gameLaunched || !pieces[pieceIndex]) return;
 
 	let newPosition = { ...position[pieceIndex] };
+	console.log("-- inside handleKeyDown, newPos = ", newPosition)
 
 	switch (keyDown) {
 		case 'ArrowLeft':
@@ -435,6 +452,7 @@ function MultiGame() {
 		case 'ArrowDown':
 			newPosition.y += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+				console.log("arrow down propre")
 				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 				dispatch(modifyPositions(newPosition, pieceIndex))
 			}
@@ -475,6 +493,7 @@ function MultiGame() {
 	useEffect(() => {
 		if (gameLaunched){
 			movePieceDownRef.current(tick)
+			// movePieceDownRef(tick)
 	}
  }, [gameLaunched, keyDown, tick, movePieceDownRef, addMalusGo])
 
@@ -513,23 +532,6 @@ function MultiGame() {
 	const Retry = () => {
 		dispatch({ type: 'RETRY_SIGNAL' })
 	}
-	// const Retry = () => {
-	// 	setLastMalus(0)
-	// 	setKeyDown("null")
-	// 	socket.emit('changestatusPlayer', actualUrl, name, true)
-	// 	setGameOver(false)
-	// 	if (leader) {
-	// 		socket.emit('all_retry', actualUrl, name)
-	// 	}
-	// 	setRows(Array.from({ length: 20 }, () => Array(10).fill(0)));
-	// 	setPosition(prevPosition => {
-	// 		const newPosition = [...prevPosition];
-	// 		setStartPiece(true)
-	// 		newPosition[pieceIndex] = { x: 4, y: 0 };
-	// 		return newPosition;
-	// 	  });
-	// 	launchGame()
-	// }
 
 	const toHome = () => {
 		navigate("/");
@@ -545,9 +547,9 @@ function MultiGame() {
           <div className="board1">
             {Array.from({ length: 20 }).map((_, i) => (
               <div key={i} className="row">
-                {/* <div className={`cell ${Players.some(player => player.higherPos === i && player.higherPos !== 0) ? 'piece' : ''}`}></div> */}
+                <div className={`cell ${Players.some(player => player.higherPos === i && player.higherPos !== 0) ? 'piece' : ''}`}></div>
                 <div className="player-names">
-                  {/* {Players.filter(player => player.higherPos === i && player.higherPos !== 0).map(player => player.name).join(', ')} */}
+                  {Players.filter(player => player.higherPos === i && player.higherPos !== 0).map(player => player.name).join(', ')}
                 </div>
               </div>
             ))}
@@ -561,7 +563,6 @@ function MultiGame() {
 				<button onClick={Retry()}>Retry</button>}
 				<div className='score'>
 				<h3> {name} : {score} </h3>
-				{/* <h3> {name} </h3> */}
 				{bestScore > 0 &&
 				<div>
 					<h4>/ &nbsp;&nbsp; &nbsp;&nbsp;Best score : {bestScore} </h4>

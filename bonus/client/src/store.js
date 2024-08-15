@@ -30,6 +30,7 @@ import musicSlice from './reducers/musicSlice'
 import malusSlice from './reducers/malusSlice'
 import addMalusGoSlice from './reducers/addMalusGoSlice'
 import timeSlice from './reducers/timeSlice'
+import playersSlice from './reducers/playersSlice'
 
 export const store = configureStore({
 	reducer: {
@@ -64,6 +65,7 @@ export const store = configureStore({
 		malus: malusSlice,
 		addMalusGo: addMalusGoSlice,
 		time: timeSlice,
+		players: playersSlice,
 		
 	},
 	middleware(getDefaultMiddleware) {

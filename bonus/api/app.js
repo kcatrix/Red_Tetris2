@@ -228,25 +228,13 @@ io.on('connection', (socket) => {
 				nature = "solo"
 			// let old_score = Rooms[index].Players[playerIndex].scores
 			const scoreIndex = ScoresList.findIndex(score => score.name === name && score.nature === nature);
-			console.log("-- before ScoresList")
-			console.log("score = ", score)
-			console.log("Index de ScoresList = ", scoreIndex)
-			if (scoreIndex !== -1)
-				console.log("ScoresList[scoreIndex].score = ", ScoresList[scoreIndex].scores)
-
 			if (scoreIndex !== -1 && score > ScoresList[scoreIndex].scores ) { // Si score existant et que nouveau score meilleur
-				console.log("-- inside ScoresList")
-				console.log("score = ", score)
-				console.log("nature = ",nature ," et score.nature = ", ScoresList[scoreIndex].nature)
-				console.log("ScoresList = ", ScoresList[scoreIndex].scores)
 				ScoresList.splice(scoreIndex, 1);
 				let newScore = new Scores(name, score, nature)
 				ScoresList.push(newScore)
 			}
 			else if (scoreIndex === -1) { // si score n'existe pas
-				console.log("inside scoreIndex === -1")
 				if (score) {
-					console.log("name = ", name, " && score = ", score, " && nature = ", nature)
 					let newScore = new Scores(name, score, nature)
 					ScoresList.push(newScore)
 				}

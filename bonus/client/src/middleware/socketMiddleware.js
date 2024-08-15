@@ -59,7 +59,7 @@ const launchGame = (state, store, socket) => {
 	
 	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	store.dispatch(gameLaunchedOn(true));
-	store.dispatch(changeResultats("Game over"));
+	// store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
 		socket.emit("gameStarted", state.url)
@@ -322,10 +322,10 @@ const socketMiddleware = (() => {
 				}
 				break;
 			}
-			case 'GAME_OVER': {
-				resetGameOver(state, store, socket)
-				break;
-			}
+			// case 'GAME_OVER': {
+			// 	resetGameOver(state, store, socket)
+			// 	break;
+			// }
 			case 'LAUNCH_CLICK': {
 				launchGame(state, store, socket)
 				break;
