@@ -14,9 +14,9 @@ const positionsSlice = createSlice({
 				return newPosition;
 			},
 			modifyPositions(state, action) {
-				const { newPos, pieceIndex } = action.payload
+				const { newPosition, pieceIndex } = action.payload
 				const newPositions = [...state];
-				newPositions[pieceIndex] = newPos;
+				newPositions[pieceIndex] = newPosition;
 				return newPositions;
 			},
 			newPositions(state) {

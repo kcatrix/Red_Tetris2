@@ -7,7 +7,7 @@ import { selectPiece, modifyPiece } from './reducers/pieceSlice';
 import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
 import { selectMusic, musicOff } from './reducers/musicSlice';
 import { selectStartPiece, startPieceOff, startPieceOn } from './reducers/startPieceSlice';
-import { modifyRows } from './reducers/rowsSlice';
+import { modifyRows, selectRows } from './reducers/rowsSlice';
 import { modifyTime, addTime, selectTime } from './reducers/timeSlice';
 import { modifyPositions, newPositions, resetPositions, selectPositions } from './reducers/positionsSlice';
 import { changeKeyDown, selectKeyDown } from './reducers/keyDownSlice';
@@ -29,6 +29,7 @@ import { selectAddMalusGo } from './reducers/addMalusGoSlice';
 
 function MultiGame() {
 
+	const rows = useSelector(selectRows)
 	const name = useSelector(selectTempName)
 	const url = useSelector(selectUrl);
 	const music = useSelector(selectMusic)
@@ -61,13 +62,7 @@ function MultiGame() {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
-
-	const [rows, setRows] = useState(
-	  Array.from({ length: 20 }, () => Array(10).fill(0))
-	);
-
 	let intervalId;
-	const actualUrl = location.pathname;
 
 	useEffect(() => { // remplacable par un dispatch({ message a la con })
 
@@ -99,7 +94,7 @@ function MultiGame() {
 	if (!gameLaunched)
 		dispatch({ type: 'NAME_PLAYER' })
 
-	// dispatch({ type: 'RETRY_SIGNAL' })
+	dispatch({ type: 'RETRY_SIGNAL' })
 
 	// useEffect(() => {
 	// 	if (retrySignal)
@@ -118,14 +113,14 @@ function MultiGame() {
 	}, [])
 
 	useEffect(() => {
-
+		console.log("inside malus")
+		console.log("malus = ", malus)
 		dispatch({ type: 'MALUS' })
 	}, [malus]);	
 	
-		// ----- La suite des événements !! 
-
 	useEffect(() => {
-
+		console.log("inside malus-sent proc by addMalusGo")
+		console.log("addMalusGo = ", addMalusGo)
 		dispatch({ type: 'MALUS_SENT' })
 	}, [addMalusGo])
 
@@ -168,17 +163,14 @@ function MultiGame() {
 	// const movePieceDownRef = () => {
 			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-					console.log("apparition premiere piece")
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					dispatch(startPieceOff());
 			}
 
 			if (tick && keyDown == "null") { // Condition écrivant si il n'y a que des zéros en bas de la pièce
-				console.log("arrow down auto")
 				handleKeyDown("ArrowDown")
 			}
 			else if (!tick && keyDown != "null" && !spaceRaised) {
-				console.log("touche presse")
 				handleKeyDown(keyDown);
 				if (keyDown == ' ') {
 					setSpaceRaised(true)
@@ -187,7 +179,6 @@ function MultiGame() {
 			}
 			
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
-				console.log("on a recontré un mur -> ", rows)
 				if (!spaceRaised && tick == false) { // fix potentiel slide bot
 					return
 				}
@@ -207,9 +198,9 @@ function MultiGame() {
 						// socket.emit("gameStopped", actualUrl);
 						// return gameLaunched;
 				}
-
-				let newRows = [ ...rows];
-				let oldScore = score.current;
+				console.log("--- inside check 1 = 1")
+				let newRows = rows.map(row => [...row]);
+				let oldScore = score;
 				let newScore = 0;
 				let tmpScore = 0;
 				let sum = 0;
@@ -219,7 +210,7 @@ function MultiGame() {
 								tmpScore += 100;
 						}
 						if (checkPiece === position[pieceIndex].y) {
-								setRows(newRows);
+								dispatch(modifyRows(newRows));
 								dispatch(addScore(tmpScore)); // score.current
 								newScore = oldScore + tmpScore;
 								sum = newScore - oldScore;
@@ -227,8 +218,11 @@ function MultiGame() {
 				}
 
 				if (!down) {
+					console.log("inside !down")
+					console.log("sum  = ", sum)
 					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
-							dispatch(modifyMalus(sum / 100));
+						const final = sum / 100
+						dispatch(modifyMalus(final));
 					}
 						setDown(true); // Indique si la pièce a touché le sol
 				}
@@ -245,21 +239,15 @@ function MultiGame() {
 
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
-	  // setRows(prevRows => {
-			let newRows = [...rows];
-			console.log("-- inside writePiece, oldPosition = ", oldPosition)
-			console.log("piece = ", piece)
-			console.log("newPosition = ", newPosition)
-			console.log("oldPiece = ", oldPiece)
+	  // setRows(prevRows => { 	writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+
+		let newRows = rows.map(row => [...row]);
+
 
 			if (oldPiece == 0) {
-				console.log("piece.length -> ", piece.length)
 				for (let y = 0; y < piece.length; y++) {
 					for (let x = 0; x < piece[y].length; x++) {
 						if (piece[y][x] === 1){
-							console.log("piece -> ", piece, " && x -> ", x, " && y -> ", y)
-							console.log("oldPosition.y (", oldPosition.y, ") + y (", y,") = ", oldPosition.y + y)
-							console.log("oldPosition.x (", oldPosition.x, ") + x (", x,") = ", oldPosition.x + x)
 							newRows[oldPosition.y + y][oldPosition.x + x] = 0;
 						}
 					}
@@ -284,6 +272,7 @@ function MultiGame() {
 					}
 				}
 			}
+
 			dispatch(modifyRows(newRows));
 	};
   
@@ -325,7 +314,7 @@ function MultiGame() {
 	const check1 = (rows, piece, newPiece, position, axe) => {
 	  let it;
 	  let tmpPosition;
-	  let rowsClean = [...rows];
+	  let rowsClean = rows.map(row => [...row]);
   
 	  if (axe === "y" || axe === "+x" || axe === "r") {
 			for (let y = 0; y < piece.length; y++) {
@@ -414,7 +403,6 @@ function MultiGame() {
 	if (!gameLaunched || !pieces[pieceIndex]) return;
 
 	let newPosition = { ...position[pieceIndex] };
-	console.log("-- inside handleKeyDown, newPos = ", newPosition)
 
 	switch (keyDown) {
 		case 'ArrowLeft':
@@ -423,7 +411,7 @@ function MultiGame() {
 			newPosition.x -= 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
 				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch.modifyPositions(newPosition, pieceIndex)
+				dispatch(modifyPositions({newPosition, pieceIndex}))
 			}
 			break;
 		case 'ArrowRight':
@@ -432,7 +420,7 @@ function MultiGame() {
 			newPosition.x += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions(newPosition, pieceIndex))
+				dispatch(modifyPositions({newPosition, pieceIndex}))
 			}
 			break;
 		case 'ArrowUp':
@@ -443,7 +431,7 @@ function MultiGame() {
 			const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
 			if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
 				writePiece(newPiece, position[pieceIndex], position[pieceIndex], pieces[pieceIndex]);
-				dispatch(modifyPiece())
+				dispatch(modifyPiece({newPiece, pieceIndex}))
 			}
 			else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
@@ -452,18 +440,16 @@ function MultiGame() {
 		case 'ArrowDown':
 			newPosition.y += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-				console.log("arrow down propre")
 				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions(newPosition, pieceIndex))
+				dispatch(modifyPositions({newPosition, pieceIndex}))
 			}
 			break;
 			case ' ':
-				let tempPosition = { ...position[pieceIndex] };
-				while (check1(rows, pieces[pieceIndex], 0, tempPosition, "y") === 0) {
-					tempPosition.y++;
+				while (check1(rows, pieces[pieceIndex], 0, newPosition, "y") === 0) {
+					newPosition.y++;
 				}
-				writePiece(pieces[pieceIndex], position[pieceIndex], tempPosition, 0);
-				dispatch(modifyPositions(tempPosition, pieceIndex))
+				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+				dispatch(modifyPositions({newPosition, pieceIndex}))
 			break; 
 		default:
 			break;
@@ -530,7 +516,7 @@ function MultiGame() {
 	};  
 
 	const Retry = () => {
-		dispatch({ type: 'RETRY_SIGNAL' })
+		dispatch({ type: 'RETRY_GAME' })
 	}
 
 	const toHome = () => {
@@ -560,7 +546,7 @@ function MultiGame() {
 				{gameover == true && 
 				<h2>{resultat}</h2>}
 				{gameover == true && leader &&
-				<button onClick={Retry()}>Retry</button>}
+				<button onClick={Retry}> Retry </button>}
 				<div className='score'>
 				<h3> {name} : {score} </h3>
 				{bestScore > 0 &&

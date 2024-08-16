@@ -215,8 +215,6 @@ io.on('connection', (socket) => {
 		})
 
 		socket.on('score_add', (score, name, Url) => {
-			console.log("---- start score_add")
-			console.log("name = ", name, " && score = ", score)
 			const searchUrl = (element) => element.Url == Url
 			const searchName = (element) => element.name == name
 			const index = Rooms.findIndex(searchUrl);

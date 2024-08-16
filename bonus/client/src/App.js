@@ -37,15 +37,18 @@ function App() {
   useEffect(() => {
     // Initialiser la connexion socket via le middleware
     dispatch({ type: 'SOCKET_INIT' });
+
   }, []);
 
 	useEffect(() => {
 		 // Si Url n'est pas encore attribué et que loca.path est différent d'initial, stock Url dans check
-		dispatch(changeCheckUrl(location.pathname));
-    if (url === "" && location.pathname.length > 1) {
+		
+		 if (url === "" && location.pathname.length > 1) {
+			const tempUrl = location.pathname
+			dispatch(changeCheckUrl(tempUrl));
     }
     navigate("/");
-  }, []);
+  }, [checkUrl]);
 
 	useEffect(() => { // Lorsque multi est true est qu'une url existe, on navigue vers l'url multi
 		// multi et url est modifié dans le socketMiddleware lorsqu'on appuie sur createRoom
@@ -59,18 +62,20 @@ function App() {
 		if (tempName.length === 0) {
 			dispatch(changeOldUrl(checkUrl));
 			navigate("/");
-		} else if (checkUrl && checkUrl.length > 3) {
+		} 
+		if (checkUrl && checkUrl.length > 3) {
 			dispatch({ type: 'URL_CHECK' });
 		}
 	}, [checkUrl]);
 
 	useEffect(() => { // Continuité de la vérif d'url au-dessus.
 		// Si changeOk est true et que l'ancienne URL est valide, on navigue vers l'url validé et on crée nouveau joueur dans room
-		if (changeOk && oldUrl.length > 0) {
+		
+		if (changeOk && oldUrl.length > 0 && !noName) {
 			dispatch(changeUrl(oldUrl));
-			dispatch(changeOldUrl(""));
 			dispatch({ type: 'CREATE_PLAYER' });
-			navigate(url);
+			dispatch(changeOldUrl(""));
+			navigate(oldUrl);
 		}
 	}, [noName]);
 

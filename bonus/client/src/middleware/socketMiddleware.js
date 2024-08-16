@@ -79,14 +79,16 @@ const Retry = (state, store, socket) => {
 	store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
 	store.dispatch(resetPositions(state.pieceIndex))
 	store.dispatch(startPieceOn())
-	launchGame(state, store)
+	launchGame(state, store, socket)
 }
 
 const addMalusLines = (state, store, socket) => {
+
+		console.log("bonjour addMalus")
+
 		let newPos = {x: state.positions.x, y: 0};
-		
-		let newRows = [...state.rows];
-		let pieces = state.pieces
+		let newRows = state.rows.map(rows => [...rows]);
+		let pieces = state.piece
 		let pieceIndex = state.pieceIndex
 		let position = state.positions
 		let rows = state.rows
@@ -170,7 +172,9 @@ const socketMiddleware = (() => {
     if (!socket && action.type === 'SOCKET_INIT') {
       // Initialiser la connexion socket une seule fois
       socket = io('http://localhost:4000'); // Utilisez votre adresse publique ici
+			// store.dispatch(changeSocket(io('http://localhost:4000')))
 
+			// const socket = useSelector(selectSocket)
       socket.on('connect', () => {
         console.log('Connected to socket server');
       });
@@ -193,7 +197,6 @@ const socketMiddleware = (() => {
 
 		const state = store.getState();
 
-
     switch (action.type) {
       case 'createRoom/createRoomOn': {
         socket.emit('createGameRoom', state.tempName, state.piece);
@@ -211,6 +214,8 @@ const socketMiddleware = (() => {
         break
       }
       case 'URL_CHECK': {
+				console.log("---- URL CHECK")
+				console.log("state.checkUrl = ", state.checkUrl)
         socket.emit('urlCheck', state.checkUrl);
 				socket.on('urlChecked', (check) => { // réponse de demande d'accès
 					check ? store.dispatch(changeOkOn()) : store.dispatch(changeOkOff());
@@ -257,14 +262,14 @@ const socketMiddleware = (() => {
 			}
 			case 'RETRY_SIGNAL': {
 				socket.on('retry', (nameleader) => {
-					if (state.tempName != nameleader)
-						store.dispatch(retrySignalOn())
+					if (state.tempName != nameleader) {
+						Retry(state, store, socket)
+					}
 				})
 				break;
 			}
-			case 'RETRY_GAMES': {
-				if (state.retrySignal == true)
-					Retry(state, store, socket)
+			case 'RETRY_GAME': {
+				Retry(state, store, socket)
 				break;
 			}
 			case 'WINNER': {
@@ -293,7 +298,9 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'MALUS': {
+				console.log("inside malus socket")
 				if (state.malus > 1) {
+					console.log("passe-t'on la ?")
 					let trueMalus = state.malus - 1;
 					socket.emit('malus', trueMalus, state.url);
 					store.dispatch(modifyMalus(0));
@@ -301,6 +308,7 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'MALUS_SENT': {
+				console.log("inside malus sent")
 				socket.on('malusSent', (number) => {
 					store.dispatch(modifyAddMalusGo(number))
 				});
@@ -316,16 +324,17 @@ const socketMiddleware = (() => {
 			}
 			case 'ADD_MALUS_LINES': {
 				if (state.addMalusGo) {
-					addMalusLines(state, store)
+					console.log("inside case ADD MALUS")
+					store.dispatch(modifyRows(addMalusLines(state, store, socket)))
 					store.dispatch(addLastMalus(state.addMalusGo))
 					store.dispatch(modifyAddMalusGo(0))
 				}
 				break;
 			}
-			// case 'GAME_OVER': {
-			// 	resetGameOver(state, store, socket)
-			// 	break;
-			// }
+			case 'GAME_OVER': {
+				resetGameOver(state, store, socket)
+				break;
+			}
 			case 'LAUNCH_CLICK': {
 				launchGame(state, store, socket)
 				break;
