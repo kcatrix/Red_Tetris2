@@ -82,88 +82,87 @@ const Retry = (state, store, socket) => {
 	launchGame(state, store, socket)
 }
 
-const addMalusLines = (state, store, socket) => {
+// const addMalusLines = (state, store, socket) => {
 
-		console.log("bonjour addMalus")
+// 		let newPos = {x: state.positions.x, y: 0};
+// 		let newRows = state.rows.map(rows => [...rows]);
+// 		let pieces = state.piece
+// 		let pieceIndex = state.pieceIndex
+// 		let position = state.positions
+// 		let rows = state.rows
+// 		let number = state.addMalusGo
 
-		let newPos = {x: state.positions.x, y: 0};
-		let newRows = state.rows.map(rows => [...rows]);
-		let pieces = state.piece
-		let pieceIndex = state.pieceIndex
-		let position = state.positions
-		let rows = state.rows
-		let number = state.addMalusGo
+// 		// Clear piece from current position in newRows
+// 		for (let y = 0; y < pieces.length; y++) {
+// 				for (let x = 0; x < pieces[y].length; x++) {
+// 						if (pieces[y][x] === 1) {
+// 								newRows[position.y + y][position.x + x] = 0;
+// 						}
+// 				}
+// 		}
 
-		// Clear piece from current position in newRows
-		for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-						if (pieces[y][x] === 1) {
-								newRows[position.y + y][position.x + x] = 0;
-						}
-				}
-		}
+// 		// Find the highest row containing '1' or '2' from the bottom
+// 		let highestRowWith1 = 0;
+// 		for (let y = rows.length - 1; y >= 0; y--) {
+// 				if (newRows[y].includes(1) || newRows[y].includes(2)) {
+// 						highestRowWith1 = y;
+// 				} else if (equal(newRows[y], 0)) {
+// 						break;
+// 				}
+// 		}
 
-		// Find the highest row containing '1' or '2' from the bottom
-		let highestRowWith1 = 0;
-		for (let y = rows.length - 1; y >= 0; y--) {
-				if (newRows[y].includes(1) || newRows[y].includes(2)) {
-						highestRowWith1 = y;
-				} else if (equal(newRows[y], 0)) {
-						break;
-				}
-		}
+// 		// Check if adding malus lines would cause game over
+// 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
+// 				console.log("--  game over from addMalus")
+// 				resetGameOver(state, store, socket)
+// 		}
 
-		// Check if adding malus lines would cause game over
-		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
-				console.log("--  game over from addMalus")
-				resetGameOver(state, store, socket)
-		}
-
-		// Move rows up by 'number' positions
-		for (let y = highestRowWith1; y < rows.length - state.lastMalus + number; y++) {
-				newRows[y - number] = rows[y];		
-		}
+// 		// Move rows up by 'number' positions
+// 		for (let y = highestRowWith1; y < rows.length - state.lastMalus + number; y++) {
+// 				newRows[y - number] = rows[y];		
+// 		}
 		
-		// Add malus lines at the bottom
-		for (let y = (rows.length - 1) - state.lastMalus; y > (rows.length - 1) - (state.lastMalus + number); y--) {
-			newRows[y] = new Array(rows[0].length).fill(2);
-		}
+// 		// Add malus lines at the bottom
+// 		for (let y = (rows.length - 1) - state.lastMalus; y > (rows.length - 1) - (state.lastMalus + number); y--) {
+// 			newRows[y] = new Array(rows[0].length).fill(2);
+// 		}
 
-		// Restore piece in its original position or adjusted position in newRows
+// 		// Restore piece in its original position or adjusted position in newRows
 		
 
-		if (position.y + pieces.length < rows.length - (number + state.lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
-						if (newPos.y == 0 && position.y != 0) {
-							newPos.y = position.y + y;
-						}
-						newRows[position.y + y][position.x + x] = 1;	
-					}							
-				}
-			}
-		}
-		else if (position.y + pieces.length >= rows.length - (number + state.lastMalus)) {
-			for (let y = 0; y < pieces.length; y++) {
-				for (let x = 0; x < pieces[y].length; x++) {
-					if (pieces[y][x] === 1) {
-						if (newPos.y == 0) {
-							newPos.y = position.y + y - (number + state.lastMalus);
-						}
-						newRows[position.y + y - (number + state.lastMalus)][position.x + x] = 1;
-					}
-				}
-			}
-		}
+// 		if (position.y + pieces.length < rows.length - (number + state.lastMalus)) {
+// 			for (let y = 0; y < pieces.length; y++) {
+// 				for (let x = 0; x < pieces[y].length; x++) {
+// 					if (pieces[y][x] === 1) {
+// 						if (newPos.y == 0 && position.y != 0) {
+// 							newPos.y = position.y + y;
+// 						}
+// 						newRows[position.y + y][position.x + x] = 1;	
+// 					}							
+// 				}
+// 			}
+// 		}
+// 		else if (position.y + pieces.length >= rows.length - (number + state.lastMalus)) {
+// 			for (let y = 0; y < pieces.length; y++) {
+// 				for (let x = 0; x < pieces[y].length; x++) {
+// 					if (pieces[y][x] === 1) {
+// 						if (newPos.y == 0) {
+// 							newPos.y = position.y + y - (number + state.lastMalus);
+// 						}
+// 						newRows[position.y + y - (number + state.lastMalus)][position.x + x] = 1;
+// 					}
+// 				}
+// 			}
+// 		}
 
-		// Update piece position if necessary
-		if (newPos !== 0) {
-			store.dispatch(modifyPositions({newPos, pieceIndex}))
-		}
-		// Update the rows state
-		return newRows;
-}
+// 		// // Update piece position if necessary
+// 		// if (newPos !== 0) {
+// 		// 	store.dispatch(modifyPositions({newPosition: newPos, pieceIndex}))
+// 		// }
+
+// 		// Update the rows state
+// 		return newRows;
+// }
 
 const socketMiddleware = (() => {
   let socket;
@@ -322,15 +321,15 @@ const socketMiddleware = (() => {
 				});
 				break;
 			}
-			case 'ADD_MALUS_LINES': {
-				if (state.addMalusGo) {
-					console.log("inside case ADD MALUS")
-					store.dispatch(modifyRows(addMalusLines(state, store, socket)))
-					store.dispatch(addLastMalus(state.addMalusGo))
-					store.dispatch(modifyAddMalusGo(0))
-				}
-				break;
-			}
+			// case 'ADD_MALUS_LINES': {
+			// 	if (state.addMalusGo) {
+			// 		console.log("inside case ADD MALUS")
+			// 		store.dispatch(modifyRows(addMalusLines(state, store, socket)))
+			// 		store.dispatch(addLastMalus(state.addMalusGo))
+			// 		store.dispatch(modifyAddMalusGo(0))
+			// 	}
+			// 	break;
+			// }
 			case 'GAME_OVER': {
 				resetGameOver(state, store, socket)
 				break;

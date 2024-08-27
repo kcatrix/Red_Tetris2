@@ -21,10 +21,10 @@ import { selectLeader } from './reducers/leaderSlice';
 import { selectPlayers } from './reducers/playersSlice';
 import { selectPlayersOff } from './reducers/playersOffSlice';
 import { selectResultats } from './reducers/resultatsSlice';
-import { selectLastMalus } from './reducers/lastMalusSlice';
+import { addLastMalus, selectLastMalus } from './reducers/lastMalusSlice';
 import { modifyMalus, selectMalus } from './reducers/malusSlice';
 import { selectBestScore } from './reducers/bestScoreSlice';
-import { selectAddMalusGo } from './reducers/addMalusGoSlice';
+import { modifyAddMalusGo, selectAddMalusGo } from './reducers/addMalusGoSlice';
 
 
 function MultiGame() {
@@ -38,7 +38,7 @@ function MultiGame() {
 	const retrySignal = useSelector(selectRetrySignal)
 	const score = useSelector(selectScore);
 	const pieceIndex = useSelector(selectPieceIndex);
-	const position = useSelector(selectPositions);
+	// const position = useSelector(selectPositions);
 	const gameLaunched = useSelector(selectGameLaunched);
 	const Time = useSelector(selectTime);
 	const startPiece = useSelector(selectStartPiece);
@@ -52,6 +52,7 @@ function MultiGame() {
 	const bestScore = useSelector(selectBestScore);
 	const keyDown = useSelector(selectKeyDown)
 	const addMalusGo = useSelector(selectAddMalusGo)
+	const [position, setPosition] = useState([{ x: 4, y: 0}]);
 	const [play, setPlay] = useState(false);
 	const [tick, setTick] = useState(false)
 	const [down, setDown] = useState(false);
@@ -121,6 +122,7 @@ function MultiGame() {
 	useEffect(() => {
 		console.log("inside malus-sent proc by addMalusGo")
 		console.log("addMalusGo = ", addMalusGo)
+		// if (addMalusGo > 0)
 		dispatch({ type: 'MALUS_SENT' })
 	}, [addMalusGo])
 
@@ -131,8 +133,106 @@ function MultiGame() {
   
 	useEffect(() => {
 
-		dispatch({ type: 'ADD_MALUS_LINES' })
+		// dispatch({ type: 'ADD_MALUS_LINES' })
+		if (addMalusGo) {
+					dispatch(modifyRows(addMalusLines(addMalusGo, pieces[pieceIndex])))
+					dispatch(addLastMalus(addMalusGo))
+					dispatch(modifyAddMalusGo(0))
+				}
 	}, [addMalusGo, lastMalus])
+
+	const addMalusLines = (number, pieces) => {
+
+
+		let newPos = {x: position.x, y: 0};
+		let newRows = rows.map(row => [...row.map(cell => cell)]);
+
+
+		// Clear piece from current position in newRows
+		for (let y = 0; y < pieces.length; y++) {
+				for (let x = 0; x < pieces[y].length; x++) {
+						if (pieces[y][x] === 1) {
+								newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 0;
+						}
+				}
+		}
+
+		// Find the highest row containing '1' or '2' from the bottom
+		let highestRowWith1 = 0;
+		for (let y = rows.length - 1; y >= 0; y--) {
+				if (newRows[y].includes(1) || newRows[y].includes(2)) {
+						highestRowWith1 = y;
+				} else if (equal(newRows[y], 0)) {
+						break;
+				}
+		}
+
+		// Check if adding malus lines would cause game over
+		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
+				console.log("--  game over from addMalus")
+				// resetGameOver(state, store, socket)
+		}
+
+		// Move rows up by 'number' positions
+		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
+				newRows[y - number] = rows[y];		
+		}
+		
+		// Add malus lines at the bottom
+		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
+			newRows[y] = new Array(rows[0].length).fill(2);
+		}
+
+		// Restore piece in its original position or adjusted position in newRows
+		
+
+		if (position[pieceIndex].y + pieces.length < rows.length - (number + lastMalus)) {
+			for (let y = 0; y < pieces.length; y++) {
+				for (let x = 0; x < pieces[y].length; x++) {
+					if (pieces[y][x] === 1) {
+						if (newPos.y == 0 && position[pieceIndex].y != 0) {
+							newPos.y = position[pieceIndex].y + y;
+						}
+						console.log("position.y = ", position[pieceIndex].y)
+						console.log("y = ", y)
+						console.log("position.x = ", position[pieceIndex].x)
+						console.log("x = ", x)
+						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
+					}							
+				}
+			}
+		}
+		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
+			for (let y = 0; y < pieces.length; y++) {
+				for (let x = 0; x < pieces[y].length; x++) {
+					if (pieces[y][x] === 1) {
+						if (newPos.y == 0) {
+							newPos.y = position[pieceIndex].y + y - (number + lastMalus);
+						}
+						console.log("position.y = ", position[pieceIndex].y)
+						console.log("y = ", y)
+						console.log("position.x = ", position[pieceIndex].x)
+						console.log("x = ", x)
+						console.log("number = ", number)
+						console.log("lastMalus = ", lastMalus)
+						newRows[position[pieceIndex].y + y - (number + lastMalus)][position[pieceIndex].x + x] = 1;
+					}
+				}
+			}
+		}
+
+		// Update piece position if necessary
+		if (newPos != 0) {
+			// dispatch(modifyPositions({newPosition: newPos, pieceIndex}))
+			setPosition(prevPosition => {
+				const newPositions = [...prevPosition];
+				newPositions[pieceIndex] = newPos;
+				return newPositions;
+			});
+		}
+		// Update the rows state
+		return newRows;
+}
 
 	const equal = (row, number) => {
 	  return row.every(cell => cell === number);
@@ -149,20 +249,10 @@ function MultiGame() {
 	  return false;
 	};
 
-	// Not used
-	// const checkLastRows = (rows) => {
-	// 	let y = rows.length - 1;
-	//   for (y; rows[y].includes(1); y--) {}
-	// 	if (y == 20)
-	// 		return 19;
-	// 	else
-	//   return y;
-	// };
-  
 	movePieceDownRef.current = useCallback(() => {
 	// const movePieceDownRef = () => {
 			
-			if (startPiece && check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+			if (startPiece && check1(rows, pieces[pieceIndex], 0, "y") === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					dispatch(startPieceOff());
 			}
@@ -178,25 +268,12 @@ function MultiGame() {
 				dispatch(changeKeyDown("null"))
 			}
 			
-			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+			if (check1(rows, pieces[pieceIndex], 0, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 				if (!spaceRaised && tick == false) { // fix potentiel slide bot
 					return
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
-						// console.log("game over from normal")
 						dispatch({ type: 'GAME_OVER'})
-						// socket.emit('changestatusPlayer', actualUrl, name, false);
-						// socket.emit("score_add", score.current, name, actualUrl);
-						// setGameLaunched(false);
-						// setLastMalus((old) => old = 0);
-						// setKeyDown("null");
-						// if (score.current > bestScore)
-						// 	setBestScore(score.current)
-						// score.current = 0 // En modifiant score.current ici, le perdant affichera un score.current a 0 et le best score.current sera affiché meme si il n'y a pas eu de précédent
-						// setGameOver(true);
-						// setTime(1000)
-						// socket.emit("gameStopped", actualUrl);
-						// return gameLaunched;
 				}
 				console.log("--- inside check 1 = 1")
 				let newRows = rows.map(row => [...row]);
@@ -230,8 +307,9 @@ function MultiGame() {
 					setSpaceRaised(false)
 				dispatch(modifyPieceIndex(pieceIndex + 1));
 				dispatch(startPieceOn());
-				dispatch(newPositions());
-			}
+				// dispatch(newPositions());
+				setPosition([...position, { x: 4, y: 0 }]);
+			}			
 	// }
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
 
@@ -277,7 +355,7 @@ function MultiGame() {
 	};
   
 	const deleteLine = (rows, start, end) => {
-	  let newRows = [...rows];
+		let newRows = rows.map(row => [...row]);
 	  for (let y = start; y >= end; y--) {
 			if (equal(newRows[y], 1)) {
 				newRows.splice(y, 1);
@@ -311,17 +389,22 @@ function MultiGame() {
 	  return true;
 	};
   
-	const check1 = (rows, piece, newPiece, position, axe) => {
+	const check1 = (rows, piece, newPiece, axe) => {
 	  let it;
 	  let tmpPosition;
+		// let position = [...pos]
 	  let rowsClean = rows.map(row => [...row]);
+
+		console.log("---- inside check 1")
+		console.log("position = ", position[pieceIndex])
+		console.log("rows Clean.length = ", rowsClean.length)
   
 	  if (axe === "y" || axe === "+x" || axe === "r") {
 			for (let y = 0; y < piece.length; y++) {
 				for (let x = 0; x < piece[y].length; x++) {
 					if (piece[y][x] === 1) {
-						const newY = position.y + y;
-						const newX = position.x + x;
+						const newY = position[pieceIndex].y + y;
+						const newX = position[pieceIndex].x + x;
 			
 						if (axe === "r")
 							rowsClean[newY][newX] = 0;
@@ -359,8 +442,8 @@ function MultiGame() {
 			for (let y = 0; y < piece.length; y++) {
 				for (let x = piece[y].length - 1; x >= 0; x--) {
 					if (piece[y][x] === 1) {
-						const newY = position.y + y;
-						const newX = position.x + x;
+						const newY = position[pieceIndex].y + y;
+						const newX = position[pieceIndex].x + x;
 						let itp = 0;
 						it = x;
 						tmpPosition = 0;
@@ -385,8 +468,8 @@ function MultiGame() {
 			for (let dy = 0; dy < newPiece.length; dy++) {
 				for (let dx = 0; dx < newPiece[dy].length; dx++) {
 					if (newPiece[dy][dx] === 1) {
-						const newPieceY = position.y + dy;
-						const newPieceX = position.x + dx;
+						const newPieceY = position[pieceIndex].y + dy;
+						const newPieceX = position[pieceIndex].x + dx;
 			
 						if (newPieceX === 0 || newPieceX > rows[dy].length - 1 || newPieceY >= rows.length || rowsClean[newPieceY][newPieceX] === 1 || rowsClean[newPieceY][newPieceX] === 2){
 							return 1;
@@ -410,8 +493,12 @@ function MultiGame() {
 				return
 			newPosition.x -= 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
-				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions({newPosition, pieceIndex}))
+				setPosition(prevPositions => {
+					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					return newPositions;
+				});
 			}
 			break;
 		case 'ArrowRight':
@@ -419,8 +506,12 @@ function MultiGame() {
 				return
 			newPosition.x += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
-				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions({newPosition, pieceIndex}))
+				setPosition(prevPositions => {
+					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					return newPositions;
+				});
 			}
 			break;
 		case 'ArrowUp':
@@ -440,8 +531,12 @@ function MultiGame() {
 		case 'ArrowDown':
 			newPosition.y += 1;
 			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
-				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions({newPosition, pieceIndex}))
+				setPosition(prevPositions => {
+					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					return newPositions;
+				});
 			}
 			break;
 			case ' ':
@@ -449,7 +544,11 @@ function MultiGame() {
 					newPosition.y++;
 				}
 				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
-				dispatch(modifyPositions({newPosition, pieceIndex}))
+				setPosition(prevPositions => {
+					const newPositions = [...prevPositions];
+					newPositions[pieceIndex] = newPosition;
+					return newPositions;
+				});
 			break; 
 		default:
 			break;
