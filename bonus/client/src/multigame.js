@@ -5,16 +5,16 @@ import sound from './tetris.mp3';
 import { selectUrl } from './reducers/urlSlice';
 import { selectPiece, modifyPiece } from './reducers/pieceSlice';
 import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
-import { selectMusic, musicOff } from './reducers/musicSlice';
+import { selectMusic, musicOff, musicOn } from './reducers/musicSlice';
 import { selectStartPiece, startPieceOff, startPieceOn } from './reducers/startPieceSlice';
 import { modifyRows, selectRows } from './reducers/rowsSlice';
 import { modifyTime, addTime, selectTime } from './reducers/timeSlice';
-import { modifyPositions, newPositions, resetPositions, selectPositions } from './reducers/positionsSlice';
+// import { modifyPositions, newPositions, resetPositions, selectPositions } from './reducers/positionsSlice';
 import { changeKeyDown, selectKeyDown } from './reducers/keyDownSlice';
 import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
 import { selectTempName } from './reducers/tempNameSlice';
 import { addScore, selectScore } from './reducers/scoreSlice';
-import { modifyPieceIndex, selectPieceIndex } from './reducers/pieceIndexSlice';
+// import { modifyPieceIndex, selectPieceIndex } from './reducers/pieceIndexSlice';
 import { selectGameLaunched } from './reducers/gameLaunchedSlice';
 import { selectGameOver } from './reducers/gameOverSlice';
 import { selectLeader } from './reducers/leaderSlice';
@@ -37,7 +37,6 @@ function MultiGame() {
 	const catalogPieces = useSelector(selectCatalogPieces)
 	const retrySignal = useSelector(selectRetrySignal)
 	const score = useSelector(selectScore);
-	const pieceIndex = useSelector(selectPieceIndex);
 	// const position = useSelector(selectPositions);
 	const gameLaunched = useSelector(selectGameLaunched);
 	const Time = useSelector(selectTime);
@@ -53,6 +52,7 @@ function MultiGame() {
 	const keyDown = useSelector(selectKeyDown)
 	const addMalusGo = useSelector(selectAddMalusGo)
 	const [position, setPosition] = useState([{ x: 4, y: 0}]);
+	const [pieceIndex, setPieceIndex] = useState(0);
 	const [play, setPlay] = useState(false);
 	const [tick, setTick] = useState(false)
 	const [down, setDown] = useState(false);
@@ -82,30 +82,35 @@ function MultiGame() {
 		}
 	}, [down]);
 
-	useEffect(() => { // un peu de mal a imaginer comment catch cette socket, remplacer par un dispatch ? 
-		// Peut être setInterval peut aider a boucler sur action dispatch
+	useEffect(() => { 
 		dispatch({ type: 'LAUNCH_GAME' })
 	}, [])
 
 	useEffect(() => {
-		if (music == true)
-			toggleAudioPlayback();
-	}, [music])
+		if (resultat == "winner")
+			setPlay(true)
+		toggleAudioPlayback();
+	}, [play, music])
 
 	if (!gameLaunched)
 		dispatch({ type: 'NAME_PLAYER' })
 
 	dispatch({ type: 'RETRY_SIGNAL' })
 
-	// useEffect(() => {
-	// 	if (retrySignal)
-	// 		dispatch({ type: 'RETRY_GAMES' })
-	// 	dispatch(retrySignalOff())
-	// }, [retrySignal])
-
+	useEffect(() => {
+		if (retrySignal) {
+			setPosition([{x: 4, y: 0}])
+			setPieceIndex(0)
+			setPlay(false)
+		}
+		dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))))
+		dispatch(retrySignalOff())
+	}, [retrySignal])
 
 	useEffect(() => {
 		dispatch({ type: 'WINNER'})
+		if (music == true)
+			setPlay(true)
 	}, [])
 
 	useEffect(() => {
@@ -114,15 +119,10 @@ function MultiGame() {
 	}, [])
 
 	useEffect(() => {
-		console.log("inside malus")
-		console.log("malus = ", malus)
 		dispatch({ type: 'MALUS' })
 	}, [malus]);	
 	
 	useEffect(() => {
-		console.log("inside malus-sent proc by addMalusGo")
-		console.log("addMalusGo = ", addMalusGo)
-		// if (addMalusGo > 0)
 		dispatch({ type: 'MALUS_SENT' })
 	}, [addMalusGo])
 
@@ -133,7 +133,6 @@ function MultiGame() {
   
 	useEffect(() => {
 
-		// dispatch({ type: 'ADD_MALUS_LINES' })
 		if (addMalusGo) {
 					dispatch(modifyRows(addMalusLines(addMalusGo, pieces[pieceIndex])))
 					dispatch(addLastMalus(addMalusGo))
@@ -169,7 +168,7 @@ function MultiGame() {
 
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
-				console.log("--  game over from addMalus")
+			setPlay(true);
 				// resetGameOver(state, store, socket)
 		}
 
@@ -193,10 +192,6 @@ function MultiGame() {
 						if (newPos.y == 0 && position[pieceIndex].y != 0) {
 							newPos.y = position[pieceIndex].y + y;
 						}
-						console.log("position.y = ", position[pieceIndex].y)
-						console.log("y = ", y)
-						console.log("position.x = ", position[pieceIndex].x)
-						console.log("x = ", x)
 						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
 					}							
 				}
@@ -209,12 +204,6 @@ function MultiGame() {
 						if (newPos.y == 0) {
 							newPos.y = position[pieceIndex].y + y - (number + lastMalus);
 						}
-						console.log("position.y = ", position[pieceIndex].y)
-						console.log("y = ", y)
-						console.log("position.x = ", position[pieceIndex].x)
-						console.log("x = ", x)
-						console.log("number = ", number)
-						console.log("lastMalus = ", lastMalus)
 						newRows[position[pieceIndex].y + y - (number + lastMalus)][position[pieceIndex].x + x] = 1;
 					}
 				}
@@ -252,7 +241,7 @@ function MultiGame() {
 	movePieceDownRef.current = useCallback(() => {
 	// const movePieceDownRef = () => {
 			
-			if (startPiece && check1(rows, pieces[pieceIndex], 0, "y") === 0) {
+			if (startPiece && check1(rows, pieces[pieceIndex], 0, "y", 0) === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					dispatch(startPieceOff());
 			}
@@ -268,14 +257,14 @@ function MultiGame() {
 				dispatch(changeKeyDown("null"))
 			}
 			
-			if (check1(rows, pieces[pieceIndex], 0, "y") === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
+			if (check1(rows, pieces[pieceIndex], 0, "y", 0) === 1) { // Condition lorsqu'on repère un 1 en bas de la pièce
 				if (!spaceRaised && tick == false) { // fix potentiel slide bot
 					return
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
+						setPlay(true)
 						dispatch({ type: 'GAME_OVER'})
 				}
-				console.log("--- inside check 1 = 1")
 				let newRows = rows.map(row => [...row]);
 				let oldScore = score;
 				let newScore = 0;
@@ -295,8 +284,6 @@ function MultiGame() {
 				}
 
 				if (!down) {
-					console.log("inside !down")
-					console.log("sum  = ", sum)
 					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
 						const final = sum / 100
 						dispatch(modifyMalus(final));
@@ -305,13 +292,12 @@ function MultiGame() {
 				}
 				if (spaceRaised)
 					setSpaceRaised(false)
-				dispatch(modifyPieceIndex(pieceIndex + 1));
+				setPieceIndex(pieceIndex + 1);
 				dispatch(startPieceOn());
-				// dispatch(newPositions());
 				setPosition([...position, { x: 4, y: 0 }]);
 			}			
 	// }
-}, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo]);
+}, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo, spaceRaised]);
 
 
 
@@ -389,22 +375,23 @@ function MultiGame() {
 	  return true;
 	};
   
-	const check1 = (rows, piece, newPiece, axe) => {
+	const check1 = (rows, piece, newPiece, axe, newPosition) => {
 	  let it;
 	  let tmpPosition;
-		// let position = [...pos]
-	  let rowsClean = rows.map(row => [...row]);
-
-		console.log("---- inside check 1")
-		console.log("position = ", position[pieceIndex])
-		console.log("rows Clean.length = ", rowsClean.length)
+		let rowsClean = rows.map(row => [...row]);
+		let newX = 0;
+		let newY = 0;
   
-	  if (axe === "y" || axe === "+x" || axe === "r") {
+	  if (axe === "y" || axe === "+x" || axe === "r" || axe === " ") {
 			for (let y = 0; y < piece.length; y++) {
 				for (let x = 0; x < piece[y].length; x++) {
 					if (piece[y][x] === 1) {
-						const newY = position[pieceIndex].y + y;
-						const newX = position[pieceIndex].x + x;
+						newY = position[pieceIndex].y + y;
+						newX = position[pieceIndex].x + x;
+						if (newPosition != 0) { 
+							newY = newPosition.y + y;
+							newX = newPosition.x + x;
+						}
 			
 						if (axe === "r")
 							rowsClean[newY][newX] = 0;
@@ -492,7 +479,7 @@ function MultiGame() {
 			if (tick)
 				return
 			newPosition.x -= 1;
-			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "-x") === 0) { 
+			if (check1(rows, pieces[pieceIndex], 0, "-x", 0) === 0) { 
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
@@ -505,7 +492,7 @@ function MultiGame() {
 			if (tick)
 				return
 			newPosition.x += 1;
-			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "+x") === 0) {
+			if (check1(rows, pieces[pieceIndex], 0, "+x", 0) === 0) {
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
@@ -520,17 +507,17 @@ function MultiGame() {
 			let newPiecePosition = searchMatchingPatterns(catalogPieces, pieces, pieceIndex);
 			newPiecePosition[1] = newPiecePosition[1] === 3 ? 0 : newPiecePosition[1] + 1;
 			const newPiece = catalogPieces[newPiecePosition[0]][newPiecePosition[1]];
-			if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 0) {
+			if (check1(rows, pieces[pieceIndex], newPiece, "r", 0) === 0) {
 				writePiece(newPiece, position[pieceIndex], position[pieceIndex], pieces[pieceIndex]);
 				dispatch(modifyPiece({newPiece, pieceIndex}))
 			}
-			else if (check1(rows, pieces[pieceIndex], newPiece, position[pieceIndex], "r") === 1) {
+			else if (check1(rows, pieces[pieceIndex], newPiece, "r", 0) === 1) {
 				writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 			}
 			break;
 		case 'ArrowDown':
 			newPosition.y += 1;
-			if (check1(rows, pieces[pieceIndex], 0, position[pieceIndex], "y") === 0) {
+			if (check1(rows, pieces[pieceIndex], 0, "y", 0) === 0) {
 				setPosition(prevPositions => {
 					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
@@ -540,11 +527,11 @@ function MultiGame() {
 			}
 			break;
 			case ' ':
-				while (check1(rows, pieces[pieceIndex], 0, newPosition, "y") === 0) {
+				while (check1(rows, pieces[pieceIndex], 0, "y", newPosition) === 0) {
 					newPosition.y++;
 				}
-				writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 				setPosition(prevPositions => {
+					writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 					const newPositions = [...prevPositions];
 					newPositions[pieceIndex] = newPosition;
 					return newPositions;
@@ -597,7 +584,6 @@ function MultiGame() {
   
 	const launchGame = () => {
 		dispatch({ type: 'LAUNCH_CLICK' })
-	  toggleAudioPlayback();
 	};
 
 	const toggleAudioPlayback = () => {
@@ -605,17 +591,21 @@ function MultiGame() {
 		  if (audio) {
 			audio.play();
 		  }
-		} else {
+		} 
+		else if (play) {
 		  if (audio) {
 			audio.pause();
+			audio.load();
 		  }
 		}
-		setPlay(!play);
 		dispatch(musicOff())
 	};  
 
 	const Retry = () => {
+		setPosition([{x: 4, y: 0}])
+		setPieceIndex(0);
 		dispatch({ type: 'RETRY_GAME' })
+		setPlay(false)
 	}
 
 	const toHome = () => {

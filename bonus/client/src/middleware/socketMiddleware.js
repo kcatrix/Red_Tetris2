@@ -17,8 +17,8 @@ import { changeKeyDown } from '../reducers/keyDownSlice';
 import { gameOverOff, gameOverOn } from '../reducers/gameOverSlice';
 import { modifyRows } from '../reducers/rowsSlice';
 import { startPieceOn } from '../reducers/startPieceSlice';
-import { modifyPositions, resetPositions } from '../reducers/positionsSlice';
-import { musicOn } from '../reducers/musicSlice';
+// import { modifyPositions, resetPositions } from '../reducers/positionsSlice';
+import { musicOff, musicOn } from '../reducers/musicSlice';
 import { modifyMalus } from '../reducers/malusSlice';
 import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
 import { fillPlayers } from '../reducers/playersSlice';
@@ -41,6 +41,7 @@ const checkRowsEqual = (rows, firstY, lastY, number) => {
 
 const resetGameOver = (state, store, socket) => {
 
+	store.dispatch(musicOn())
 	socket.emit('changestatusPlayer', state.url, state.tempName, false);
 	socket.emit("score_add", state.score, state.tempName, state.url);
 	store.dispatch(gameLaunchedOff());
@@ -57,18 +58,19 @@ const resetGameOver = (state, store, socket) => {
 
 const launchGame = (state, store, socket) => {
 	
+	store.dispatch(musicOn())
 	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	store.dispatch(gameLaunchedOn(true));
-	// store.dispatch(changeResultats("Game over"));
+	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
 		socket.emit("gameStarted", state.url)
 	}
-	store.dispatch(musicOn())
 }
 
 const Retry = (state, store, socket) => {
 
+	store.dispatch(musicOn())
 	store.dispatch(modifyLastMalus(0))
 	store.dispatch(changeKeyDown("null"))
 	socket.emit('changestatusPlayer', state.url, state.tempName, true)
@@ -77,92 +79,10 @@ const Retry = (state, store, socket) => {
 		socket.emit('all_retry', state.url, state.tempName)
 	}
 	store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
-	store.dispatch(resetPositions(state.pieceIndex))
 	store.dispatch(startPieceOn())
+	store.dispatch(retrySignalOn())
 	launchGame(state, store, socket)
 }
-
-// const addMalusLines = (state, store, socket) => {
-
-// 		let newPos = {x: state.positions.x, y: 0};
-// 		let newRows = state.rows.map(rows => [...rows]);
-// 		let pieces = state.piece
-// 		let pieceIndex = state.pieceIndex
-// 		let position = state.positions
-// 		let rows = state.rows
-// 		let number = state.addMalusGo
-
-// 		// Clear piece from current position in newRows
-// 		for (let y = 0; y < pieces.length; y++) {
-// 				for (let x = 0; x < pieces[y].length; x++) {
-// 						if (pieces[y][x] === 1) {
-// 								newRows[position.y + y][position.x + x] = 0;
-// 						}
-// 				}
-// 		}
-
-// 		// Find the highest row containing '1' or '2' from the bottom
-// 		let highestRowWith1 = 0;
-// 		for (let y = rows.length - 1; y >= 0; y--) {
-// 				if (newRows[y].includes(1) || newRows[y].includes(2)) {
-// 						highestRowWith1 = y;
-// 				} else if (equal(newRows[y], 0)) {
-// 						break;
-// 				}
-// 		}
-
-// 		// Check if adding malus lines would cause game over
-// 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
-// 				console.log("--  game over from addMalus")
-// 				resetGameOver(state, store, socket)
-// 		}
-
-// 		// Move rows up by 'number' positions
-// 		for (let y = highestRowWith1; y < rows.length - state.lastMalus + number; y++) {
-// 				newRows[y - number] = rows[y];		
-// 		}
-		
-// 		// Add malus lines at the bottom
-// 		for (let y = (rows.length - 1) - state.lastMalus; y > (rows.length - 1) - (state.lastMalus + number); y--) {
-// 			newRows[y] = new Array(rows[0].length).fill(2);
-// 		}
-
-// 		// Restore piece in its original position or adjusted position in newRows
-		
-
-// 		if (position.y + pieces.length < rows.length - (number + state.lastMalus)) {
-// 			for (let y = 0; y < pieces.length; y++) {
-// 				for (let x = 0; x < pieces[y].length; x++) {
-// 					if (pieces[y][x] === 1) {
-// 						if (newPos.y == 0 && position.y != 0) {
-// 							newPos.y = position.y + y;
-// 						}
-// 						newRows[position.y + y][position.x + x] = 1;	
-// 					}							
-// 				}
-// 			}
-// 		}
-// 		else if (position.y + pieces.length >= rows.length - (number + state.lastMalus)) {
-// 			for (let y = 0; y < pieces.length; y++) {
-// 				for (let x = 0; x < pieces[y].length; x++) {
-// 					if (pieces[y][x] === 1) {
-// 						if (newPos.y == 0) {
-// 							newPos.y = position.y + y - (number + state.lastMalus);
-// 						}
-// 						newRows[position.y + y - (number + state.lastMalus)][position.x + x] = 1;
-// 					}
-// 				}
-// 			}
-// 		}
-
-// 		// // Update piece position if necessary
-// 		// if (newPos !== 0) {
-// 		// 	store.dispatch(modifyPositions({newPosition: newPos, pieceIndex}))
-// 		// }
-
-// 		// Update the rows state
-// 		return newRows;
-// }
 
 const socketMiddleware = (() => {
   let socket;
@@ -244,6 +164,8 @@ const socketMiddleware = (() => {
 		
 				let index = y;
 				socket.emit("setHigherPos", index, state.Url, state.tempName);
+				console.log("-- Set higher pos end")
+				console.log("index = ", index)
 				break;
 			}
 			case 'LAUNCH_GAME': {
@@ -279,10 +201,10 @@ const socketMiddleware = (() => {
 						socket.emit("score_add", state.score, state.tempName, state.url)
 						if (state.score > state.bestScore)
 							store.dispatch(modifyBestScore(state.score))
+						store.dispatch(musicOn())
 						store.dispatch(modifyScore(0))
 						store.dispatch(gameOverOn())
 						store.dispatch(gameLaunchedOff())
-						store.dispatch(musicOn())
 						socket.emit("gameStopped", state.url)
 						return state.gameLaunched
 					}
