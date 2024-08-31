@@ -18,11 +18,13 @@ import { noNameOff, selectNoName } from './reducers/noNameSlice';
 import { changeOldUrl, selectOldUrl } from './reducers/oldUrlSlice';
 import { changeCheckUrl } from './reducers/checkUrlSlice';
 import { selectScoreList } from './reducers/scoreListSlice';
+import { backOff, selectBack } from './reducers/backSlice';
 
 function App() {
   const catalogPieces = useSelector(selectCatalogPieces);
   const multi = useSelector(selectMulti);
   const url = useSelector(selectUrl);
+	const back = useSelector(selectBack);
   const changeOk = useSelector(selectChangeOk);
   const tempName = useSelector(selectTempName);
   const checkUrl = useSelector(selectCheckUrl);
@@ -59,13 +61,17 @@ function App() {
 
 	useEffect(() => { // Logique vérifiant si on tente d'accéder à l'URL avec un nom déja rempli ou pas
 		// Si oui, on vérifie l'URL, sinon on repart de la page de base pour rentrer son nom est accéder au multi
-		if (tempName.length === 0) {
+		if (tempName.length === 0 && back == false) {
 			dispatch(changeOldUrl(checkUrl));
 			navigate("/");
 		} 
-		if (checkUrl && checkUrl.length > 3) {
+		if (checkUrl && checkUrl.length > 3 && back == false) {
 			dispatch({ type: 'URL_CHECK' });
 		}
+		if (back == true)
+			dispatch(changeOldUrl(""))
+			dispatch(backOff())
+			navigate("/")
 	}, [checkUrl]);
 
 	useEffect(() => { // Continuité de la vérif d'url au-dessus.

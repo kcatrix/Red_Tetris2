@@ -25,6 +25,7 @@ import { addLastMalus, selectLastMalus } from './reducers/lastMalusSlice';
 import { modifyMalus, selectMalus } from './reducers/malusSlice';
 import { selectBestScore } from './reducers/bestScoreSlice';
 import { modifyAddMalusGo, selectAddMalusGo } from './reducers/addMalusGoSlice';
+import { backOn, selectBack } from './reducers/backSlice';
 
 
 function MultiGame() {
@@ -64,6 +65,8 @@ function MultiGame() {
 	const dispatch = useDispatch();
 
 	let intervalId;
+
+	dispatch(backOn())
 
 	useEffect(() => { // remplacable par un dispatch({ message a la con })
 
