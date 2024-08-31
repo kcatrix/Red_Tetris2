@@ -163,9 +163,7 @@ const socketMiddleware = (() => {
 				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {}
 		
 				let index = y;
-				socket.emit("setHigherPos", index, state.Url, state.tempName);
-				console.log("-- Set higher pos end")
-				console.log("index = ", index)
+				socket.emit("setHigherPos", index, state.url, state.tempName);
 				break;
 			}
 			case 'LAUNCH_GAME': {
@@ -236,7 +234,9 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'HIGHER_POS': {
+				console.log("inside HIGHER_POS")
 				socket.on('higherPos', (Players, Url) => {
+					console.log("Players = ", Players)
 					if (Url == state.url) {
 						store.dispatch(fillPlayers(Players.filter(element => element.name !== state.tempName)));
 					}

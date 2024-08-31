@@ -150,7 +150,6 @@ io.on('connection', (socket) => {
     })
 
 		socket.on('setHigherPos', (number, Url, name) => {
-
 				const searchUrl = (element) => element.Url == Url
 				const searchName = (element) => element.name == name
         let index_player;
