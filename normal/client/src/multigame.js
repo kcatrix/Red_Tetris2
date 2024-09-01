@@ -12,7 +12,6 @@ import { modifyTime, addTime, selectTime } from './reducers/timeSlice';
 import { changeKeyDown, selectKeyDown } from './reducers/keyDownSlice';
 import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
 import { selectTempName } from './reducers/tempNameSlice';
-// import { addScore, selectScore } from './reducers/scoreSlice';
 import { selectGameLaunched } from './reducers/gameLaunchedSlice';
 import { selectGameOver } from './reducers/gameOverSlice';
 import { selectLeader } from './reducers/leaderSlice';
@@ -21,9 +20,7 @@ import { selectPlayersOff } from './reducers/playersOffSlice';
 import { selectResultats } from './reducers/resultatsSlice';
 import { addLastMalus, selectLastMalus } from './reducers/lastMalusSlice';
 import { modifyMalus, selectMalus } from './reducers/malusSlice';
-// import { selectBestScore } from './reducers/bestScoreSlice';
 import { modifyAddMalusGo, selectAddMalusGo } from './reducers/addMalusGoSlice';
-import { backOn, selectBack } from './reducers/backSlice';
 
 
 function MultiGame() {
@@ -35,7 +32,6 @@ function MultiGame() {
 	const pieces = useSelector(selectPiece);
 	const catalogPieces = useSelector(selectCatalogPieces)
 	const retrySignal = useSelector(selectRetrySignal)
-	// const score = useSelector(selectScore);
 	const gameLaunched = useSelector(selectGameLaunched);
 	const Time = useSelector(selectTime);
 	const startPiece = useSelector(selectStartPiece);
@@ -46,25 +42,20 @@ function MultiGame() {
 	const resultat = useSelector(selectResultats)
 	const lastMalus = useSelector(selectLastMalus);
 	const malus = useSelector(selectMalus);
-	// const bestScore = useSelector(selectBestScore);
 	const keyDown = useSelector(selectKeyDown)
 	const addMalusGo = useSelector(selectAddMalusGo)
-	const back = useSelector(selectBack)
 	const [position, setPosition] = useState([{ x: 4, y: 0}]);
 	const [pieceIndex, setPieceIndex] = useState(0);
 	const [play, setPlay] = useState(false);
 	const [tick, setTick] = useState(false)
 	const [down, setDown] = useState(false);
 	const [spaceRaised, setSpaceRaised] = useState(false)
-	// const audio = document.getElementById("audio_tag");
 	const movePieceDownRef = useRef();
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
 	let intervalId;
-
-	dispatch(backOn())
 
 	useEffect(() => { // remplacable par un dispatch({ message a la con })
 
@@ -86,12 +77,6 @@ function MultiGame() {
 	useEffect(() => { 
 		dispatch({ type: 'LAUNCH_GAME' })
 	}, [])
-
-	// useEffect(() => {
-	// 	if (resultat == "winner")
-	// 		setPlay(true)
-	// 	toggleAudioPlayback();
-	// }, [play, music])
 
 	if (!gameLaunched)
 		dispatch({ type: 'NAME_PLAYER' })
@@ -170,7 +155,7 @@ function MultiGame() {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 			setPlay(true);
-				// resetGameOver(state, store, socket)
+			dispatch({ type:"RESET_GAME_OVER" })
 		}
 
 		// Move rows up by 'number' positions
@@ -240,7 +225,6 @@ function MultiGame() {
 	};
 
 	movePieceDownRef.current = useCallback(() => {
-	// const movePieceDownRef = () => {
 			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, "y", 0) === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
@@ -587,21 +571,6 @@ function MultiGame() {
 		dispatch({ type: 'LAUNCH_CLICK' })
 	};
 
-	// const toggleAudioPlayback = () => {
-	// 	if (!play) {
-	// 	  if (audio) {
-	// 		audio.play();
-	// 	  }
-	// 	} 
-	// 	else if (play) {
-	// 	  if (audio) {
-	// 		audio.pause();
-	// 		audio.load();
-	// 	  }
-	// 	}
-	// 	dispatch(musicOff())
-	// };  
-
 	const Retry = () => {
 		setPosition([{x: 4, y: 0}])
 		setPieceIndex(0);
@@ -610,6 +579,7 @@ function MultiGame() {
 	}
 
 	const toHome = () => {
+		dispatch({ type: "BACK_HOME" })
 		navigate("/");
 	}
 

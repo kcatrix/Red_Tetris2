@@ -7,14 +7,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HighScoreBoard } from './components/HighScoreBoard';
 import { selectRandomPiece } from "./reducers/pieceSlice";
 import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
-import { selectMulti } from './reducers/multiSlice';
+import { multiOff, selectMulti } from './reducers/multiSlice';
 import { selectUrl, changeUrl } from './reducers/urlSlice';
-import { selectChangeOk } from './reducers/changeOkSlice';
+import { changeOkOff, selectChangeOk } from './reducers/changeOkSlice';
 import { selectShowHighScore, showHighScoreOn } from './reducers/showHighScoreSlice';
 import { createRoomOn } from './reducers/createRoomSlice';
 import { changeTempName, selectTempName } from './reducers/tempNameSlice';
 import { selectCheckUrl } from './reducers/checkUrlSlice';
-import { noNameOff, selectNoName } from './reducers/noNameSlice';
+import { noNameOff, noNameOn, selectNoName } from './reducers/noNameSlice';
 import { changeOldUrl, selectOldUrl } from './reducers/oldUrlSlice';
 import { changeCheckUrl } from './reducers/checkUrlSlice';
 import { selectScoreList } from './reducers/scoreListSlice';
@@ -45,7 +45,8 @@ function App() {
 	useEffect(() => {
 		 // Si Url n'est pas encore attribué et que loca.path est différent d'initial, stock Url dans check
 		
-		 if (url === "" && location.pathname.length > 1) {
+		//  if (url === "" && location.pathname.length > 1 && back == false) {
+		 if (url === "" && location.pathname.length > 1 ) {
 			const tempUrl = location.pathname
 			dispatch(changeCheckUrl(tempUrl));
     }
@@ -61,17 +62,25 @@ function App() {
 
 	useEffect(() => { // Logique vérifiant si on tente d'accéder à l'URL avec un nom déja rempli ou pas
 		// Si oui, on vérifie l'URL, sinon on repart de la page de base pour rentrer son nom est accéder au multi
-		if (tempName.length === 0 && back == false) {
+		// if (tempName.length === 0 && back == false) {
+		if (tempName.length === 0) {
 			dispatch(changeOldUrl(checkUrl));
 			navigate("/");
 		} 
-		if (checkUrl && checkUrl.length > 3 && back == false) {
+		// if (checkUrl && checkUrl.length > 3 && back == false) {
+		if (checkUrl && checkUrl.length > 3 ) {
 			dispatch({ type: 'URL_CHECK' });
 		}
-		if (back == true)
-			dispatch(changeOldUrl(""))
-			dispatch(backOff())
-			navigate("/")
+		// if (back == true) {
+		// 	console.log("coucou 1")
+		// 	dispatch(changeOldUrl(""))
+		// 	dispatch(changeCheckUrl(""))
+		// 	dispatch(changeUrl(location.pathname))
+		// 	dispatch(changeTempName(''))
+		// 	dispatch(noNameOn());
+		// 	dispatch(backOff())
+		// 	navigate("/")
+		// }
 	}, [checkUrl]);
 
 	useEffect(() => { // Continuité de la vérif d'url au-dessus.
@@ -83,6 +92,17 @@ function App() {
 			dispatch(changeOldUrl(""));
 			navigate(oldUrl);
 		}
+		// else if (back == true) { 
+		// 	console.log("coucou 2")
+		// 	dispatch(changeOldUrl(""))
+		// 	dispatch(changeCheckUrl(""))
+		// 	dispatch(changeUrl(location.pathname));
+		// 	dispatch(changeTempName(''))
+		// 	dispatch(noNameOn());
+		// 	dispatch(backOff())
+		// 	dispatch(changeOkOff())
+		// 	navigate("/")
+		// }
 	}, [noName]);
 
   const handleInputChange = (event) => { // logique de construction du nom

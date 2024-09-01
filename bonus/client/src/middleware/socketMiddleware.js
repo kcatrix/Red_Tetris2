@@ -2,7 +2,11 @@ import io from 'socket.io-client';
 import { fillPiece } from '../reducers/pieceSlice';
 import { fillCatalog } from '../reducers/catalogPiecesSlice';
 import { changeUrl } from '../reducers/urlSlice';
-import { multiOn } from '../reducers/multiSlice';
+import { changeOldUrl } from '../reducers/oldUrlSlice';
+import { changeCheckUrl } from '../reducers/checkUrlSlice';
+import { changeTempName } from '../reducers/tempNameSlice';
+import { multiOn, multiOff } from '../reducers/multiSlice';
+import { noNameOn } from '../reducers/noNameSlice';
 import { changeOkOff, changeOkOn } from '../reducers/changeOkSlice';
 import { changeScoreList } from '../reducers/scoreListSlice';
 import { leaderOn } from '../reducers/leaderSlice';
@@ -17,7 +21,6 @@ import { changeKeyDown } from '../reducers/keyDownSlice';
 import { gameOverOff, gameOverOn } from '../reducers/gameOverSlice';
 import { modifyRows } from '../reducers/rowsSlice';
 import { startPieceOn } from '../reducers/startPieceSlice';
-// import { modifyPositions, resetPositions } from '../reducers/positionsSlice';
 import { musicOff, musicOn } from '../reducers/musicSlice';
 import { modifyMalus } from '../reducers/malusSlice';
 import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
@@ -234,30 +237,35 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'HIGHER_POS': {
-				console.log("inside HIGHER_POS")
 				socket.on('higherPos', (Players, Url) => {
-					console.log("Players = ", Players)
 					if (Url == state.url) {
 						store.dispatch(fillPlayers(Players.filter(element => element.name !== state.tempName)));
 					}
 				});
 				break;
 			}
-			// case 'ADD_MALUS_LINES': {
-			// 	if (state.addMalusGo) {
-			// 		console.log("inside case ADD MALUS")
-			// 		store.dispatch(modifyRows(addMalusLines(state, store, socket)))
-			// 		store.dispatch(addLastMalus(state.addMalusGo))
-			// 		store.dispatch(modifyAddMalusGo(0))
-			// 	}
-			// 	break;
-			// }
 			case 'GAME_OVER': {
 				resetGameOver(state, store, socket)
 				break;
 			}
 			case 'LAUNCH_CLICK': {
 				launchGame(state, store, socket)
+				break;
+			}
+			case 'BACK_HOME': {
+				store.dispatch(changeOldUrl(""))
+				store.dispatch(changeCheckUrl(""))
+				store.dispatch(changeUrl("/"))
+				store.dispatch(changeTempName(''))
+				store.dispatch(noNameOn());
+				store.dispatch(multiOff())
+				store.dispatch(fillPiece([]))
+				store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
+				socket.emit("gameStopped", state.url)
+				break;
+			}
+			case 'RESET_GAME_OVER': {
+				resetGameOver(state, store, socket)
 				break;
 			}
       // Ajoutez d'autres cas selon les besoins

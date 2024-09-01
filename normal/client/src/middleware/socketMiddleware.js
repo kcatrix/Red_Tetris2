@@ -2,7 +2,11 @@ import io from 'socket.io-client';
 import { fillPiece } from '../reducers/pieceSlice';
 import { fillCatalog } from '../reducers/catalogPiecesSlice';
 import { changeUrl } from '../reducers/urlSlice';
-import { multiOn } from '../reducers/multiSlice';
+import { changeOldUrl } from '../reducers/oldUrlSlice';
+import { changeCheckUrl } from '../reducers/checkUrlSlice';
+import { changeTempName } from '../reducers/tempNameSlice';
+import { multiOn, multiOff } from '../reducers/multiSlice';
+import { noNameOn } from '../reducers/noNameSlice';
 import { changeOkOff, changeOkOn } from '../reducers/changeOkSlice';
 import { changeScoreList } from '../reducers/scoreListSlice';
 import { leaderOn } from '../reducers/leaderSlice';
@@ -17,7 +21,6 @@ import { changeKeyDown } from '../reducers/keyDownSlice';
 import { gameOverOff, gameOverOn } from '../reducers/gameOverSlice';
 import { modifyRows } from '../reducers/rowsSlice';
 import { startPieceOn } from '../reducers/startPieceSlice';
-// import { modifyPositions, resetPositions } from '../reducers/positionsSlice';
 import { musicOff, musicOn } from '../reducers/musicSlice';
 import { modifyMalus } from '../reducers/malusSlice';
 import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
@@ -43,23 +46,17 @@ const resetGameOver = (state, store, socket) => {
 
 	store.dispatch(musicOn())
 	socket.emit('changestatusPlayer', state.url, state.tempName, false);
-	// socket.emit("score_add", state.score, state.tempName, state.url);
 	store.dispatch(gameLaunchedOff());
 	store.dispatch(modifyLastMalus(0));
 	store.dispatch(changeKeyDown("null"))
 	store.dispatch(gameOverOn());
-	store.dispatch(modifyTime(1000))
-	// if (state.score > state.bestScore)
-	// 	store.dispatch(modifyBestScore(store.score))
-	// store.dispatch(modifyScore(0));
+	// store.dispatch(modifyTime(1000))
 	socket.emit("gameStopped", state.url);
 	return state.gameLaunched;
 }
 
 const launchGame = (state, store, socket) => {
 	
-	// store.dispatch(musicOn())
-	// store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	store.dispatch(gameLaunchedOn(true));
 	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
@@ -70,7 +67,6 @@ const launchGame = (state, store, socket) => {
 
 const Retry = (state, store, socket) => {
 
-	// store.dispatch(musicOn())
 	store.dispatch(modifyLastMalus(0))
 	store.dispatch(changeKeyDown("null"))
 	socket.emit('changestatusPlayer', state.url, state.tempName, true)
@@ -91,9 +87,7 @@ const socketMiddleware = (() => {
     if (!socket && action.type === 'SOCKET_INIT') {
       // Initialiser la connexion socket une seule fois
       socket = io('http://localhost:4000'); // Utilisez votre adresse publique ici
-			// store.dispatch(changeSocket(io('http://localhost:4000')))
 
-			// const socket = useSelector(selectSocket)
       socket.on('connect', () => {
         console.log('Connected to socket server');
       });
@@ -194,11 +188,6 @@ const socketMiddleware = (() => {
 					if (name_winner == state.tempName)
 					{
 						store.dispatch(changeResultats("winner"))
-						// socket.emit("score_add", state.score, state.tempName, state.url)
-						// if (state.score > state.bestScore)
-						// 	store.dispatch(modifyBestScore(state.score))
-						// store.dispatch(musicOn())
-						// store.dispatch(modifyScore(0))
 						store.dispatch(gameOverOn())
 						store.dispatch(gameLaunchedOff())
 						socket.emit("gameStopped", state.url)
@@ -237,21 +226,28 @@ const socketMiddleware = (() => {
 				});
 				break;
 			}
-			// case 'ADD_MALUS_LINES': {
-			// 	if (state.addMalusGo) {
-			// 		console.log("inside case ADD MALUS")
-			// 		store.dispatch(modifyRows(addMalusLines(state, store, socket)))
-			// 		store.dispatch(addLastMalus(state.addMalusGo))
-			// 		store.dispatch(modifyAddMalusGo(0))
-			// 	}
-			// 	break;
-			// }
 			case 'GAME_OVER': {
 				resetGameOver(state, store, socket)
 				break;
 			}
 			case 'LAUNCH_CLICK': {
 				launchGame(state, store, socket)
+				break;
+			}
+			case 'BACK_HOME': {
+				store.dispatch(changeOldUrl(""))
+				store.dispatch(changeCheckUrl(""))
+				store.dispatch(changeUrl("/"))
+				store.dispatch(changeTempName(''))
+				store.dispatch(noNameOn());
+				store.dispatch(multiOff())
+				store.dispatch(fillPiece([]))
+				store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
+				socket.emit("gameStopped", state.url)
+				break;
+			}
+			case 'RESET_GAME_OVER': {
+				resetGameOver(state, store, socket)
 				break;
 			}
       // Ajoutez d'autres cas selon les besoins

@@ -7,14 +7,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { HighScoreBoard } from './components/HighScoreBoard';
 import { selectRandomPiece } from "./reducers/pieceSlice";
 import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
-import { selectMulti } from './reducers/multiSlice';
+import { multiOff, selectMulti } from './reducers/multiSlice';
 import { selectUrl, changeUrl } from './reducers/urlSlice';
-import { selectChangeOk } from './reducers/changeOkSlice';
+import { changeOkOff, selectChangeOk } from './reducers/changeOkSlice';
 import { selectShowHighScore, showHighScoreOn } from './reducers/showHighScoreSlice';
 import { createRoomOn } from './reducers/createRoomSlice';
 import { changeTempName, selectTempName } from './reducers/tempNameSlice';
 import { selectCheckUrl } from './reducers/checkUrlSlice';
-import { noNameOff, selectNoName } from './reducers/noNameSlice';
+import { noNameOff, noNameOn, selectNoName } from './reducers/noNameSlice';
 import { changeOldUrl, selectOldUrl } from './reducers/oldUrlSlice';
 import { changeCheckUrl } from './reducers/checkUrlSlice';
 import { backOff, selectBack } from './reducers/backSlice';
@@ -67,10 +67,14 @@ function App() {
 		if (checkUrl && checkUrl.length > 3 && back == false) {
 			dispatch({ type: 'URL_CHECK' });
 		}
-		if (back == true)
+		if (back == true) {
 			dispatch(changeOldUrl(""))
+			dispatch(changeUrl(location.pathname))
+			dispatch(changeTempName(''))
+			dispatch(noNameOn());
 			dispatch(backOff())
 			navigate("/")
+		}
 	}, [checkUrl]);
 
 	useEffect(() => { // Continuité de la vérif d'url au-dessus.
@@ -83,9 +87,15 @@ function App() {
 			navigate(oldUrl);
 		}
 		// logique si back == true mais normalement cover par precedent useEffect
-		// else if (changeOk && oldUrl.length > 0 && !noName && back == true) {  
-		// 	dispatch(changeUrl(""));
-		// }
+		else if (back == true) { 
+			dispatch(changeOldUrl(""))
+			dispatch(changeUrl(location.pathname));
+			dispatch(changeTempName(''))
+			dispatch(noNameOn());
+			dispatch(backOff())
+			dispatch(changeOkOff())
+			navigate("/")
+		}
 	}, [noName]);
 
   const handleInputChange = (event) => { // logique de construction du nom

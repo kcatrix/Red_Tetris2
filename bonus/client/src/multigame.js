@@ -2,7 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import sound from './tetris.mp3';
-import { selectUrl } from './reducers/urlSlice';
+import { changeUrl, selectUrl } from './reducers/urlSlice';
+import { changeOldUrl } from './reducers/oldUrlSlice';
+import { changeCheckUrl } from './reducers/checkUrlSlice';
+import { changeTempName } from './reducers/tempNameSlice';
+import { noNameOn } from './reducers/noNameSlice';
 import { selectPiece, modifyPiece } from './reducers/pieceSlice';
 import { selectRetrySignal, retrySignalOff } from './reducers/retrySignalSlice';
 import { selectMusic, musicOff, musicOn } from './reducers/musicSlice';
@@ -25,7 +29,7 @@ import { addLastMalus, selectLastMalus } from './reducers/lastMalusSlice';
 import { modifyMalus, selectMalus } from './reducers/malusSlice';
 import { selectBestScore } from './reducers/bestScoreSlice';
 import { modifyAddMalusGo, selectAddMalusGo } from './reducers/addMalusGoSlice';
-import { backOn, selectBack } from './reducers/backSlice';
+// import { backOff, backOn, selectBack } from './reducers/backSlice';
 
 
 function MultiGame() {
@@ -66,7 +70,7 @@ function MultiGame() {
 
 	let intervalId;
 
-	dispatch(backOn())
+	// dispatch(backOn())
 
 	useEffect(() => { // remplacable par un dispatch({ message a la con })
 
@@ -147,7 +151,8 @@ function MultiGame() {
 
 
 		let newPos = {x: position.x, y: 0};
-		let newRows = rows.map(row => [...row.map(cell => cell)]);
+		// let newRows = rows.map(row => [...row.map(cell => cell)]);
+		let newRows = rows.map(row => [...row]);
 
 
 		// Clear piece from current position in newRows
@@ -172,7 +177,7 @@ function MultiGame() {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 			setPlay(true);
-				// resetGameOver(state, store, socket)
+			dispatch({ type: "RESET_GAME_OVER" })
 		}
 
 		// Move rows up by 'number' positions
@@ -195,6 +200,13 @@ function MultiGame() {
 						if (newPos.y == 0 && position[pieceIndex].y != 0) {
 							newPos.y = position[pieceIndex].y + y;
 						}
+						console.log("--- inside addmalus crash")
+						console.log("position = ", position[pieceIndex])
+						console.log("pieceIndex = ", pieceIndex)
+						console.log("y = ", y)
+						console.log("x = ", x)
+						console.log("position[pieceIndex].y + y = ", position[pieceIndex].y + y)
+						console.log("position[pieceIndex].x + x = ", position[pieceIndex].x + x)
 						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
 					}							
 				}
@@ -606,12 +618,12 @@ function MultiGame() {
 
 	const Retry = () => {
 		setPosition([{x: 4, y: 0}])
-		setPieceIndex(0);
 		dispatch({ type: 'RETRY_GAME' })
 		setPlay(false)
 	}
 
 	const toHome = () => {
+		dispatch({ type: "BACK_HOME" })
 		navigate("/");
 	}
 
