@@ -106,8 +106,11 @@ function MultiGame() {
 
 	useEffect(() => {
 		if (retrySignal) {
-			setPosition([{x: 4, y: 0}])
-			setPieceIndex(0)
+			setPosition(prevPosition => {
+				const newPosition = [...prevPosition];
+				newPosition[pieceIndex] = { x: 4, y: 0 };
+				return newPosition;
+			});
 			setPlay(false)
 		}
 		dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))))
@@ -150,7 +153,7 @@ function MultiGame() {
 	const addMalusLines = (number, pieces) => {
 
 
-		let newPos = {x: position.x, y: 0};
+		let newPos = {x: position[pieceIndex].x, y: 0};
 		// let newRows = rows.map(row => [...row.map(cell => cell)]);
 		let newRows = rows.map(row => [...row]);
 
@@ -177,6 +180,11 @@ function MultiGame() {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 			setPlay(true);
+			setPosition(prevPosition => {
+				const newPosition = [...prevPosition];
+				newPosition[pieceIndex] = { x: 4, y: 0 };
+				return newPosition;
+				});
 			dispatch({ type: "RESET_GAME_OVER" })
 		}
 
@@ -200,18 +208,12 @@ function MultiGame() {
 						if (newPos.y == 0 && position[pieceIndex].y != 0) {
 							newPos.y = position[pieceIndex].y + y;
 						}
-						console.log("--- inside addmalus crash")
-						console.log("position = ", position[pieceIndex])
-						console.log("pieceIndex = ", pieceIndex)
-						console.log("y = ", y)
-						console.log("x = ", x)
-						console.log("position[pieceIndex].y + y = ", position[pieceIndex].y + y)
-						console.log("position[pieceIndex].x + x = ", position[pieceIndex].x + x)
 						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
 					}							
 				}
 			}
 		}
+		// Logique repositionnant la piece si une ligne de 2 est a son niveau
 		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
@@ -228,6 +230,7 @@ function MultiGame() {
 		// Update piece position if necessary
 		if (newPos != 0) {
 			// dispatch(modifyPositions({newPosition: newPos, pieceIndex}))
+			console.log("newPos = ", newPos)
 			setPosition(prevPosition => {
 				const newPositions = [...prevPosition];
 				newPositions[pieceIndex] = newPos;
@@ -253,9 +256,7 @@ function MultiGame() {
 	  return false;
 	};
 
-	movePieceDownRef.current = useCallback(() => {
-	// const movePieceDownRef = () => {
-			
+	movePieceDownRef.current = useCallback(() => {			
 			if (startPiece && check1(rows, pieces[pieceIndex], 0, "y", 0) === 0) {
 					writePiece(pieces[pieceIndex], position[pieceIndex], position[pieceIndex], 0);
 					dispatch(startPieceOff());
@@ -278,6 +279,11 @@ function MultiGame() {
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
 						setPlay(true)
+						setPosition(prevPosition => {
+							const newPosition = [...prevPosition];
+							newPosition[pieceIndex] = { x: 4, y: 0 };
+							return newPosition;
+							});
 						dispatch({ type: 'GAME_OVER'})
 				}
 				let newRows = rows.map(row => [...row]);
@@ -311,14 +317,12 @@ function MultiGame() {
 				dispatch(startPieceOn());
 				setPosition([...position, { x: 4, y: 0 }]);
 			}			
-	// }
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo, spaceRaised]);
 
 
 
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
-	  // setRows(prevRows => { 	writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 
 		let newRows = rows.map(row => [...row]);
 
@@ -617,7 +621,11 @@ function MultiGame() {
 	};  
 
 	const Retry = () => {
-		setPosition([{x: 4, y: 0}])
+		setPosition(prevPosition => {
+			const newPosition = [...prevPosition];
+			newPosition[pieceIndex] = { x: 4, y: 0 };
+			return newPosition;
+		  });
 		dispatch({ type: 'RETRY_GAME' })
 		setPlay(false)
 	}

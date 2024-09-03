@@ -26,6 +26,7 @@ import { modifyMalus } from '../reducers/malusSlice';
 import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
 import { fillPlayers } from '../reducers/playersSlice';
 import { modifyTime } from '../reducers/timeSlice';
+import { createRoomOff } from '../reducers/createRoomSlice';
 
 const equal = (row, number) => {
 	return row.every(cell => cell === number);
@@ -236,14 +237,24 @@ const socketMiddleware = (() => {
 			}
 			case 'BACK_HOME': {
 				store.dispatch(changeOldUrl(""))
+				store.dispatch(createRoomOff())
 				store.dispatch(changeCheckUrl(""))
 				store.dispatch(changeUrl("/"))
 				store.dispatch(changeTempName(''))
+				store.dispatch(modifyPieceIndex(0))
 				store.dispatch(noNameOn());
 				store.dispatch(multiOff())
+				store.dispatch(gameOverOff())
+				store.dispatch(fillPlayersOff([]))
+				store.dispatch(fillPlayers([]))
 				store.dispatch(fillPiece([]))
+
+				socket.emit('requestRandomPiece');
+
+				socket.on('randomPiece', (randomPiece) => {
+					store.dispatch(fillPiece(randomPiece)); // Add the randomPiece to the pieces array
+				});
 				store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
-				socket.emit("gameStopped", state.url)
 				break;
 			}
 			case 'RESET_GAME_OVER': {

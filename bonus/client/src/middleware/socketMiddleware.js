@@ -26,6 +26,8 @@ import { modifyMalus } from '../reducers/malusSlice';
 import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
 import { fillPlayers } from '../reducers/playersSlice';
 import { modifyTime } from '../reducers/timeSlice';
+import { createRoomOff } from '../reducers/createRoomSlice';
+import { modifyPieceIndex } from '../reducers/pieceIndexSlice';
 
 const equal = (row, number) => {
 	return row.every(cell => cell === number);
@@ -64,6 +66,7 @@ const launchGame = (state, store, socket) => {
 	store.dispatch(musicOn())
 	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
 	store.dispatch(gameLaunchedOn(true));
+	store.dispatch(modifyTime(1000))
 	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
@@ -78,6 +81,7 @@ const Retry = (state, store, socket) => {
 	store.dispatch(changeKeyDown("null"))
 	socket.emit('changestatusPlayer', state.url, state.tempName, true)
 	store.dispatch(gameOverOff(false))
+	store.dispatch(modifyTime(1000))
 	if (state.leader) {
 		socket.emit('all_retry', state.url, state.tempName)
 	}
@@ -259,9 +263,22 @@ const socketMiddleware = (() => {
 				store.dispatch(changeTempName(''))
 				store.dispatch(noNameOn());
 				store.dispatch(multiOff())
+				store.dispatch(modifyPieceIndex(0))
+				store.dispatch(fillPlayersOff([]))
+				store.dispatch(fillPlayers([]))
+				store.dispatch(gameOverOff())
 				store.dispatch(fillPiece([]))
+				store.dispatch(createRoomOff())
+
+				socket.emit('changestatusPlayer', state.url, state.tempName, false);
+				
+				socket.emit('requestRandomPiece');
+
+				socket.on('randomPiece', (randomPiece) => {
+					store.dispatch(fillPiece(randomPiece)); // Add the randomPiece to the pieces array
+				});
+
 				store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
-				socket.emit("gameStopped", state.url)
 				break;
 			}
 			case 'RESET_GAME_OVER': {

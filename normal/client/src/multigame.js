@@ -85,8 +85,11 @@ function MultiGame() {
 
 	useEffect(() => {
 		if (retrySignal) {
-			setPosition([{x: 4, y: 0}])
-			setPieceIndex(0)
+			setPosition(prevPosition => {
+				const newPosition = [...prevPosition];
+				newPosition[pieceIndex] = { x: 4, y: 0 };
+				return newPosition;
+			});
 			setPlay(false)
 		}
 		dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))))
@@ -130,7 +133,7 @@ function MultiGame() {
 
 
 		let newPos = {x: position.x, y: 0};
-		let newRows = rows.map(row => [...row.map(cell => cell)]);
+		let newRows = rows.map(row => [...row]);
 
 
 		// Clear piece from current position in newRows
@@ -155,6 +158,11 @@ function MultiGame() {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 			setPlay(true);
+			setPosition(prevPosition => {
+				const newPosition = [...prevPosition];
+				newPosition[pieceIndex] = { x: 4, y: 0 };
+				return newPosition;
+				});
 			dispatch({ type:"RESET_GAME_OVER" })
 		}
 
@@ -247,7 +255,12 @@ function MultiGame() {
 					return
 				}
 				if (position[pieceIndex].y === 0) { // Condition provoquant le Game Over
-						// setPlay(true)
+						setPlay(true)
+						setPosition(prevPosition => {
+							const newPosition = [...prevPosition];
+							newPosition[pieceIndex] = { x: 4, y: 0 };
+							return newPosition;
+							});
 						dispatch({ type: 'GAME_OVER'})
 				}
 				let newRows = rows.map(row => [...row]);
@@ -288,7 +301,6 @@ function MultiGame() {
 
   
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
-	  // setRows(prevRows => { 	writePiece(pieces[pieceIndex], position[pieceIndex], newPosition, 0);
 
 		let newRows = rows.map(row => [...row]);
 
@@ -550,7 +562,6 @@ function MultiGame() {
 	useEffect(() => {
 		if (gameLaunched){
 			movePieceDownRef.current(tick)
-			// movePieceDownRef(tick)
 	}
  }, [gameLaunched, keyDown, tick, movePieceDownRef, addMalusGo])
 
@@ -572,8 +583,11 @@ function MultiGame() {
 	};
 
 	const Retry = () => {
-		setPosition([{x: 4, y: 0}])
-		setPieceIndex(0);
+		setPosition(prevPosition => {
+			const newPosition = [...prevPosition];
+			newPosition[pieceIndex] = { x: 4, y: 0 };
+			return newPosition;
+		  });
 		dispatch({ type: 'RETRY_GAME' })
 		setPlay(false)
 	}
