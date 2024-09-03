@@ -1,121 +1,136 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import MultiGame from './multigame';
-import io from 'socket.io-client';
 import * as changeButtonFunctions from './components/changeButton'; // Importation de toutes les fonctions
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { HighScoreBoard } from './components/HighScoreBoard';
+import { selectRandomPiece } from "./reducers/pieceSlice";
+import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
+import { multiOff, selectMulti } from './reducers/multiSlice';
+import { selectUrl, changeUrl } from './reducers/urlSlice';
+import { changeOkOff, selectChangeOk } from './reducers/changeOkSlice';
+import { selectShowHighScore, showHighScoreOn } from './reducers/showHighScoreSlice';
+import { createRoomOn } from './reducers/createRoomSlice';
+import { changeTempName, selectTempName } from './reducers/tempNameSlice';
+import { selectCheckUrl } from './reducers/checkUrlSlice';
+import { noNameOff, noNameOn, selectNoName } from './reducers/noNameSlice';
+import { changeOldUrl, selectOldUrl } from './reducers/oldUrlSlice';
+import { changeCheckUrl } from './reducers/checkUrlSlice';
+import { backOff, selectBack } from './reducers/backSlice';
 
 function App() {
-  const [socket, setSocket] = useState(null);
-  const [pieces, setPieces] = useState([]); // Array to hold the pieces
-  const [catalogPieces, setCatalogPieces] = useState([]);
-  const [multi, setMulti] = useState(false); // Ajout de l'état multi
-  const [cou, setCou] = useState(false);
-  const [Url, setUrl] = useState('');
-  const [changeOk, setChangeOk] = useState(false);
-  const [tempName, setTempName] = useState(''); // État temporaire pour l'input
-  const [checkUrl, setCheckUrl] = useState();
-  const [noName, setNoName] = useState(true)
-  const [oldUrl, setoldUrl] = useState()
+  const catalogPieces = useSelector(selectCatalogPieces);
+  const multi = useSelector(selectMulti);
+  const url = useSelector(selectUrl);
+  const back = useSelector(selectBack);
+  const changeOk = useSelector(selectChangeOk);
+  const tempName = useSelector(selectTempName);
+  const checkUrl = useSelector(selectCheckUrl);
+  const noName = useSelector(selectNoName);
+  const oldUrl = useSelector(selectOldUrl);
+  // const scoresList = useSelector(selectScoreList);
+  // const showHighScore = useSelector(selectShowHighScore);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
-  // Connexion au serveur socket.io
   useEffect(() => {
-    // const socketIo = io('http://90.5.107.160:4000'); // Utilisez votre adresse publique ici
-    const socketIo = io('http://localhost:4000'); // Utilisez votre adresse publique ici
-    setSocket(socketIo);
+    // Initialiser la connexion socket via le middleware
+    dispatch({ type: 'SOCKET_INIT' });
 
-    socketIo.emit('requestRandomPiece');
+  }, []);
 
-    socketIo.on('randomPiece', (randomPiece) => {
-      setPieces(randomPiece); // Add the randomPiece to the pieces array
-    });
-
-    socketIo.emit('allPieces');
-
-    socketIo.on('piecesDelivered', (pieces) => {
-      setCatalogPieces(pieces);
-    });
-
-    socketIo.on('GiveUrl', (givenUrl) => {
-      setUrl(givenUrl);
-      setMulti(true);
-      navigate(givenUrl); // Rediriger vers la nouvelle URL
-    });
-
-    if (Url == "" && location.pathname.length > 1) { // IL FAUT SORTIR TOUS DU USEEFFECT
-      setCheckUrl(location.pathname)
+	useEffect(() => {
+		 // Si Url n'est pas encore attribué et que loca.path est différent d'initial, stock Url dans check
+		
+		 if (url === "" && location.pathname.length > 1) {
+			const tempUrl = location.pathname
+			dispatch(changeCheckUrl(tempUrl));
     }
+    navigate("/");
+  }, [checkUrl]);
 
-    socketIo.on("urlChecked", (check) => { // réponse de demande d'accès
-      check ? setChangeOk(true) : setChangeOk(false);
-      navigate("/");
-    })
-
-    // Nettoyer la connexion socket lors du démontage du composant
-    return () => socketIo.disconnect();
-  }, [changeOk]);
-
-  useEffect( () => { // demande d'acceptation d'accès a room existante
-    if (tempName.length == 0)
-    {
-      setoldUrl(checkUrl)
-      navigate("/")
+	useEffect(() => { // Lorsque multi est true est qu'une url existe, on navigue vers l'url multi
+		// multi et url est modifié dans le socketMiddleware lorsqu'on appuie sur createRoom
+    if (multi && url.length > 1) {
+      navigate(url);
     }
-    if (checkUrl && checkUrl.length > 3) {
-      socket.emit("urlCheck", checkUrl)
-    }
-    
-  }, [checkUrl])
-  
-  useEffect( () => { // Redirection auto si pas de name nous devont vérifier available !!!!!!!
+  }, [multi]);
 
-    if (changeOk && oldUrl.length > 0)
-    {
-      const tempUrl = oldUrl
-      setoldUrl("")
-      socket.emit('createPlayer', oldUrl, tempName)
-      navigate(tempUrl)
-    }
-  }, [noName])
+	useEffect(() => { // Logique vérifiant si on tente d'accéder à l'URL avec un nom déja rempli ou pas
+		// Si oui, on vérifie l'URL, sinon on repart de la page de base pour rentrer son nom est accéder au multi
+		if (tempName.length === 0 && back == false) {
+			dispatch(changeOldUrl(checkUrl));
+			navigate("/");
+		} 
+		if (checkUrl && checkUrl.length > 3 && back == false) {
+			dispatch({ type: 'URL_CHECK' });
+		}
+		if (back == true) {
+			dispatch(changeOldUrl(""))
+			dispatch(changeUrl(location.pathname))
+			dispatch(changeTempName(''))
+			dispatch(noNameOn());
+			dispatch(backOff())
+			navigate("/")
+		}
+	}, [checkUrl]);
 
-  const handleInputChange = (event) => {
-    setTempName(event.target.value);
+	useEffect(() => { // Continuité de la vérif d'url au-dessus.
+		// Si changeOk est true et que l'ancienne URL est valide, on navigue vers l'url validé et on crée nouveau joueur dans room
+		
+		if (changeOk && oldUrl.length > 0 && !noName && back == false) {
+			dispatch(changeUrl(oldUrl));
+			dispatch({ type: 'CREATE_PLAYER' });
+			dispatch(changeOldUrl(""));
+			navigate(oldUrl);
+		}
+		// logique si back == true mais normalement cover par precedent useEffect
+		else if (back == true) { 
+			dispatch(changeOldUrl(""))
+			dispatch(changeUrl(location.pathname));
+			dispatch(changeTempName(''))
+			dispatch(noNameOn());
+			dispatch(backOff())
+			dispatch(changeOkOff())
+			navigate("/")
+		}
+	}, [noName]);
+
+  const handleInputChange = (event) => { // logique de construction du nom
+    dispatch(changeTempName(event.target.value));
   };
 
-  const handleValidation = () => {
-    // Remplacer les caractères accentués par leurs équivalents non accentués
+  const handleValidation = () => { // logique de clean et validation du nom
     const sanitizedTempName = tempName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  
-    // Supprimer les autres caractères spéciaux
     const finalTempName = sanitizedTempName.replace(/[^a-zA-Z0-9]/g, '');
-  
+
     if (finalTempName.length >= 2 && finalTempName.length <= 15) {
-      setTempName(finalTempName);
-      setNoName(false);
+      dispatch(changeTempName(finalTempName));
+      dispatch(noNameOff());
     } else {
       alert('Name must be between 2 and 15 characters');
     }
   };
-  
 
   return (
     <div className='Game'>
       <h1>Red Tetris</h1>
       <Routes>
-        {!noName && (
-        <Route path="/:roomId/:name" element={
-          <div>
-            <MultiGame OgPieces={pieces} catalogPieces={catalogPieces} name={tempName} socket={socket}/>
-          </div>
-        }/>
+				{!noName && (
+        	<Route path="/:roomId/:name" element={
+          	<div>
+							<MultiGame/>
+         	 </div>
+        	}/>
         )}
         <Route path="/" element={
           <>
             {!noName && (
               <div className="button">
-                <button onClick={() => changeButtonFunctions.coucou(cou, setCou, socket, tempName, pieces)}>Create Room</button>
+                <button onClick={() => dispatch(createRoomOn())}>Create Room</button>
+                {/* <button onClick={() => dispatch(showHighScoreOn())}>High Score</button> */}
               </div>
             )}
             {noName && (
@@ -125,8 +140,11 @@ function App() {
                 <button onClick={handleValidation}>Validate</button>
               </div>
             )}
+            {/* {showHighScore && (
+              <HighScoreBoard scoresList={scoresList} />
+            )} */}
           </>
-        }/>
+        } />
       </Routes>
     </div>
   );

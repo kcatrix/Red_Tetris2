@@ -42,16 +42,9 @@ io.on('connection', (socket) => {
             let room = Rooms[i];
             let playerIndex = room.Players.findIndex(player => player.id === socket.id);
 
+
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
-                let old_score = room.Players[playerIndex].scores
-                let old_name = room.Players[playerIndex].name
-                const scoreIndex = ScoresList.findIndex(score => score.name === old_name);
-                if (scoreIndex !== -1) {
-                    ScoresList.splice(scoreIndex, 1);
-                }
-                const score = new Scores(old_name, old_score);
-                ScoresList.push(score)
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
 
                 // Notifier les autres joueurs dans la room
@@ -73,7 +66,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('requestRandomPiece', () => {
-		const pieces = new Pieces();
+			const pieces = new Pieces();
     	const randomPiece = pieces.getallPiece();
     	socket.emit('randomPiece', randomPiece);
     });
@@ -115,7 +108,6 @@ io.on('connection', (socket) => {
         const roomIndex = Rooms.findIndex(searchUrl);
         if (Rooms[roomIndex]) {
             Rooms[roomIndex].available = false;
-						// io.to(checkUrl).emit('launchGame', Rooms[roomIndex]); // Emit to the room
 						io.to(checkUrl).emit('launchGame'); // Emit to the room
 					}
     });
@@ -158,13 +150,12 @@ io.on('connection', (socket) => {
     })
 
 		socket.on('setHigherPos', (number, Url, name) => {
-
 				const searchUrl = (element) => element.Url == Url
 				const searchName = (element) => element.name == name
         let index_player;
 
 				const index = Rooms.findIndex(searchUrl);
-        if (Rooms[index].Players)
+        if (Rooms[index] && Rooms[index].Players)
 				    index_player = Rooms[index].Players.findIndex(searchName)
 
 
@@ -221,12 +212,39 @@ io.on('connection', (socket) => {
 			}
 			io.to(Url).emit('retry', name)
 		})
-        socket.on('score_add', (score, name, Url) => {
-            const searchUrl = (element) => element.Url == Url
-						const searchName = (element) => element.name == name
-            const index = Rooms.findIndex(searchUrl);
-            const index_player = Rooms[index].Players.findIndex(searchName)
-            Rooms[index].Players[index_player].setScore(score)
-        })
+
+		socket.on('score_add', (score, name, Url) => {
+			const searchUrl = (element) => element.Url == Url
+			const searchName = (element) => element.name == name
+			const index = Rooms.findIndex(searchUrl);
+			const index_player = Rooms[index].Players.findIndex(searchName)
+			let nature;
+			if  (Rooms[index].Players.length > 1)
+				nature = "multi"
+			else if (Rooms[index].Players.length == 1)
+				nature = "solo"
+			// let old_score = Rooms[index].Players[playerIndex].scores
+			const scoreIndex = ScoresList.findIndex(score => score.name === name && score.nature === nature);
+			if (scoreIndex !== -1 && score > ScoresList[scoreIndex].scores ) { // Si score existant et que nouveau score meilleur
+				ScoresList.splice(scoreIndex, 1);
+				let newScore = new Scores(name, score, nature)
+				ScoresList.push(newScore)
+			}
+			else if (scoreIndex === -1) { // si score n'existe pas
+				if (score) {
+					let newScore = new Scores(name, score, nature)
+					ScoresList.push(newScore)
+				}
+			}
+			Rooms[index].Players[index_player].setScore(score)
+		})
+
+		socket.on('highScore', () => {
+			function compareNumbers(a, b) {
+				return b.scores - a.scores;
+			}
+			ScoresList.sort(compareNumbers)
+			socket.emit("highScoreSorted", ScoresList)
+		})
 });
 
