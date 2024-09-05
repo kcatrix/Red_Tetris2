@@ -21,6 +21,7 @@ import { selectResultats } from './reducers/resultatsSlice';
 import { addLastMalus, selectLastMalus } from './reducers/lastMalusSlice';
 import { modifyMalus, selectMalus } from './reducers/malusSlice';
 import { modifyAddMalusGo, selectAddMalusGo } from './reducers/addMalusGoSlice';
+import { addScore, selectScore } from './reducers/scoreSlice';
 
 
 function MultiGame() {
@@ -28,6 +29,7 @@ function MultiGame() {
 	const rows = useSelector(selectRows)
 	const name = useSelector(selectTempName)
 	const url = useSelector(selectUrl);
+	const score = useSelector(selectScore)
 	const music = useSelector(selectMusic)
 	const pieces = useSelector(selectPiece);
 	const catalogPieces = useSelector(selectCatalogPieces)
@@ -97,6 +99,10 @@ function MultiGame() {
 	}, [retrySignal])
 
 	useEffect(() => {
+		dispatch({ type: 'PLAYER_DISCONNECTED'})
+	}, [])
+
+	useEffect(() => {
 		dispatch({ type: 'WINNER'})
 		if (music == true)
 			setPlay(true)
@@ -131,10 +137,9 @@ function MultiGame() {
 
 	const addMalusLines = (number, pieces) => {
 
-
-		let newPos = {x: position.x, y: 0};
+		let newPos = {x: position[pieceIndex].x, y: 0};
 		let newRows = rows.map(row => [...row]);
-
+		let basicCopy = rows.map(row => [...row]);
 
 		// Clear piece from current position in newRows
 		for (let y = 0; y < pieces.length; y++) {
@@ -147,7 +152,7 @@ function MultiGame() {
 
 		// Find the highest row containing '1' or '2' from the bottom
 		let highestRowWith1 = 0;
-		for (let y = rows.length - 1; y >= 0; y--) {
+		for (let y = basicCopy.length - 1; y >= 0; y--) {
 				if (newRows[y].includes(1) || newRows[y].includes(2)) {
 						highestRowWith1 = y;
 				} else if (equal(newRows[y], 0)) {
@@ -167,31 +172,37 @@ function MultiGame() {
 		}
 
 		// Move rows up by 'number' positions
-		for (let y = highestRowWith1; y < rows.length - lastMalus + number; y++) {
-				newRows[y - number] = rows[y];		
+		for (let y = highestRowWith1; y < basicCopy.length - lastMalus + number; y++) {
+				newRows[y - number] = basicCopy[y];		
 		}
 		
 		// Add malus lines at the bottom
-		for (let y = (rows.length - 1) - lastMalus; y > (rows.length - 1) - (lastMalus + number); y--) {
+		for (let y = (basicCopy.length - 1) - lastMalus; y > (basicCopy.length - 1) - (lastMalus + number); y--) {
 			newRows[y] = new Array(rows[0].length).fill(2);
 		}
 
 		// Restore piece in its original position or adjusted position in newRows
 		
+		// let modifyY = 0;
+		let newPosition = { ...position[pieceIndex] }
 
-		if (position[pieceIndex].y + pieces.length < rows.length - (number + lastMalus)) {
+		if (position[pieceIndex].y + pieces.length < basicCopy.length - (number + lastMalus)) {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
 						if (newPos.y == 0 && position[pieceIndex].y != 0) {
-							newPos.y = position[pieceIndex].y + y;
+							if (check1(newRows, pieces, 0, "y", newPosition) == 1) {
+								while (check1(newRows, pieces, 0, "y", newPosition) == 1)
+									newPosition.y--;
+							}
+							newPos.y = (newPosition.y + y);
 						}
-						newRows[position[pieceIndex].y + y][position[pieceIndex].x + x] = 1;	
+						newRows[(newPosition.y + y)][position[pieceIndex].x + x] = 1;	
 					}							
 				}
 			}
 		}
-		else if (position.y + pieces.length >= rows.length - (number + lastMalus)) {
+		else if (position[pieceIndex].y + pieces.length >= basicCopy.length - (number + lastMalus)) {
 			for (let y = 0; y < pieces.length; y++) {
 				for (let x = 0; x < pieces[y].length; x++) {
 					if (pieces[y][x] === 1) {
@@ -264,10 +275,10 @@ function MultiGame() {
 						dispatch({ type: 'GAME_OVER'})
 				}
 				let newRows = rows.map(row => [...row]);
-				// let oldScore = score;
-				// let newScore = 0;
-				// let tmpScore = 0;
-				// let sum = 0;
+				let oldScore = score;
+				let newScore = 0;
+				let tmpScore = 0;
+				let sum = 0;
 				for (let checkPiece = position[pieceIndex].y + pieces[pieceIndex].length - 1; checkPiece >= position[pieceIndex].y && position[pieceIndex].y >= 0; checkPiece--) { // Logique détruisant les pieces lorsque ligne de 1
 						if (checkRowsEqual(rows, position[pieceIndex].y, checkPiece, 1)) {
 								newRows = deleteLine(newRows, position[pieceIndex].y + pieces[pieceIndex].length - 1, position[pieceIndex].y);
@@ -275,17 +286,17 @@ function MultiGame() {
 						}
 						if (checkPiece === position[pieceIndex].y) {
 								dispatch(modifyRows(newRows));
-								// dispatch(addScore(tmpScore)); // score.current
-								// newScore = oldScore + tmpScore;
-								// sum = newScore - oldScore;
+								dispatch(addScore(tmpScore)); // score.current
+								newScore = oldScore + tmpScore;
+								sum = newScore - oldScore;
 						}
 				}
 
 				if (!down) {
-					// if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
-					// 	const final = sum / 100
-					// 	dispatch(modifyMalus(final));
-					// }
+					if (sum / 100 > 1) {  // Calcul pour générer Malus par rapport au score.current fait
+						const final = sum / 100
+						dispatch(modifyMalus(final));
+					}
 						setDown(true); // Indique si la pièce a touché le sol
 				}
 				if (spaceRaised)
@@ -379,7 +390,7 @@ function MultiGame() {
 		let newX = 0;
 		let newY = 0;
   
-	  if (axe === "y" || axe === "+x" || axe === "r" || axe === " ") {
+	  if (axe === "y" || axe === "+x" || axe === "r") {
 			for (let y = 0; y < piece.length; y++) {
 				for (let x = 0; x < piece[y].length; x++) {
 					if (piece[y][x] === 1) {

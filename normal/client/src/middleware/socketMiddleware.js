@@ -9,7 +9,7 @@ import { multiOn, multiOff } from '../reducers/multiSlice';
 import { noNameOn } from '../reducers/noNameSlice';
 import { changeOkOff, changeOkOn } from '../reducers/changeOkSlice';
 import { changeScoreList } from '../reducers/scoreListSlice';
-import { leaderOn } from '../reducers/leaderSlice';
+import { leaderOff, leaderOn } from '../reducers/leaderSlice';
 import { modifyBestScore } from '../reducers/bestScoreSlice';
 import { modifyScore } from '../reducers/scoreSlice';
 import { gameLaunchedOff, gameLaunchedOn } from '../reducers/gameLaunchedSlice';
@@ -27,6 +27,7 @@ import { modifyAddMalusGo } from '../reducers/addMalusGoSlice';
 import { fillPlayers } from '../reducers/playersSlice';
 import { modifyTime } from '../reducers/timeSlice';
 import { createRoomOff } from '../reducers/createRoomSlice';
+import { modifyPieceIndex } from '../reducers/pieceIndexSlice';
 
 const equal = (row, number) => {
 	return row.every(cell => cell === number);
@@ -58,7 +59,7 @@ const resetGameOver = (state, store, socket) => {
 
 const launchGame = (state, store, socket) => {
 	
-	store.dispatch(gameLaunchedOn(true));
+	store.dispatch(gameLaunchedOn());
 	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
 		socket.emit('changestatusPlayer',  state.url, state.tempName, true)
@@ -71,7 +72,7 @@ const Retry = (state, store, socket) => {
 	store.dispatch(modifyLastMalus(0))
 	store.dispatch(changeKeyDown("null"))
 	socket.emit('changestatusPlayer', state.url, state.tempName, true)
-	store.dispatch(gameOverOff(false))
+	store.dispatch(gameOverOff())
 	if (state.leader) {
 		socket.emit('all_retry', state.url, state.tempName)
 	}
@@ -200,12 +201,11 @@ const socketMiddleware = (() => {
 			case 'NEW_LEADER': {
 				socket.on('newLeader', (name_leader) => {
 					if(name_leader == state.tempName)
-						leaderOn()
+						store.dispatch(leaderOn())
 				})
 				break;
 			}
 			case 'MALUS': {
-				console.log("inside malus socket")
 				if (state.malus > 1) {
 					let trueMalus = state.malus - 1;
 					socket.emit('malus', trueMalus, state.url);
@@ -235,6 +235,13 @@ const socketMiddleware = (() => {
 				launchGame(state, store, socket)
 				break;
 			}
+			case 'PLAYER_DISCONNECTED': {
+				socket.on('playerDisconnected', (disconnectedPlayer) => {
+					store.dispatch(fillPlayers(state.players.filter(element => element.name !== disconnectedPlayer)))
+					console.log("-- Inside PLAYER_DISCONNECTED")
+				});
+				break;
+			}
 			case 'BACK_HOME': {
 				store.dispatch(changeOldUrl(""))
 				store.dispatch(createRoomOff())
@@ -248,12 +255,17 @@ const socketMiddleware = (() => {
 				store.dispatch(fillPlayersOff([]))
 				store.dispatch(fillPlayers([]))
 				store.dispatch(fillPiece([]))
+				store.dispatch(leaderOff())
+				store.dispatch(gameLaunchedOff())
+
+				socket.emit('quit');
 
 				socket.emit('requestRandomPiece');
 
 				socket.on('randomPiece', (randomPiece) => {
 					store.dispatch(fillPiece(randomPiece)); // Add the randomPiece to the pieces array
 				});
+
 				store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
 				break;
 			}

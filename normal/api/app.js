@@ -7,6 +7,7 @@ const Pieces = require('./pieces');
 const Room = require('./room');
 const Players = require('./players');
 const Scores = require('./scores');
+const { log } = require('console');
 const nmbrPieces = 2000;
 const Rooms = [];
 const ScoresList = [];
@@ -46,19 +47,32 @@ io.on('connection', (socket) => {
             if (playerIndex !== -1) {
                 // Retirer le joueur de la room
                 let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
-
                 // Notifier les autres joueurs dans la room
                 io.to(room.Url).emit('playerDisconnected', disconnectedPlayer.name);
-
                 // Si la room n'a plus de joueurs, la supprimer
                 if (room.Players.length === 0) {
                     Rooms.splice(i, 1);
-                } else {
+                } 
+								else if (room.Players.length >= 1){
                     // Si le joueur déconnecté était le leader, assigner un nouveau leader
                     if (disconnectedPlayer.leader && room.Players.length > 0) {
                         room.Players[0].leader = true; // Assigner le premier joueur comme nouveau leader
                         io.to(room.Url).emit('newLeader', room.Players[0].name);
                     }
+										let nombre_de_joueur = room.Players.length
+										let activePlayersCount = 0;
+										for (let i = 0; i < nombre_de_joueur; i++) {
+												if (room.Players[i].ingame == true || room.Players[i].ingame == undefined) {
+														winner_index = i;
+														activePlayersCount = activePlayersCount + 1
+												}
+										}
+										if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+												io.to(room.Url).emit('winner', room.Players[winner_index].name);
+										}
+										else if (activePlayersCount == 1 && nombre_de_joueur == 1) {
+												io.to(room.Url).emit('winner', room.Players[0].name);
+										}
                 }
                 break; // Sortir de la boucle car le joueur a été trouvé et traité
             }
@@ -210,7 +224,8 @@ io.on('connection', (socket) => {
 				for(let x = 0; x < Rooms[index].Players.length; x++) {
 					Rooms[index].Players[x].setHigherPos(0) 
 			}
-			io.to(Url).emit('retry', name)
+			if (Rooms[index].Players.length > 1)
+				io.to(Url).emit('retry', name)
 		})
 
 		socket.on('score_add', (score, name, Url) => {
@@ -246,5 +261,49 @@ io.on('connection', (socket) => {
 			ScoresList.sort(compareNumbers)
 			socket.emit("highScoreSorted", ScoresList)
 		})
+
+		socket.on('quit', () => {
+			for (let i = 0; i < Rooms.length; i++) {
+				let room = Rooms[i];
+				let playerIndex = room.Players.findIndex(player => player.id === socket.id);
+
+
+				if (playerIndex !== -1) {
+					// Retirer le joueur de la room
+					let disconnectedPlayer = room.Players.splice(playerIndex, 1)[0];
+
+					// Notifier les autres joueurs dans la room
+					io.to(room.Url).emit('playerDisconnected', disconnectedPlayer.name);
+
+					// Si la room n'a plus de joueurs, la supprimer
+					if (room.Players.length === 0) {
+							Rooms.splice(i, 1);
+					}
+					else if (room.Players.length >= 1){
+						// Si le joueur déconnecté était le leader, assigner un nouveau leader
+						if (disconnectedPlayer.leader && room.Players.length > 0) {
+								room.Players[0].leader = true; // Assigner le premier joueur comme nouveau leader
+								io.to(room.Url).emit('newLeader', room.Players[0].name);
+						}
+						let nombre_de_joueur = room.Players.length
+						let activePlayersCount = 0;
+						for (let i = 0; i < nombre_de_joueur; i++) {
+								if (room.Players[i].ingame == true || room.Players[i].ingame == undefined) {
+										winner_index = i;
+										activePlayersCount = activePlayersCount + 1
+								}
+						}
+						if (activePlayersCount == 1 && nombre_de_joueur > 1) {
+								io.to(room.Url).emit('winner', room.Players[winner_index].name);
+						}
+						else if (activePlayersCount == 1 && nombre_de_joueur == 1) {
+								io.to(room.Url).emit('winner', room.Players[0].name);
+						}
+					}
+					break; // Sortir de la boucle car le joueur a été trouvé et traité
+				}
+      }
+		})
+
 });
 

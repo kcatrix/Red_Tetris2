@@ -9,7 +9,7 @@ import { multiOn, multiOff } from '../reducers/multiSlice';
 import { noNameOn } from '../reducers/noNameSlice';
 import { changeOkOff, changeOkOn } from '../reducers/changeOkSlice';
 import { changeScoreList } from '../reducers/scoreListSlice';
-import { leaderOn } from '../reducers/leaderSlice';
+import { leaderOff, leaderOn } from '../reducers/leaderSlice';
 import { modifyBestScore } from '../reducers/bestScoreSlice';
 import { modifyScore } from '../reducers/scoreSlice';
 import { gameLaunchedOff, gameLaunchedOn } from '../reducers/gameLaunchedSlice';
@@ -65,7 +65,7 @@ const launchGame = (state, store, socket) => {
 	
 	store.dispatch(musicOn())
 	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
-	store.dispatch(gameLaunchedOn(true));
+	store.dispatch(gameLaunchedOn());
 	store.dispatch(modifyTime(1000))
 	store.dispatch(changeResultats("Game over"));
 	if (state.leader) {
@@ -80,7 +80,7 @@ const Retry = (state, store, socket) => {
 	store.dispatch(modifyLastMalus(0))
 	store.dispatch(changeKeyDown("null"))
 	socket.emit('changestatusPlayer', state.url, state.tempName, true)
-	store.dispatch(gameOverOff(false))
+	store.dispatch(gameOverOff())
 	store.dispatch(modifyTime(1000))
 	if (state.leader) {
 		socket.emit('all_retry', state.url, state.tempName)
@@ -140,8 +140,6 @@ const socketMiddleware = (() => {
         break
       }
       case 'URL_CHECK': {
-				console.log("---- URL CHECK")
-				console.log("state.checkUrl = ", state.checkUrl)
         socket.emit('urlCheck', state.checkUrl);
 				socket.on('urlChecked', (check) => { // réponse de demande d'accès
 					check ? store.dispatch(changeOkOn()) : store.dispatch(changeOkOff());
@@ -219,14 +217,12 @@ const socketMiddleware = (() => {
 			case 'NEW_LEADER': {
 				socket.on('newLeader', (name_leader) => {
 					if(name_leader == state.tempName)
-						leaderOn()
+						store.dispatch(leaderOn())
 				})
 				break;
 			}
 			case 'MALUS': {
-				console.log("inside malus socket")
 				if (state.malus > 1) {
-					console.log("passe-t'on la ?")
 					let trueMalus = state.malus - 1;
 					socket.emit('malus', trueMalus, state.url);
 					store.dispatch(modifyMalus(0));
@@ -234,7 +230,6 @@ const socketMiddleware = (() => {
 				break;
 			}
 			case 'MALUS_SENT': {
-				console.log("inside malus sent")
 				socket.on('malusSent', (number) => {
 					store.dispatch(modifyAddMalusGo(number))
 				});
@@ -256,8 +251,16 @@ const socketMiddleware = (() => {
 				launchGame(state, store, socket)
 				break;
 			}
+			case 'PLAYER_DISCONNECTED': {
+				socket.on('playerDisconnected', (disconnectedPlayer) => {
+					store.dispatch(fillPlayers(state.players.filter(element => element.name !== disconnectedPlayer)))
+					console.log("-- Inside PLAYER_DISCONNECTED")
+				});
+				break;
+			}
 			case 'BACK_HOME': {
 				store.dispatch(changeOldUrl(""))
+				store.dispatch(createRoomOff())
 				store.dispatch(changeCheckUrl(""))
 				store.dispatch(changeUrl("/"))
 				store.dispatch(changeTempName(''))
@@ -268,9 +271,10 @@ const socketMiddleware = (() => {
 				store.dispatch(fillPlayers([]))
 				store.dispatch(gameOverOff())
 				store.dispatch(fillPiece([]))
-				store.dispatch(createRoomOff())
+				store.dispatch(leaderOff())
+				store.dispatch(gameLaunchedOff())
 
-				socket.emit('changestatusPlayer', state.url, state.tempName, false);
+				socket.emit('quit')
 				
 				socket.emit('requestRandomPiece');
 

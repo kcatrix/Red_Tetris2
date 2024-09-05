@@ -3,7 +3,7 @@ import socketMiddleware from './middleware/socketMiddleware'
 import pieceSlice from './reducers/pieceSlice'
 import catalogPiecesSlice from './reducers/catalogPiecesSlice'
 import multiSlice from './reducers/multiSlice'
-import urlSlice, { changeUrl } from './reducers/urlSlice'
+import urlSlice from './reducers/urlSlice'
 import checkUrlSlice from './reducers/checkUrlSlice'
 import changeOkSlice from './reducers/changeOkSlice'
 import createRoomSlice from './reducers/createRoomSlice'
@@ -46,7 +46,6 @@ export const store = configureStore({
 		showHighScore: showHighScoreSlice,
 		scoreList: scoreListSlice,
 		noName: noNameSlice,
-		checkUrl: checkUrlSlice,
 		oldUrl: oldUrlSlice,
 		leader: leaderSlice,
 		bestScore: bestScoreSlice,
