@@ -13,4 +13,8 @@ Que dois-faire notre room ? :
 X	la room doit créer l'url par rapport au nom du leader
 X	la room créer des joueurs
 
-ok
+dernier ligne droite
+		mise en place de :
+			Playwright
+			ou jest 
+		pour la prise en charge de l'environnement de test
