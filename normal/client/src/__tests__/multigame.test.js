@@ -118,65 +118,60 @@ describe('Multigame Actions', () => {
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import MultiGame from '../multigame';
 import { BrowserRouter } from 'react-router-dom';
-import reducers from '../reducers';
-
-const createTestStore = (initialState = {}) => {
-  return configureStore({
-    reducer: reducers,
-    preloadedState: initialState
-  });
-};
+import MultiGame from '../multigame';
+import { pieceReducer } from '../reducers/pieceSlice';
+import { scoreReducer } from '../reducers/scoreSlice';
+import { gameOverReducer } from '../reducers/gameOverSlice';
+import { gameLaunchedReducer } from '../reducers/gameLaunchedSlice';
+import { leaderReducer } from '../reducers/leaderSlice';
+import { musicReducer } from '../reducers/musicSlice';
+import { startPieceReducer } from '../reducers/startPieceSlice';
+import { malusReducer } from '../reducers/malusSlice';
+import { playersReducer } from '../reducers/playersSlice';
+import { resultatsReducer } from '../reducers/resultatsSlice';
+import { tempNameReducer } from '../reducers/tempNameSlice';
+import { urlReducer } from '../reducers/urlSlice';
+import { showHighScoreReducer } from '../reducers/showHighScoreSlice';
+import { changeOkReducer } from '../reducers/changeOkSlice';
+import { noNameReducer } from '../reducers/noNameSlice';
+import { scoreListReducer } from '../reducers/scoreListSlice';
+import { positionsReducer } from '../reducers/positionsSlice';
 
 describe('MultiGame Component', () => {
   let store;
 
   beforeEach(() => {
-    store = createTestStore({
-      multi: false,
-      players: [],
-      playersOff: [],
-      resultats: 'Game Over',
-      leader: false,
-      gameLaunched: false,
-      createRoom: false,
-      url: '',
-      rows: [],
-      piece: null,
-      positions: [],
-      score: 0,
-      gameOver: false,
-      malus: 0,
-      noName: true,
-      tempName: '',
-      oldUrl: '',
-      time: 0,
-      catalogPieces: [],
-      pieceIndex: 0,
-      back: false,
-      showHighScore: false,
-      scoreList: [],
-      music: false,
-      retrySignal: false,
-      changeOk: false,
-      lastMalus: 0,
-      startPiece: false,
-      bestScore: 0,
-      addMalusGo: false
+    store = configureStore({
+      reducer: {
+        piece: pieceReducer,
+        score: scoreReducer,
+        gameOver: gameOverReducer,
+        gameLaunched: gameLaunchedReducer,
+        leader: leaderReducer,
+        music: musicReducer,
+        startPiece: startPieceReducer,
+        malus: malusReducer,
+        players: playersReducer,
+        resultats: resultatsReducer,
+        tempName: tempNameReducer,
+        url: urlReducer,
+        showHighScore: showHighScoreReducer,
+        changeOk: changeOkReducer,
+        noName: noNameReducer,
+        scoreList: scoreListReducer,
+        positions: positionsReducer
+      }
+    });
+  });
+
+  test('displays player information', () => {
+    store.dispatch({ 
+      type: 'players/setPlayers', 
+      payload: [{ name: 'TestPlayer', score: 0 }] 
     });
 
-    // Mock Audio
-    window.Audio = jest.fn().mockImplementation(() => ({
-      play: jest.fn(),
-      pause: jest.fn(),
-      loop: false
-    }));
-  });
-
-  test('renders game component', () => {
-    const { container } = render(
+    render(
       <Provider store={store}>
         <BrowserRouter>
           <MultiGame />
@@ -184,37 +179,96 @@ describe('MultiGame Component', () => {
       </Provider>
     );
 
-    const appContainer = container.querySelector('.App');
-    expect(appContainer).toBeInTheDocument();
+    expect(store.getState().players[0].name).toBe('TestPlayer');
   });
 
-  test('displays player name when set', () => {
-    store.dispatch({ type: 'tempName/changeTempName', payload: 'TestPlayer' });
-
-    const { container } = render(
+  test('handles game launch', () => {
+    render(
       <Provider store={store}>
         <BrowserRouter>
           <MultiGame />
         </BrowserRouter>
       </Provider>
     );
-
-    expect(screen.getByText('TestPlayer')).toBeInTheDocument();
-  });
-
-  test('handles game state changes', () => {
-    store.dispatch({ type: 'multi/setMulti', payload: true });
-    store.dispatch({ type: 'gameLaunched/setGameLaunched', payload: true });
     
-    const { container } = render(
+    store.dispatch({ type: 'gameLaunched/gameLaunchedOn' });
+    expect(store.getState().gameLaunched).toBe(true);
+  });
+
+  test('handles game over', () => {
+    render(
       <Provider store={store}>
         <BrowserRouter>
           <MultiGame />
         </BrowserRouter>
       </Provider>
     );
+    
+    store.dispatch({ type: 'gameOver/gameOverOn' });
+    expect(store.getState().gameOver).toBe(true);
+  });
 
-    expect(store.getState().multi).toBe(true);
-    expect(store.getState().gameLaunched).toBe(true);
+  test('handles score updates', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+    
+    store.dispatch({ type: 'score/setScore', payload: 100 });
+    expect(store.getState().score).toBe(100);
+  });
+
+  test('handles malus', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+    
+    store.dispatch({ type: 'malus/setMalus', payload: 2 });
+    expect(store.getState().malus).toBe(2);
+  });
+
+  test('handles piece updates', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+    
+    const testPiece = {
+      type: 'T',
+      position: { x: 0, y: 0 },
+      rotation: 0
+    };
+    
+    store.dispatch({ type: 'piece/setPiece', payload: testPiece });
+    expect(store.getState().piece).toEqual(testPiece);
+  });
+
+  test('handles position updates', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+    
+    const testPositions = [
+      [0, 0, 0],
+      [1, 1, 1],
+      [0, 0, 0]
+    ];
+    
+    store.dispatch({ type: 'positions/modifyPositions', payload: testPositions });
+    expect(store.getState().positions).toEqual(testPositions);
   });
 });

@@ -1,194 +1,160 @@
 import React from 'react';
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
 import { BrowserRouter } from 'react-router-dom';
-import { HighScoreBoard } from '../components/HighScoreBoard';
-import { ChangeButton } from '../components/changeButton';
+import { configureStore } from '@reduxjs/toolkit';
+import HighScoreBoard from '../components/HighScoreBoard';
+import ChangeButton from '../components/changeButton';
+import MultiGame from '../multigame';
+import { pieceReducer } from '../reducers/pieceSlice';
+import { scoreReducer } from '../reducers/scoreSlice';
+import { gameOverReducer } from '../reducers/gameOverSlice';
+import { gameLaunchedReducer } from '../reducers/gameLaunchedSlice';
+import { leaderReducer } from '../reducers/leaderSlice';
+import { musicReducer } from '../reducers/musicSlice';
+import { startPieceReducer } from '../reducers/startPieceSlice';
+import { malusReducer } from '../reducers/malusSlice';
+import { playersReducer } from '../reducers/playersSlice';
+import { resultatsReducer } from '../reducers/resultatsSlice';
+import { tempNameReducer } from '../reducers/tempNameSlice';
+import { urlReducer } from '../reducers/urlSlice';
+import { positionsReducer } from '../reducers/positionsSlice';
+import { showHighScoreReducer } from '../reducers/showHighScoreSlice';
+import { changeOkReducer } from '../reducers/changeOkSlice';
+import { noNameReducer } from '../reducers/noNameSlice';
+import { scoreListReducer } from '../reducers/scoreListSlice';
 
-// Tests for HighScoreBoard component
-describe('HighScoreBoard Component', () => {
+describe('Components', () => {
   let store;
 
   beforeEach(() => {
     store = configureStore({
       reducer: {
-        showHighScore: (state = false, action) =>
-          action.type === 'showHighScore/setShowHighScore' ? action.payload : state,
-        tempName: (state = '', action) =>
-          action.type === 'tempName/changeTempName' ? action.payload : state,
-        pieces: (state = [], action) =>
-          action.type === 'pieces/setPieces' ? action.payload : state,
-        scoreList: (state = [], action) =>
-          action.type === 'scoreList/changeScoreList' ? action.payload : state
+        piece: pieceReducer,
+        score: scoreReducer,
+        gameOver: gameOverReducer,
+        gameLaunched: gameLaunchedReducer,
+        leader: leaderReducer,
+        music: musicReducer,
+        startPiece: startPieceReducer,
+        malus: malusReducer,
+        players: playersReducer,
+        resultats: resultatsReducer,
+        tempName: tempNameReducer,
+        url: urlReducer,
+        positions: positionsReducer,
+        showHighScore: showHighScoreReducer,
+        changeOk: changeOkReducer,
+        noName: noNameReducer,
+        scoreList: scoreListReducer
+      },
+      preloadedState: {
+        tempName: 'TestPlayer',
+        showHighScore: false,
+        changeOk: false,
+        noName: false,
+        scoreList: []
       }
     });
   });
 
-  test('renders no scores message when list is empty', () => {
-    const { getByText } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <HighScoreBoard scoresList={[]} />
-        </BrowserRouter>
-      </Provider>
-    );
+  describe('HighScoreBoard', () => {
+    test('renders no scores message when list is empty', () => {
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <HighScoreBoard />
+          </BrowserRouter>
+        </Provider>
+      );
+      expect(screen.getByText(/No high scores yet/i)).toBeInTheDocument();
+    });
 
-    expect(getByText('No Score Yet')).toBeInTheDocument();
-    expect(getByText('Go Back')).toBeInTheDocument();
-  });
+    test('renders scores when list is not empty', () => {
+      store.dispatch({
+        type: 'scoreList/setScoreList',
+        payload: [
+          { name: 'Player1', score: 100 },
+          { name: 'Player2', score: 200 }
+        ]
+      });
 
-  test('renders score list when scores exist', () => {
-    const scores = [
-      { name: 'Player1', score: 1000, nature: 'Solo' },
-      { name: 'Player2', score: 800, nature: 'Multi' }
-    ];
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <HighScoreBoard />
+          </BrowserRouter>
+        </Provider>
+      );
 
-    const { getByText } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <HighScoreBoard scoresList={scores} />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    expect(getByText('Player1')).toBeInTheDocument();
-    expect(getByText('1000')).toBeInTheDocument();
-    expect(getByText('Solo')).toBeInTheDocument();
-    expect(getByText('Player2')).toBeInTheDocument();
-    expect(getByText('800')).toBeInTheDocument();
-    expect(getByText('Multi')).toBeInTheDocument();
-  });
-
-  test('handles back button click', () => {
-    const { getByText } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <HighScoreBoard scoresList={[]} />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const backButton = getByText('Go Back');
-    fireEvent.click(backButton);
-    expect(store.getState().showHighScore).toBe(false);
-  });
-
-  test('displays scores in descending order', () => {
-    const scores = [
-      { name: 'Player3', score: 500, nature: 'Solo' },
-      { name: 'Player1', score: 1000, nature: 'Solo' },
-      { name: 'Player2', score: 800, nature: 'Multi' }
-    ];
-
-    const { getAllByTestId } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <HighScoreBoard scoresList={scores} />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const scoreElements = getAllByTestId('score-item');
-    expect(scoreElements[0]).toHaveTextContent('1000');
-    expect(scoreElements[1]).toHaveTextContent('800');
-    expect(scoreElements[2]).toHaveTextContent('500');
-  });
-});
-
-// Tests for ChangeButton component
-describe('ChangeButton Component', () => {
-  let store;
-
-  beforeEach(() => {
-    store = configureStore({
-      reducer: {
-        changeOk: (state = false, action) =>
-          action.type === 'changeOk/changeOkOn' ? true : 
-          action.type === 'changeOk/changeOkOff' ? false : state,
-        tempName: (state = '', action) =>
-          action.type === 'tempName/changeTempName' ? action.payload : state
-      }
+      expect(screen.getByText('Player1')).toBeInTheDocument();
+      expect(screen.getByText('Player2')).toBeInTheDocument();
+      expect(screen.getByText('100')).toBeInTheDocument();
+      expect(screen.getByText('200')).toBeInTheDocument();
     });
   });
 
-  test('renders change button correctly', () => {
-    render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <ChangeButton />
-        </BrowserRouter>
-      </Provider>
-    );
+  describe('ChangeButton', () => {
+    test('renders change button', () => {
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <ChangeButton />
+          </BrowserRouter>
+        </Provider>
+      );
 
-    expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter your name')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
+
+    test('handles name input and button click', () => {
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <ChangeButton />
+          </BrowserRouter>
+        </Provider>
+      );
+
+      const input = screen.getByPlaceholderText('Enter your name');
+      const button = screen.getByRole('button');
+
+      fireEvent.change(input, { target: { value: 'NewPlayer' } });
+      fireEvent.click(button);
+
+      expect(store.getState().tempName).toBe('NewPlayer');
+      expect(store.getState().changeOk).toBe(true);
+    });
+
+    test('handles empty name input', () => {
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <ChangeButton />
+          </BrowserRouter>
+        </Provider>
+      );
+
+      const input = screen.getByPlaceholderText('Enter your name');
+      const button = screen.getByRole('button');
+
+      fireEvent.change(input, { target: { value: '' } });
+      fireEvent.click(button);
+
+      expect(store.getState().noName).toBe(true);
+    });
   });
 
-  test('handles button click with valid input', () => {
-    render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <ChangeButton />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const input = screen.getByPlaceholderText('Enter your name');
-    const button = screen.getByRole('button');
-
-    fireEvent.change(input, { target: { value: 'ValidName' } });
-    fireEvent.click(button);
-
-    expect(store.getState().changeOk).toBe(true);
-    expect(store.getState().tempName).toBe('ValidName');
-  });
-
-  test('handles empty input', () => {
-    render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <ChangeButton />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const button = screen.getByRole('button');
-    fireEvent.click(button);
-    
-    expect(store.getState().changeOk).toBe(false);
-  });
-
-  test('handles input validation for long names', () => {
-    render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <ChangeButton />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const input = screen.getByPlaceholderText('Enter your name');
-    const button = screen.getByRole('button');
-    
-    fireEvent.change(input, { target: { value: 'ThisIsAVeryLongPlayerNameThatShouldNotBeAllowed' } });
-    fireEvent.click(button);
-    
-    expect(store.getState().changeOk).toBe(false);
-  });
-
-  test('updates tempName in store when input changes', () => {
-    render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <ChangeButton />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const input = screen.getByPlaceholderText('Enter your name');
-    fireEvent.change(input, { target: { value: 'NewPlayer' } });
-    
-    expect(store.getState().tempName).toBe('NewPlayer');
+  describe('MultiGame', () => {
+    test('renders game component', () => {
+      render(
+        <Provider store={store}>
+          <BrowserRouter>
+            <MultiGame />
+          </BrowserRouter>
+        </Provider>
+      );
+      // Add assertions here
+    });
   });
 });

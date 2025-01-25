@@ -1,155 +1,97 @@
-import { createSocketMiddleware } from '../middleware/socketMiddleware';
 import { configureStore } from '@reduxjs/toolkit';
-import reducers from '../reducers';
+import { equal, checkRowsEqual, resetGameOver, launchGame, Retry } from '../middleware/socketMiddleware';
+
+// Mock socket.io-client
+jest.mock('socket.io-client');
 
 describe('Socket Middleware', () => {
-  let mockSocket;
   let store;
-  let middleware;
-  let mockState;
+  let mockSocket;
+  let next;
 
   beforeEach(() => {
     mockSocket = {
       emit: jest.fn(),
-      on: jest.fn(),
-      off: jest.fn(),
-      connect: jest.fn(),
-      disconnect: jest.fn()
+      on: jest.fn()
     };
-
-    middleware = createSocketMiddleware(mockSocket);
 
     store = configureStore({
-      reducer: reducers,
-      middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(middleware)
+      reducer: {
+        piece: (state = {}, action) => state,
+        score: (state = 0, action) => state,
+        gameOver: (state = false, action) => state,
+        gameLaunched: (state = false, action) => state,
+        leader: (state = false, action) => state,
+        music: (state = false, action) => state,
+        startPiece: (state = null, action) => state,
+        malus: (state = 0, action) => state,
+        players: (state = [], action) => state,
+        resultats: (state = '', action) => state,
+        positions: (state = [], action) => state,
+        showHighScore: (state = false, action) => state,
+        changeOk: (state = false, action) => state,
+        noName: (state = false, action) => state,
+        scoreList: (state = [], action) => state,
+        url: (state = '', action) => state,
+        tempName: (state = '', action) => state
+      }
     });
 
-    mockState = {
-      url: 'test-room',
-      tempName: 'Player1',
-      multi: false,
-      gameOver: false,
-      score: 0,
-      rows: Array(20).fill().map(() => Array(10).fill(0)),
-      piece: null,
-      malus: 0,
-      players: [],
-      time: 1000,
-      gameLaunched: false,
-      leader: false,
-      music: false,
-      startPiece: false,
-      pieceIndex: 0,
-      lastMalus: 0
-    };
+    next = jest.fn();
   });
 
-  test('handles socket connection events', () => {
-    // Simuler la connexion socket
-    const connectCallback = mockSocket.on.mock.calls.find(call => call[0] === 'connect')[1];
-    connectCallback();
-
-    // Vérifier que les événements sont écoutés
-    expect(mockSocket.on).toHaveBeenCalledWith('connect', expect.any(Function));
-    expect(mockSocket.on).toHaveBeenCalledWith('GAME_LAUNCHED', expect.any(Function));
-    expect(mockSocket.on).toHaveBeenCalledWith('NEW_PIECES', expect.any(Function));
-    expect(mockSocket.on).toHaveBeenCalledWith('PLAYERS', expect.any(Function));
-  });
-
-  test('emits player actions', () => {
-    store.dispatch({ 
-      type: 'socket/emit', 
-      payload: { 
-        event: 'joinRoom', 
-        data: { room: 'test-room', player: 'Player1' } 
-      } 
+  describe('Utility Functions', () => {
+    test('equal function correctly checks if all cells in a row are equal', () => {
+      const row = [1, 1, 1];
+      expect(equal(row, 1)).toBe(true);
+      expect(equal(row, 0)).toBe(false);
     });
 
-    expect(mockSocket.emit).toHaveBeenCalledWith(
-      'joinRoom',
-      { room: 'test-room', player: 'Player1' }
-    );
+    test('checkRowsEqual function correctly checks rows in a range', () => {
+      const rows = [
+        [1, 1, 1],
+        [1, 1, 1],
+        [0, 0, 0]
+      ];
+      expect(checkRowsEqual(rows, 0, 1, 1)).toBe(true);
+      expect(checkRowsEqual(rows, 0, 2, 1)).toBe(false);
+    });
   });
 
-  test('handles game state updates', () => {
-    // Simuler la réception d'une mise à jour du jeu
-    const gameUpdateCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'GAME_LAUNCHED'
-    )[1];
+  describe('Game Management Functions', () => {
+    test('resetGameOver function resets game state correctly', () => {
+      const state = {
+        gameOver: true,
+        score: 100
+      };
+      resetGameOver(state, store, mockSocket);
+      expect(mockSocket.emit).toHaveBeenCalledWith('changestatusPlayer', 'room1', 'player1', false);
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'musicOn' });
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'gameLaunchedOff' });
+    });
 
-    gameUpdateCallback({ started: true });
+    test('launchGame function initializes game correctly', () => {
+      const state = {
+        gameLaunched: false
+      };
+      launchGame(state, store, mockSocket);
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'gameLaunchedOn' });
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'changeResultats', payload: "Game over" });
+      expect(mockSocket.emit).toHaveBeenCalledWith('changestatusPlayer', 'room1', 'player1', true);
+      expect(mockSocket.emit).toHaveBeenCalledWith('gameStarted', 'room1');
+    });
 
-    expect(store.getState().gameLaunched).toBe(true);
-  });
-
-  test('handles player updates', () => {
-    // Simuler la réception d'une mise à jour des joueurs
-    const playersCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'PLAYERS'
-    )[1];
-
-    const players = ['Player1', 'Player2'];
-    playersCallback(players);
-
-    expect(store.getState().players).toEqual(players);
-  });
-
-  test('handles piece updates', () => {
-    // Simuler la réception de nouvelles pièces
-    const piecesCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'NEW_PIECES'
-    )[1];
-
-    const pieces = [
-      { type: 'I', rotation: 0 },
-      { type: 'T', rotation: 0 }
-    ];
-    piecesCallback(pieces);
-
-    expect(store.getState().catalogPieces).toEqual(pieces);
-  });
-
-  test('handles game over state', () => {
-    // Simuler la réception d'un game over
-    const gameOverCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'GAME_OVER'
-    )[1];
-
-    gameOverCallback();
-
-    expect(store.getState().gameOver).toBe(true);
-  });
-
-  test('handles malus updates', () => {
-    // Simuler la réception d'un malus
-    const malusCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'MALUS'
-    )[1];
-
-    malusCallback(2);
-
-    expect(store.getState().malus).toBe(2);
-  });
-
-  test('handles score updates', () => {
-    // Simuler la réception d'un nouveau score
-    const scoreCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'NEW_SCORE'
-    )[1];
-
-    scoreCallback(1000);
-
-    expect(store.getState().score).toBe(1000);
-  });
-
-  test('handles disconnection', () => {
-    const disconnectCallback = mockSocket.on.mock.calls.find(
-      call => call[0] === 'disconnect'
-    )[1];
-
-    disconnectCallback();
-
-    expect(store.getState().gameLaunched).toBe(false);
-    expect(store.getState().multi).toBe(false);
+    test('Retry function handles retry correctly', () => {
+      const state = {
+        gameOver: true,
+        score: 100
+      };
+      Retry(state, store, mockSocket);
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'modifyLastMalus', payload: 0 });
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'changeKeyDown', payload: "null" });
+      expect(store.dispatch).toHaveBeenCalledWith({ type: 'gameOverOff' });
+      expect(mockSocket.emit).toHaveBeenCalledWith('changestatusPlayer', 'room1', 'player1', true);
+      expect(mockSocket.emit).toHaveBeenCalledWith('all_retry', 'room1', 'player1');
+    });
   });
 });

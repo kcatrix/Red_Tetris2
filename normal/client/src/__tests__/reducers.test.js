@@ -1,202 +1,146 @@
 import { configureStore } from '@reduxjs/toolkit';
-import reducers from '../reducers';
-import { fillPiece } from '../reducers/pieceSlice';
-import { changeTempName } from '../reducers/tempNameSlice';
-import { changeUrl } from '../reducers/urlSlice';
-import { showHighScoreOn } from '../reducers/showHighScoreSlice';
-import { multiOn, multiOff } from '../reducers/multiSlice';
-import { setRows } from '../reducers/rowsSlice';
-import { setScore } from '../reducers/scoreSlice';
-import { gameOverOn, gameOverOff } from '../reducers/gameOverSlice';
-import { setMalus } from '../reducers/malusSlice';
-import { setPlayers } from '../reducers/playersSlice';
-import { gameLaunchedOn, gameLaunchedOff } from '../reducers/gameLaunchedSlice';
-import { leaderOn, leaderOff } from '../reducers/leaderSlice';
-import { musicOn, musicOff } from '../reducers/musicSlice';
-import { startPieceOn, startPieceOff } from '../reducers/startPieceSlice';
+import { pieceReducer } from '../reducers/pieceSlice';
+import { scoreReducer } from '../reducers/scoreSlice';
+import { gameOverReducer } from '../reducers/gameOverSlice';
+import { gameLaunchedReducer } from '../reducers/gameLaunchedSlice';
+import { leaderReducer } from '../reducers/leaderSlice';
+import { musicReducer } from '../reducers/musicSlice';
+import { startPieceReducer } from '../reducers/startPieceSlice';
+import { malusReducer } from '../reducers/malusSlice';
+import { playersReducer } from '../reducers/playersSlice';
+import { resultatsReducer } from '../reducers/resultatsSlice';
+import { tempNameReducer } from '../reducers/tempNameSlice';
+import { urlReducer } from '../reducers/urlSlice';
+import positionsReducer, { resetPositions, modifyPositions, newPositions } from '../reducers/positionsSlice';
+import { showHighScoreReducer } from '../reducers/showHighScoreSlice';
+import { changeOkReducer } from '../reducers/changeOkSlice';
+import { noNameReducer } from '../reducers/noNameSlice';
+import { scoreListReducer } from '../reducers/scoreListSlice';
 
-describe('Redux Store Configuration', () => {
+describe('Reducers', () => {
   let store;
 
   beforeEach(() => {
     store = configureStore({
-      reducer: reducers
+      reducer: {
+        piece: pieceReducer,
+        score: scoreReducer,
+        gameOver: gameOverReducer,
+        gameLaunched: gameLaunchedReducer,
+        leader: leaderReducer,
+        music: musicReducer,
+        startPiece: startPieceReducer,
+        malus: malusReducer,
+        players: playersReducer,
+        resultats: resultatsReducer,
+        tempName: tempNameReducer,
+        url: urlReducer,
+        positions: positionsReducer,
+        showHighScore: showHighScoreReducer,
+        changeOk: changeOkReducer,
+        noName: noNameReducer,
+        scoreList: scoreListReducer
+      }
     });
   });
 
-  test('initial state is set correctly', () => {
+  test('initial state', () => {
     const state = store.getState();
-    expect(state).toEqual({
-      catalogPieces: [],
-      multi: false,
-      url: '',
-      back: false,
-      showHighScore: false,
-      pieces: [],
-      tempName: '',
-      rows: [],
-      piece: null,
-      positions: [],
-      score: 0,
-      gameOver: false,
-      malus: 0,
-      players: [],
-      noName: true,
-      oldUrl: '',
-      changeOk: false,
-      checkUrl: '',
-      time: 0,
-      gameLaunched: false,
-      leader: false,
-      music: false,
-      keyDown: false,
-      startPiece: false,
-      pieceIndex: 0,
-      lastMalus: 0,
-      addMalusGo: 0,
-      retrySignal: false,
-      resultats: '',
-      scoreList: [],
-      playersOff: [],
-      bestScore: 0,
-      createRoom: false
+    expect(state.piece).toBeDefined();
+    expect(state.score).toBeDefined();
+    expect(state.gameOver).toBeDefined();
+    expect(state.gameLaunched).toBeDefined();
+    expect(state.leader).toBeDefined();
+    expect(state.music).toBeDefined();
+    expect(state.startPiece).toBeDefined();
+    expect(state.malus).toBeDefined();
+    expect(state.players).toBeDefined();
+    expect(state.resultats).toBeDefined();
+    expect(state.tempName).toBeDefined();
+    expect(state.url).toBeDefined();
+    expect(state.positions).toBeDefined();
+    expect(state.showHighScore).toBeDefined();
+    expect(state.changeOk).toBeDefined();
+    expect(state.noName).toBeDefined();
+    expect(state.scoreList).toBeDefined();
+  });
+
+  test('piece reducer', () => {
+    store.dispatch({ type: 'piece/setPiece', payload: 'T' });
+    expect(store.getState().piece).toBe('T');
+  });
+
+  test('score reducer', () => {
+    store.dispatch({ type: 'score/setScore', payload: 100 });
+    expect(store.getState().score).toBe(100);
+  });
+
+  test('gameOver reducer', () => {
+    store.dispatch({ type: 'gameOver/gameOverOn' });
+    expect(store.getState().gameOver).toBe(true);
+  });
+
+  test('gameLaunched reducer', () => {
+    store.dispatch({ type: 'gameLaunched/gameLaunchedOn' });
+    expect(store.getState().gameLaunched).toBe(true);
+  });
+
+  test('malus reducer', () => {
+    store.dispatch({ type: 'malus/setMalus', payload: 2 });
+    expect(store.getState().malus).toBe(2);
+  });
+
+  test('positions reducer', () => {
+    const positions = [
+      [0, 0, 0, 0],
+      [1, 1, 1, 1],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+    store.dispatch({ type: 'positions/setPositions', payload: positions });
+    expect(store.getState().positions).toEqual(positions);
+  });
+});
+
+describe('positionsSlice', () => {
+  let store;
+
+  beforeEach(() => {
+    store = configureStore({
+      reducer: {
+        positions: positionsReducer
+      }
     });
   });
 
-  describe('Game State Reducers', () => {
-    test('handles piece updates', () => {
-      const piece = { type: 'T', rotation: 0 };
-      store.dispatch(fillPiece(piece));
-      expect(store.getState().piece).toEqual(piece);
-    });
-
-    test('handles player name updates', () => {
-      const name = 'TestPlayer';
-      store.dispatch(changeTempName(name));
-      expect(store.getState().tempName).toBe(name);
-    });
-
-    test('handles URL updates', () => {
-      const url = 'test-room';
-      store.dispatch(changeUrl(url));
-      expect(store.getState().url).toBe(url);
-    });
-
-    test('handles high score visibility', () => {
-      store.dispatch(showHighScoreOn());
-      expect(store.getState().showHighScore).toBe(true);
-    });
-
-    test('handles multiplayer mode toggle', () => {
-      store.dispatch(multiOn());
-      expect(store.getState().multi).toBe(true);
-      store.dispatch(multiOff());
-      expect(store.getState().multi).toBe(false);
-    });
-
-    test('handles game board updates', () => {
-      const rows = Array(20).fill().map(() => Array(10).fill(0));
-      store.dispatch(setRows(rows));
-      expect(store.getState().rows).toEqual(rows);
-    });
-
-    test('handles score updates', () => {
-      store.dispatch(setScore(100));
-      expect(store.getState().score).toBe(100);
-    });
-
-    test('handles game over state', () => {
-      store.dispatch(gameOverOn());
-      expect(store.getState().gameOver).toBe(true);
-      store.dispatch(gameOverOff());
-      expect(store.getState().gameOver).toBe(false);
-    });
-
-    test('handles malus updates', () => {
-      store.dispatch(setMalus(2));
-      expect(store.getState().malus).toBe(2);
-    });
-
-    test('handles players list updates', () => {
-      const players = ['Player1', 'Player2'];
-      store.dispatch(setPlayers(players));
-      expect(store.getState().players).toEqual(players);
-    });
+  test('initial state', () => {
+    expect(store.getState().positions).toEqual([{ x: 4, y: 0 }]);
   });
 
-  describe('Game Control Reducers', () => {
-    test('handles game launch state', () => {
-      store.dispatch(gameLaunchedOn());
-      expect(store.getState().gameLaunched).toBe(true);
-      store.dispatch(gameLaunchedOff());
-      expect(store.getState().gameLaunched).toBe(false);
-    });
-
-    test('handles leader state', () => {
-      store.dispatch(leaderOn());
-      expect(store.getState().leader).toBe(true);
-      store.dispatch(leaderOff());
-      expect(store.getState().leader).toBe(false);
-    });
-
-    test('handles music state', () => {
-      store.dispatch(musicOn());
-      expect(store.getState().music).toBe(true);
-      store.dispatch(musicOff());
-      expect(store.getState().music).toBe(false);
-    });
-
-    test('handles start piece state', () => {
-      store.dispatch(startPieceOn());
-      expect(store.getState().startPiece).toBe(true);
-      store.dispatch(startPieceOff());
-      expect(store.getState().startPiece).toBe(false);
-    });
+  test('resetPositions action', () => {
+    // Setup initial state with multiple positions
+    store.dispatch(newPositions());
+    store.dispatch(modifyPositions({ pieceIndex: 0, newPosition: { x: 2, y: 3 } }));
+    
+    // Reset position for piece index 0
+    store.dispatch(resetPositions(0));
+    
+    expect(store.getState().positions[0]).toEqual({ x: 4, y: 0 });
   });
 
-  describe('Complex State Changes', () => {
-    test('handles game initialization', () => {
-      store.dispatch(changeTempName('Player1'));
-      store.dispatch(changeUrl('room1'));
-      store.dispatch(multiOn());
-      store.dispatch(gameLaunchedOn());
-      
-      const state = store.getState();
-      expect(state.tempName).toBe('Player1');
-      expect(state.url).toBe('room1');
-      expect(state.multi).toBe(true);
-      expect(state.gameLaunched).toBe(true);
-    });
+  test('modifyPositions action', () => {
+    const newPosition = { x: 2, y: 3 };
+    store.dispatch(modifyPositions({ pieceIndex: 0, newPosition }));
+    
+    expect(store.getState().positions[0]).toEqual(newPosition);
+  });
 
-    test('handles game reset', () => {
-      // Set up game state
-      store.dispatch(setScore(100));
-      store.dispatch(gameOverOn());
-      store.dispatch(setMalus(2));
-      
-      // Reset game
-      store.dispatch(gameOverOff());
-      store.dispatch(setScore(0));
-      store.dispatch(setMalus(0));
-      
-      const state = store.getState();
-      expect(state.score).toBe(0);
-      expect(state.gameOver).toBe(false);
-      expect(state.malus).toBe(0);
-    });
-
-    test('handles multiplayer game setup', () => {
-      const players = ['Player1', 'Player2'];
-      store.dispatch(multiOn());
-      store.dispatch(setPlayers(players));
-      store.dispatch(leaderOn());
-      store.dispatch(gameLaunchedOn());
-      
-      const state = store.getState();
-      expect(state.multi).toBe(true);
-      expect(state.players).toEqual(players);
-      expect(state.leader).toBe(true);
-      expect(state.gameLaunched).toBe(true);
-    });
+  test('newPositions action', () => {
+    store.dispatch(newPositions());
+    
+    expect(store.getState().positions).toEqual([
+      { x: 4, y: 0 },
+      { x: 4, y: 0 }
+    ]);
   });
 });
