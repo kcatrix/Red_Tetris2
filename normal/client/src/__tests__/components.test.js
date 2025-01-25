@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
-import HighScoreBoard from '../components/HighScoreBoard';
+import { HighScoreBoard } from '../components/HighScoreBoard';
 import ChangeButton from '../components/changeButton';
 import MultiGame from '../multigame';
 import { pieceReducer } from '../reducers/pieceSlice';
