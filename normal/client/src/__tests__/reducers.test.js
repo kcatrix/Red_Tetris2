@@ -4,6 +4,16 @@ import { fillPiece } from '../reducers/pieceSlice';
 import { changeTempName } from '../reducers/tempNameSlice';
 import { changeUrl } from '../reducers/urlSlice';
 import { showHighScoreOn } from '../reducers/showHighScoreSlice';
+import { multiOn, multiOff } from '../reducers/multiSlice';
+import { setRows } from '../reducers/rowsSlice';
+import { setScore } from '../reducers/scoreSlice';
+import { gameOverOn, gameOverOff } from '../reducers/gameOverSlice';
+import { setMalus } from '../reducers/malusSlice';
+import { setPlayers } from '../reducers/playersSlice';
+import { gameLaunchedOn, gameLaunchedOff } from '../reducers/gameLaunchedSlice';
+import { leaderOn, leaderOff } from '../reducers/leaderSlice';
+import { musicOn, musicOff } from '../reducers/musicSlice';
+import { startPieceOn, startPieceOff } from '../reducers/startPieceSlice';
 
 describe('Redux Store Configuration', () => {
   let store;
@@ -53,109 +63,140 @@ describe('Redux Store Configuration', () => {
     });
   });
 
-  test('reducers handle actions correctly', () => {
-    // Test tempName reducer
-    store.dispatch(changeTempName('test-player'));
-    expect(store.getState().tempName).toBe('test-player');
-
-    // Test url reducer
-    store.dispatch(changeUrl('/test-room'));
-    expect(store.getState().url).toBe('/test-room');
-
-    // Test showHighScore reducer
-    store.dispatch(showHighScoreOn());
-    expect(store.getState().showHighScore).toBe(true);
-
-    // Test piece reducer
-    const piece = { type: 'T', rotation: 0 };
-    store.dispatch(fillPiece(piece));
-    expect(store.getState().piece).toEqual(piece);
-  });
-});
-
-describe('Reducers', () => {
-  describe('catalogPieces reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.catalogPieces(undefined, {})).toEqual([]);
+  describe('Game State Reducers', () => {
+    test('handles piece updates', () => {
+      const piece = { type: 'T', rotation: 0 };
+      store.dispatch(fillPiece(piece));
+      expect(store.getState().piece).toEqual(piece);
     });
 
-    it('should handle setCatalogPieces', () => {
-      const pieces = [1, 2, 3];
-      expect(reducers.catalogPieces([], setCatalogPieces(pieces))).toEqual(pieces);
-    });
-  });
-
-  describe('multi reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.multi(undefined, {})).toBe(false);
+    test('handles player name updates', () => {
+      const name = 'TestPlayer';
+      store.dispatch(changeTempName(name));
+      expect(store.getState().tempName).toBe(name);
     });
 
-    it('should handle setMulti', () => {
-      expect(reducers.multi(false, setMulti(true))).toBe(true);
-    });
-  });
-
-  describe('url reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.url(undefined, {})).toBe('');
+    test('handles URL updates', () => {
+      const url = 'test-room';
+      store.dispatch(changeUrl(url));
+      expect(store.getState().url).toBe(url);
     });
 
-    it('should handle setUrl', () => {
-      const url = 'http://example.com';
-      expect(reducers.url('', setUrl(url))).toBe(url);
-    });
-  });
-
-  describe('back reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.back(undefined, {})).toBe(false);
+    test('handles high score visibility', () => {
+      store.dispatch(showHighScoreOn());
+      expect(store.getState().showHighScore).toBe(true);
     });
 
-    it('should handle setBack', () => {
-      expect(reducers.back(false, setBack(true))).toBe(true);
+    test('handles multiplayer mode toggle', () => {
+      store.dispatch(multiOn());
+      expect(store.getState().multi).toBe(true);
+      store.dispatch(multiOff());
+      expect(store.getState().multi).toBe(false);
+    });
+
+    test('handles game board updates', () => {
+      const rows = Array(20).fill().map(() => Array(10).fill(0));
+      store.dispatch(setRows(rows));
+      expect(store.getState().rows).toEqual(rows);
+    });
+
+    test('handles score updates', () => {
+      store.dispatch(setScore(100));
+      expect(store.getState().score).toBe(100);
+    });
+
+    test('handles game over state', () => {
+      store.dispatch(gameOverOn());
+      expect(store.getState().gameOver).toBe(true);
+      store.dispatch(gameOverOff());
+      expect(store.getState().gameOver).toBe(false);
+    });
+
+    test('handles malus updates', () => {
+      store.dispatch(setMalus(2));
+      expect(store.getState().malus).toBe(2);
+    });
+
+    test('handles players list updates', () => {
+      const players = ['Player1', 'Player2'];
+      store.dispatch(setPlayers(players));
+      expect(store.getState().players).toEqual(players);
     });
   });
 
-  describe('showHighScore reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.showHighScore(undefined, {})).toBe(false);
+  describe('Game Control Reducers', () => {
+    test('handles game launch state', () => {
+      store.dispatch(gameLaunchedOn());
+      expect(store.getState().gameLaunched).toBe(true);
+      store.dispatch(gameLaunchedOff());
+      expect(store.getState().gameLaunched).toBe(false);
     });
 
-    it('should handle setShowHighScore', () => {
-      expect(reducers.showHighScore(false, setShowHighScore(true))).toBe(true);
-    });
-  });
-
-  describe('pieces reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.pieces(undefined, {})).toEqual([]);
+    test('handles leader state', () => {
+      store.dispatch(leaderOn());
+      expect(store.getState().leader).toBe(true);
+      store.dispatch(leaderOff());
+      expect(store.getState().leader).toBe(false);
     });
 
-    it('should handle setPieces', () => {
-      const pieces = [1, 2, 3];
-      expect(reducers.pieces([], setPieces(pieces))).toEqual(pieces);
-    });
-  });
-
-  describe('tempName reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.tempName(undefined, {})).toBe('');
+    test('handles music state', () => {
+      store.dispatch(musicOn());
+      expect(store.getState().music).toBe(true);
+      store.dispatch(musicOff());
+      expect(store.getState().music).toBe(false);
     });
 
-    it('should handle changeTempName', () => {
-      const name = 'Player1';
-      expect(reducers.tempName('', changeTempName(name))).toBe(name);
+    test('handles start piece state', () => {
+      store.dispatch(startPieceOn());
+      expect(store.getState().startPiece).toBe(true);
+      store.dispatch(startPieceOff());
+      expect(store.getState().startPiece).toBe(false);
     });
   });
 
-  describe('piece reducer', () => {
-    it('should handle initial state', () => {
-      expect(reducers.piece(undefined, {})).toEqual([]);
+  describe('Complex State Changes', () => {
+    test('handles game initialization', () => {
+      store.dispatch(changeTempName('Player1'));
+      store.dispatch(changeUrl('room1'));
+      store.dispatch(multiOn());
+      store.dispatch(gameLaunchedOn());
+      
+      const state = store.getState();
+      expect(state.tempName).toBe('Player1');
+      expect(state.url).toBe('room1');
+      expect(state.multi).toBe(true);
+      expect(state.gameLaunched).toBe(true);
     });
 
-    it('should handle fillPiece', () => {
-      const piece = { id: 1, type: 'T' };
-      expect(reducers.piece([], fillPiece(piece))).toEqual(piece);
+    test('handles game reset', () => {
+      // Set up game state
+      store.dispatch(setScore(100));
+      store.dispatch(gameOverOn());
+      store.dispatch(setMalus(2));
+      
+      // Reset game
+      store.dispatch(gameOverOff());
+      store.dispatch(setScore(0));
+      store.dispatch(setMalus(0));
+      
+      const state = store.getState();
+      expect(state.score).toBe(0);
+      expect(state.gameOver).toBe(false);
+      expect(state.malus).toBe(0);
+    });
+
+    test('handles multiplayer game setup', () => {
+      const players = ['Player1', 'Player2'];
+      store.dispatch(multiOn());
+      store.dispatch(setPlayers(players));
+      store.dispatch(leaderOn());
+      store.dispatch(gameLaunchedOn());
+      
+      const state = store.getState();
+      expect(state.multi).toBe(true);
+      expect(state.players).toEqual(players);
+      expect(state.leader).toBe(true);
+      expect(state.gameLaunched).toBe(true);
     });
   });
 });

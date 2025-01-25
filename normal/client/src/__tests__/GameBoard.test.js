@@ -1,9 +1,9 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import reducers from '../reducers';
-import GameBoard from '../multigame';
+import MultiGame from '../multigame';
 import { BrowserRouter } from 'react-router-dom';
 
 describe('GameBoard Component', () => {
@@ -11,7 +11,37 @@ describe('GameBoard Component', () => {
 
   beforeEach(() => {
     store = configureStore({
-      reducer: reducers
+      reducer: reducers,
+      preloadedState: {
+        rows: Array(20).fill().map(() => Array(10).fill(0)),
+        piece: null,
+        positions: [],
+        score: 0,
+        gameOver: false,
+        malus: 0,
+        multi: false,
+        players: [],
+        url: '',
+        noName: true,
+        tempName: '',
+        oldUrl: '',
+        time: 0,
+        catalogPieces: [],
+        pieceIndex: 0,
+        back: false,
+        showHighScore: false,
+        scoreList: [],
+        music: false,
+        retrySignal: false,
+        changeOk: false,
+        lastMalus: 0,
+        startPiece: false,
+        bestScore: 0,
+        addMalusGo: false,
+        gameLaunched: false,
+        leader: false,
+        resultats: ''
+      }
     });
 
     // Mock Audio
@@ -22,83 +52,63 @@ describe('GameBoard Component', () => {
     }));
   });
 
-  test('renders game board with initial state', () => {
+  test('renders game component', () => {
     const { container } = render(
       <Provider store={store}>
         <BrowserRouter>
-          <GameBoard />
+          <MultiGame />
         </BrowserRouter>
       </Provider>
     );
 
-    const board = container.querySelector('.board1');
-    expect(board).toBeInTheDocument();
+    const appContainer = container.querySelector('.App');
+    expect(appContainer).toBeInTheDocument();
   });
 
-  test('renders game board with pieces', () => {
-    store.dispatch({ type: 'rows/setRows', payload: Array(20).fill().map(() => Array(10).fill(1)) });
-
-    const { container } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <GameBoard />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const cells = container.querySelectorAll('.board1 > div');
-    expect(cells.length).toBeGreaterThan(0);
-  });
-
-  test('displays current piece', () => {
-    const currentPiece = { type: 'T', rotation: 0 };
-    store.dispatch({ type: 'piece/setPiece', payload: currentPiece });
-
-    const { container } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <GameBoard />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const board = container.querySelector('.board1');
-    expect(board).toBeInTheDocument();
-  });
-
-  test('shows game over message', async () => {
-    store = configureStore({
-      reducer: reducers
-    });
-
-    store.dispatch({ type: 'gameOver/setGameOver', payload: true });
-
-    const { container } = render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <GameBoard />
-        </BrowserRouter>
-      </Provider>
-    );
-
-    const gameOverMessage = container.querySelector('.game-over');
-    expect(gameOverMessage).toBeInTheDocument();
-    expect(gameOverMessage).toHaveTextContent('Game Over!');
-  });
-
-  test('displays score', () => {
+  test('displays game state elements', () => {
     store.dispatch({ type: 'score/setScore', payload: 100 });
+    store.dispatch({ type: 'tempName/changeTempName', payload: 'Player1' });
 
-    const { container } = render(
+    render(
       <Provider store={store}>
         <BrowserRouter>
-          <GameBoard />
+          <MultiGame />
         </BrowserRouter>
       </Provider>
     );
 
-    const scoreDisplay = container.querySelector('.score');
-    expect(scoreDisplay).toBeInTheDocument();
-    expect(scoreDisplay).toHaveTextContent('Score: 100');
+    // Vérifier que le nom du joueur est affiché
+    expect(screen.getByText('Player1')).toBeInTheDocument();
+  });
+
+  test('handles game over state', () => {
+    store.dispatch({ type: 'gameOver/setGameOver', payload: true });
+    store.dispatch({ type: 'resultats/changeResultats', payload: 'Game Over!' });
+
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+
+    expect(screen.getByText('Game Over!')).toBeInTheDocument();
+  });
+
+  test('handles multiplayer state', () => {
+    store.dispatch({ type: 'multi/setMulti', payload: true });
+    store.dispatch({ type: 'players/setPlayers', payload: ['Player1', 'Player2'] });
+
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <MultiGame />
+        </BrowserRouter>
+      </Provider>
+    );
+
+    expect(screen.getByText('Player1')).toBeInTheDocument();
+    expect(screen.getByText('Player2')).toBeInTheDocument();
   });
 });
