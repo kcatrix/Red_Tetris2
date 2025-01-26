@@ -143,4 +143,26 @@ describe('positionsSlice', () => {
       { x: 4, y: 0 }
     ]);
   });
+
+  test('newPositions action', () => {
+    store.dispatch(newPositions());
+    expect(store.getState().positions).toEqual([{ x: 4, y: 0 }, { x: 0, y: 0 }]);
+  });
+
+  test('modifyPositions action', () => {
+    store.dispatch(newPositions());
+    store.dispatch(modifyPositions({ pieceIndex: 0, newPosition: { x: 2, y: 3 } }));
+    expect(store.getState().positions[0]).toEqual({ x: 2, y: 3 });
+  });
+
+  test('newPositions action', () => {
+    store.dispatch(newPositions());
+    expect(store.getState().positions).toEqual([{ x: 4, y: 0 }, { x: 0, y: 0 }]); // Exemple de nouvelle position
+  });
+
+  test('modifyPositions action', () => {
+    store.dispatch(newPositions());
+    store.dispatch(modifyPositions({ pieceIndex: 0, newPosition: { x: 2, y: 3 } }));
+    expect(store.getState().positions[0]).toEqual({ x: 2, y: 3 });
+  });
 });

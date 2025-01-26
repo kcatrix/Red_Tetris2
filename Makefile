@@ -56,5 +56,8 @@ install-deps:
 	cd normal/api && sudo npm install -g jest
 	cd normal/api && sudo npm install
 	cd normal/api && sudo chown -R $$USER:$$USER node_modules
+	#cd normal/client && sudo npm install
+	#cd normal/client && sudo chown -R $$USER:$$USER node_modules
 
-.PHONY: all n_stop n_resume n_clean bonus b_stop b_resume b_clean b_fclean n_r n_re b_r b_re git git_reset install-deps
+
+.PHONY: all n_stop n_resume n_clean bonus b_stop b_resume b_clean b_fclean n_r n_re b_r b_re git git_reset install-deps test test-api test-client
