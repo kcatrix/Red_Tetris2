@@ -1,4 +1,13 @@
-all: 
+.PHONY: all stop resume clean fclean re r install-deps
+
+install-deps:
+	cd api && rm -rf node_modules package-lock.json
+	cd api && sudo npm cache clean --force
+	cd api && sudo npm install -g jest
+	cd api && npm install
+	cd api && sudo chown -R $$USER:$$USER node_modules
+
+all: install-deps
 	docker compose up --build
 
 stop:
@@ -15,16 +24,11 @@ clean:
 
 fclean: clean
 	docker system prune -af
+	cd api && rm -rf node_modules package-lock.json
 
 r: clean all
 
 re: fclean all
-
-git:
-	@read -p "Enter commit message: " commit_message; \
-	git add .; \
-	git commit -m "$$commit_message"; \
-	git push
 
 git_reset:
 	git fetch origin
