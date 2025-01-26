@@ -1,45 +1,38 @@
-.PHONY: all n_stop n_resume n_clean bonus b_stop b_resume b_clean b_fclean n_r n_re b_r b_re git git_reset install-deps
-
-install-deps:
-	cd normal/api && sudo npm install -g jest
-	cd normal/api && npm install
-	cd normal/api && sudo chown -R $$USER:$$USER node_modules
-
 all: install-deps
-	docker compose -f ./normal/docker-compose.yml up --build
+	sudo docker compose -f ./normal/docker-compose.yml up --build
 
 n_stop:
-	docker compose -f ./normal/docker-compose.yml stop
+	sudo docker compose -f ./normal/docker-compose.yml stop
 
 n_resume:
-	docker compose -f ./normal/docker-compose.yml start
-	docker container start -a api_backend
+	sudo docker compose -f ./normal/docker-compose.yml start
+	sudo docker container start -a api_backend
 
 n_clean:
-	docker compose -f ./normal/docker-compose.yml down
-	docker container prune -f
-	docker volume prune -f
+	sudo docker compose -f ./normal/docker-compose.yml down
+	sudo docker container prune -f
+	sudo docker volume prune -f
 
 bonus:
-	docker compose -f ./bonus/docker-compose.yml up --build
+	sudo docker compose -f ./bonus/docker-compose.yml up --build
 
 b_stop:
-	docker compose -f ./bonus/docker-compose.yml stop
+	sudo docker compose -f ./bonus/docker-compose.yml stop
 
 b_resume:
-	docker compose -f ./bonus/docker-compose.yml start
-	docker container start -a api_backend
+	sudo docker compose -f ./bonus/docker-compose.yml start
+	sudo docker container start -a api_backend
 
 b_clean:
-	docker compose -f ./bonus/docker-compose.yml down
-	docker container prune -f
-	docker volume prune -f
+	sudo docker compose -f ./bonus/docker-compose.yml down
+	sudo docker container prune -f
+	sudo docker volume prune -f
 
 n_fclean: n_clean
-	docker system prune -af
+	sudo docker system prune -af
 
 b_fclean: b_clean
-	docker system prune -af
+	sudo docker system prune -af
 
 n_r: n_clean all
 
@@ -59,4 +52,9 @@ git_reset:
 	git fetch origin
 	git reset --hard
 
-.PHONY: bonus
+install-deps:
+	cd normal/api && sudo npm install -g jest
+	cd normal/api && sudo npm install
+	cd normal/api && sudo chown -R $$USER:$$USER node_modules
+
+.PHONY: all n_stop n_resume n_clean bonus b_stop b_resume b_clean b_fclean n_r n_re b_r b_re git git_reset install-deps
