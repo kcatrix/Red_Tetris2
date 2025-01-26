@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1737846117479" clover="3.2.0">
-  <project timestamp="1737846117487" name="All files">
+<coverage generated="1737851973200" clover="3.2.0">
+  <project timestamp="1737851973200" name="All files">
     <metrics statements="42" coveredstatements="42" conditionals="4" coveredconditionals="4" methods="15" coveredmethods="15" elements="61" coveredelements="61" complexity="0" loc="42" ncloc="42" packages="1" files="4" classes="4"/>
     <file name="pieces.js" path="/home/k/Desktop/Red_Tetris2/normal/api/pieces.js">
       <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
