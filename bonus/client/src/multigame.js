@@ -182,11 +182,7 @@ function MultiGame() {
 		// Check if adding malus lines would cause game over
 		if (highestRowWith1 !== 0 && highestRowWith1 <= number) {
 			setPlay(true);
-			setPosition(prevPosition => {
-				const newPosition = [...prevPosition];
-				newPosition[pieceIndex] = { x: 4, y: 0 };
-				return newPosition;
-				});
+			setPosition([{ x: 4, y: 0}]);
 			dispatch({ type:"RESET_GAME_OVER" })
 		}
 
