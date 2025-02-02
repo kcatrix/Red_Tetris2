@@ -56,7 +56,7 @@ const resetGameOver = (state, store, socket) => {
 	store.dispatch(modifyTime(1000))
 	if (state.score > state.bestScore)
 		store.dispatch(modifyBestScore(store.score))
-	store.dispatch(modifyScore(0));
+	store.dispatch(startPieceOn())
 	socket.emit("gameStopped", state.url);
 	return state.gameLaunched;
 }
@@ -64,7 +64,7 @@ const resetGameOver = (state, store, socket) => {
 const launchGame = (state, store, socket) => {
 	
 	store.dispatch(musicOn())
-	store.dispatch(modifyScore(0)) // Je ne sais pas si il faut que je change la ref par un redux, pour le moment on laisse
+	store.dispatch(modifyScore(0))
 	store.dispatch(gameLaunchedOn());
 	store.dispatch(modifyTime(1000))
 	store.dispatch(changeResultats("Game over"));
@@ -88,6 +88,7 @@ const Retry = (state, store, socket) => {
 	store.dispatch(modifyRows(Array.from({ length: 20 }, () => Array(10).fill(0))));
 	store.dispatch(startPieceOn())
 	store.dispatch(retrySignalOn())
+	store.dispatch(modifyScore(0))
 	launchGame(state, store, socket)
 }
 
@@ -165,7 +166,10 @@ const socketMiddleware = (() => {
 			}
 			case 'SET_HIGHER_POS': {
 				let y = 19;
-				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {}
+				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {
+					if (y == 0)
+						break;
+				}
 		
 				let index = y;
 				socket.emit("setHigherPos", index, state.url, state.tempName);
@@ -205,7 +209,6 @@ const socketMiddleware = (() => {
 						if (state.score > state.bestScore)
 							store.dispatch(modifyBestScore(state.score))
 						store.dispatch(musicOn())
-						store.dispatch(modifyScore(0))
 						store.dispatch(gameOverOn())
 						store.dispatch(gameLaunchedOff())
 						socket.emit("gameStopped", state.url)
@@ -273,6 +276,9 @@ const socketMiddleware = (() => {
 				store.dispatch(fillPiece([]))
 				store.dispatch(leaderOff())
 				store.dispatch(gameLaunchedOff())
+				store.dispatch(startPieceOn())
+				store.dispatch(modifyScore(0))
+
 
 				socket.emit('quit')
 				

@@ -53,6 +53,7 @@ const resetGameOver = (state, store, socket) => {
 	store.dispatch(changeKeyDown("null"))
 	store.dispatch(gameOverOn());
 	// store.dispatch(modifyTime(1000))
+	store.dispatch(startPieceOn())
 	socket.emit("gameStopped", state.url);
 	return state.gameLaunched;
 }
@@ -257,6 +258,7 @@ const socketMiddleware = (() => {
 				store.dispatch(fillPiece([]))
 				store.dispatch(leaderOff())
 				store.dispatch(gameLaunchedOff())
+				store.dispatch(startPieceOn())
 
 				socket.emit('quit');
 

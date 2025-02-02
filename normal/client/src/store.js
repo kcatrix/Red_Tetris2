@@ -67,7 +67,6 @@ export const store = configureStore({
 		time: timeSlice,
 		players: playersSlice,
 		back: backSlice,
-		
 	},
 	middleware(getDefaultMiddleware) {
     return getDefaultMiddleware().concat([socketMiddleware]);

@@ -283,12 +283,16 @@ function MultiGame() {
 						if (checkRowsEqual(rows, position[pieceIndex].y, checkPiece, 1)) {
 								newRows = deleteLine(newRows, position[pieceIndex].y + pieces[pieceIndex].length - 1, position[pieceIndex].y);
 								tmpScore += 100;
+								// console.log("tmpScore = ", tmpScore)
 						}
 						if (checkPiece === position[pieceIndex].y) {
 								dispatch(modifyRows(newRows));
 								dispatch(addScore(tmpScore)); // score.current
 								newScore = oldScore + tmpScore;
 								sum = newScore - oldScore;
+						// 		console.log("oldScore = ", oldScore)
+						// 		console.log("newScore =", newScore)
+						// 		console.log("score = ", score)
 						}
 				}
 
@@ -314,7 +318,6 @@ function MultiGame() {
 	const writePiece = (piece, oldPosition, newPosition, oldPiece) => {
 
 		let newRows = rows.map(row => [...row]);
-
 
 			if (oldPiece == 0) {
 				for (let y = 0; y < piece.length; y++) {
@@ -384,13 +387,13 @@ function MultiGame() {
 	};
   
 	const check1 = (rows, piece, newPiece, axe, newPosition) => {
-	  let it;
-	  let tmpPosition;
+		let it;
+		let tmpPosition;
 		let rowsClean = rows.map(row => [...row]);
 		let newX = 0;
 		let newY = 0;
   
-	  if (axe === "y" || axe === "+x" || axe === "r") {
+		if (axe === "y" || axe === "+x" || axe === "r") {
 			for (let y = 0; y < piece.length; y++) {
 				for (let x = 0; x < piece[y].length; x++) {
 					if (piece[y][x] === 1) {

@@ -13,3 +13,4 @@ COPY . .
 EXPOSE 4000
 
 CMD ["npm", "run", "dev"]
+# CMD ["tail", "-f", "/dev/null"]
