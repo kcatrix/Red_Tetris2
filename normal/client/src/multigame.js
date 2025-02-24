@@ -283,16 +283,13 @@ function MultiGame() {
 						if (checkRowsEqual(rows, position[pieceIndex].y, checkPiece, 1)) {
 								newRows = deleteLine(newRows, position[pieceIndex].y + pieces[pieceIndex].length - 1, position[pieceIndex].y);
 								tmpScore += 100;
-								// console.log("tmpScore = ", tmpScore)
 						}
 						if (checkPiece === position[pieceIndex].y) {
 								dispatch(modifyRows(newRows));
 								dispatch(addScore(tmpScore)); // score.current
 								newScore = oldScore + tmpScore;
 								sum = newScore - oldScore;
-						// 		console.log("oldScore = ", oldScore)
-						// 		console.log("newScore =", newScore)
-						// 		console.log("score = ", score)
+
 						}
 				}
 
@@ -309,7 +306,6 @@ function MultiGame() {
 				dispatch(startPieceOn());
 				setPosition([...position, { x: 4, y: 0 }]);
 			}			
-	// }
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo, spaceRaised]);
 
 

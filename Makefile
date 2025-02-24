@@ -1,38 +1,38 @@
-all: install-deps
-	sudo docker compose -f ./normal/docker-compose.yml up --build
+all: 
+	docker compose -f ./normal/docker-compose.yml up --build -d
 
 n_stop:
-	sudo docker compose -f ./normal/docker-compose.yml stop
+	docker compose -f ./normal/docker-compose.yml stop
 
 n_resume:
-	sudo docker compose -f ./normal/docker-compose.yml start
-	sudo docker container start -a api_backend
+	docker compose -f ./normal/docker-compose.yml start
+	docker container start -a api_backend
 
 n_clean:
-	sudo docker compose -f ./normal/docker-compose.yml down
-	sudo docker container prune -f
-	sudo docker volume prune -f
+	docker compose -f ./normal/docker-compose.yml down
+	docker container prune -f
+	docker volume prune -f
 
 bonus:
-	sudo docker compose -f ./bonus/docker-compose.yml up --build
+	docker compose -f ./bonus/docker-compose.yml up --build
 
 b_stop:
-	sudo docker compose -f ./bonus/docker-compose.yml stop
+	docker compose -f ./bonus/docker-compose.yml stop
 
 b_resume:
-	sudo docker compose -f ./bonus/docker-compose.yml start
-	sudo docker container start -a api_backend
+	docker compose -f ./bonus/docker-compose.yml start
+	docker container start -a api_backend
 
 b_clean:
-	sudo docker compose -f ./bonus/docker-compose.yml down
-	sudo docker container prune -f
-	sudo docker volume prune -f
+	docker compose -f ./bonus/docker-compose.yml down
+	docker container prune -f
+	docker volume prune -f
 
 n_fclean: n_clean
-	sudo docker system prune -af
+	docker system prune -af
 
 b_fclean: b_clean
-	sudo docker system prune -af
+	docker system prune -af
 
 n_r: n_clean all
 
@@ -53,9 +53,9 @@ git_reset:
 	git reset --hard
 
 install-deps:
-	cd normal/api && sudo npm install -g jest
-	cd normal/api && sudo npm install
-	cd normal/api && sudo chown -R $$USER:$$USER node_modules
+	cd normal/api && npm install -g jest
+	cd normal/api && npm install
+	cd normal/api && chown -R $$USER:$$USER node_modules
 	#cd normal/client && sudo npm install
 	#cd normal/client && sudo chown -R $$USER:$$USER node_modules
 

@@ -48,14 +48,12 @@ const resetGameOver = (state, store, socket) => {
 
 	store.dispatch(musicOn())
 	socket.emit('changestatusPlayer', state.url, state.tempName, false);
-	socket.emit("score_add", state.score, state.tempName, state.url);
+	// socket.emit("score_add", state.score, state.tempName, state.url);
 	store.dispatch(gameLaunchedOff());
 	store.dispatch(modifyLastMalus(0));
 	store.dispatch(changeKeyDown("null"))
 	store.dispatch(gameOverOn());
 	store.dispatch(modifyTime(1000))
-	if (state.score > state.bestScore)
-		store.dispatch(modifyBestScore(store.score))
 	store.dispatch(startPieceOn())
 	socket.emit("gameStopped", state.url);
 	return state.gameLaunched;
@@ -204,9 +202,12 @@ const socketMiddleware = (() => {
 				socket.on('winner', (name_winner) => {
 					if (name_winner == state.tempName)
 					{
+						console.log("name winner = ", name_winner)
 						store.dispatch(changeResultats("winner"))
 						socket.emit("score_add", state.score, state.tempName, state.url)
-						if (state.score > state.bestScore)
+						console.log("score = ", state.score)
+						console.log("Best score = ", state.bestScore)
+						if (state.bestScore == 0 || state.score > state.bestScore)
 							store.dispatch(modifyBestScore(state.score))
 						store.dispatch(musicOn())
 						store.dispatch(gameOverOn())

@@ -155,7 +155,10 @@ const socketMiddleware = (() => {
 			}
 			case 'SET_HIGHER_POS': {
 				let y = 19;
-				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {}
+				for (y; state.rows[y].includes(1) || state.rows[y].includes(2); y--) {
+					if (y == 0)
+						break;
+				}
 		
 				let index = y;
 				socket.emit("setHigherPos", index, state.url, state.tempName);

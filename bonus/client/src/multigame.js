@@ -94,9 +94,27 @@ function MultiGame() {
 	}, [])
 
 	useEffect(() => {
-		if (resultat == "winner")
+		if (resultat == "winner") {
 			setPlay(true)
+			dispatch()
+		}
+
 		toggleAudioPlayback();
+
+		if (audio) {
+			audio.onended = () => {
+			  audio.currentTime = 0;  // Remet la musique au début
+			  audio.play();           // Recommence la lecture
+			};
+		  }
+		
+		  return () => {
+			// Nettoyage de l'événement onended lors du démontage du composant
+			if (audio) {
+			  audio.onended = null;
+			}
+		  };
+
 	}, [play, music])
 
 	if (!gameLaunched)
@@ -616,7 +634,7 @@ function MultiGame() {
 		else if (play) {
 		  if (audio) {
 			audio.pause();
-			audio.load();
+			// audio.load();
 		  }
 		}
 		dispatch(musicOff())
