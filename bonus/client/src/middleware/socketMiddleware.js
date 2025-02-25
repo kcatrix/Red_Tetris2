@@ -101,7 +101,6 @@ const socketMiddleware = (() => {
 
 			// const socket = useSelector(selectSocket)
       socket.on('connect', () => {
-        console.log('Connected to socket server');
       });
 
       socket.emit('requestRandomPiece');
@@ -201,10 +200,8 @@ const socketMiddleware = (() => {
 			}
 			case 'WINNER': {
 				socket.on('winner', (name_winner) => {
-					console.log("inside WINNER middleware")
 					if (name_winner == state.tempName)
 					{
-						console.log("name winner = ", name_winner)
 						store.dispatch(changeResultats("winner"))
 						store.dispatch(musicOn())
 						store.dispatch(gameOverOn())
@@ -255,7 +252,6 @@ const socketMiddleware = (() => {
 			case 'PLAYER_DISCONNECTED': {
 				socket.on('playerDisconnected', (disconnectedPlayer) => {
 					store.dispatch(fillPlayers(state.players.filter(element => element.name !== disconnectedPlayer)))
-					console.log("-- Inside PLAYER_DISCONNECTED")
 				});
 				break;
 			}

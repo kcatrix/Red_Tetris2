@@ -92,7 +92,6 @@ const socketMiddleware = (() => {
       socket = io('http://localhost:4000'); // Utilisez votre adresse publique ici
 
       socket.on('connect', () => {
-        console.log('Connected to socket server');
       });
 
       socket.emit('requestRandomPiece');
@@ -242,7 +241,6 @@ const socketMiddleware = (() => {
 			case 'PLAYER_DISCONNECTED': {
 				socket.on('playerDisconnected', (disconnectedPlayer) => {
 					store.dispatch(fillPlayers(state.players.filter(element => element.name !== disconnectedPlayer)))
-					console.log("-- Inside PLAYER_DISCONNECTED")
 				});
 				break;
 			}

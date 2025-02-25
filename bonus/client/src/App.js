@@ -61,8 +61,7 @@ function App() {
   }, [multi]);
 
 	useEffect(() => { // Logique vérifiant si on tente d'accéder à l'URL avec un nom déja rempli ou pas
-		// Si oui, on vérifie l'URL, sinon on repart de la page de base pour rentrer son nom est accéder au multi
-		// if (tempName.length === 0 && back == false) {
+
 		if (tempName.length === 0) {
 			dispatch(changeOldUrl(checkUrl));
 			navigate("/");
@@ -71,16 +70,7 @@ function App() {
 		if (checkUrl && checkUrl.length > 3 ) {
 			dispatch({ type: 'URL_CHECK' });
 		}
-		// if (back == true) {
-		// 	console.log("coucou 1")
-		// 	dispatch(changeOldUrl(""))
-		// 	dispatch(changeCheckUrl(""))
-		// 	dispatch(changeUrl(location.pathname))
-		// 	dispatch(changeTempName(''))
-		// 	dispatch(noNameOn());
-		// 	dispatch(backOff())
-		// 	navigate("/")
-		// }
+
 	}, [checkUrl]);
 
 	useEffect(() => { // Continuité de la vérif d'url au-dessus.
@@ -92,17 +82,7 @@ function App() {
 			dispatch(changeOldUrl(""));
 			navigate(oldUrl);
 		}
-		// else if (back == true) { 
-		// 	console.log("coucou 2")
-		// 	dispatch(changeOldUrl(""))
-		// 	dispatch(changeCheckUrl(""))
-		// 	dispatch(changeUrl(location.pathname));
-		// 	dispatch(changeTempName(''))
-		// 	dispatch(noNameOn());
-		// 	dispatch(backOff())
-		// 	dispatch(changeOkOff())
-		// 	navigate("/")
-		// }
+
 	}, [noName]);
 
   const handleInputChange = (event) => { // logique de construction du nom

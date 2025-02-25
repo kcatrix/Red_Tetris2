@@ -11,8 +11,7 @@ const nmbrPieces = 2000;
 const Rooms = [];
 const ScoresList = [];
 
-server.listen(port, () =>
-  console.log(`Server running on port ${port}, http://localhost:${port}`)
+server.listen(port, () => {}
 );
 
 const io = require('socket.io')(server, {
@@ -32,10 +31,8 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected: ', socket.id);
 
     socket.on('disconnect', () => {
-			console.log(`Client disconnected with ID: `, socket.id);
 
 			// Parcourir toutes les rooms pour trouver le client déconnecté
 			for (let i = 0; i < Rooms.length; i++) {
@@ -143,7 +140,6 @@ io.on('connection', (socket) => {
         const index = Rooms.findIndex(searchUrl);
         if (index !== -1 && Rooms[index]) {
             Rooms[index].creatNewPlayer(name, socket.id, existingScore);
-            // console.log(Rooms[index]);
             socket.join(Url); // Add player to the room
             io.to(Url).emit('namePlayer',  Rooms[index].Players.map(player => player.name))
         } 
@@ -259,7 +255,6 @@ io.on('connection', (socket) => {
 			function compareNumbers(a, b) {
 				return b.scores - a.scores;
 			}
-			console.log("highScore = ", ScoresList)
 			ScoresList.sort(compareNumbers)
 			socket.emit("highScoreSorted", ScoresList)
 		})

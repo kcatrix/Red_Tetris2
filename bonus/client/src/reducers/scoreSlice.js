@@ -10,7 +10,6 @@ const scoreSlice = createSlice({
 			return action.payload;
 		},
 		addScore: (state, action) => {
-			console.log("state ( ", state, " ) + actiom ( ", action.payload, " ) = ", state + action.payload)
 			return state + action.payload
 		}
 	}

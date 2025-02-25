@@ -13,6 +13,9 @@ n_clean:
 	docker container prune -f
 	docker volume prune -f
 
+coverage:
+	docker exec -it api_backend npm run coverage
+
 bonus:
 	docker compose -f ./bonus/docker-compose.yml up --build
 
