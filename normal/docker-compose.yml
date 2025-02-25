@@ -5,6 +5,10 @@ services:
     container_name: api_backend
     ports:
       - '4000:4000'
+    env_file:
+      - .env
+    environment:
+      - URL=${URL}
     volumes:
       - ./api:/app
       - /app/node_modules
@@ -13,6 +17,10 @@ services:
     container_name: client_frontend
     ports:
       - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      - REACT_APP_URL=${URL}
     volumes:
       - ./client:/app
       - /app/node_modules

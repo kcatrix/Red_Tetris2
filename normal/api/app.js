@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const server = require('http').createServer(app);
 const port = process.env.PORT || 4000;
+const url = process.env.URL
 const Pieces = require('./pieces');
 const Room = require('./room');
 const Players = require('./players');
@@ -12,20 +13,19 @@ const nmbrPieces = 2000;
 const Rooms = [];
 const ScoresList = [];
 
+
 server.listen(port, () => {}
 );
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://localhost:3000", // Spécifiez explicitement votre adresse publique
-        // origin: "http://90.5.107.160:3000", // Spécifiez explicitement votre adresse publique
+        origin: "http://" + url + ":3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 		maxHttpBufferSize: 1e8, pingTimeout: 60000
 });
 
-app.use(cors({ origin: 'http://localhost:3000' }));
-// app.use(cors({ origin: 'http://90.5.107.160:3000' }));
+app.use(cors({ origin: "http://" + url + ":3000" }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');
