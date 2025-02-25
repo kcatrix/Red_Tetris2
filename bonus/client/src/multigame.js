@@ -94,9 +94,9 @@ function MultiGame() {
 	}, [])
 
 	useEffect(() => {
+		console.log("coucou winner from resultat = winner")
 		if (resultat == "winner") {
 			setPlay(true)
-			dispatch()
 		}
 
 		toggleAudioPlayback();

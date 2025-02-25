@@ -11,7 +11,7 @@ import { changeOkOff, changeOkOn } from '../reducers/changeOkSlice';
 import { changeScoreList } from '../reducers/scoreListSlice';
 import { leaderOff, leaderOn } from '../reducers/leaderSlice';
 import { modifyBestScore } from '../reducers/bestScoreSlice';
-import { modifyScore } from '../reducers/scoreSlice';
+import { modifyScore, selectScore } from '../reducers/scoreSlice';
 import { gameLaunchedOff, gameLaunchedOn } from '../reducers/gameLaunchedSlice';
 import { retrySignalOn } from '../reducers/retrySignalSlice';
 import { changeResultats } from '../reducers/resultatsSlice';
@@ -171,6 +171,7 @@ const socketMiddleware = (() => {
 		
 				let index = y;
 				socket.emit("setHigherPos", index, state.url, state.tempName);
+				socket.emit("score_add", state.score, state.tempName, state.url)
 				break;
 			}
 			case 'LAUNCH_GAME': {
@@ -200,15 +201,11 @@ const socketMiddleware = (() => {
 			}
 			case 'WINNER': {
 				socket.on('winner', (name_winner) => {
+					console.log("inside WINNER middleware")
 					if (name_winner == state.tempName)
 					{
 						console.log("name winner = ", name_winner)
 						store.dispatch(changeResultats("winner"))
-						socket.emit("score_add", state.score, state.tempName, state.url)
-						console.log("score = ", state.score)
-						console.log("Best score = ", state.bestScore)
-						if (state.bestScore == 0 || state.score > state.bestScore)
-							store.dispatch(modifyBestScore(state.score))
 						store.dispatch(musicOn())
 						store.dispatch(gameOverOn())
 						store.dispatch(gameLaunchedOff())

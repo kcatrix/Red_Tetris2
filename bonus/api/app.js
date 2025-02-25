@@ -225,7 +225,7 @@ io.on('connection', (socket) => {
 				for(let x = 0; x < Rooms[index].Players.length; x++) {
 					Rooms[index].Players[x].setHigherPos(0) 
 			}
-			if (Rooms[index].Players.length >= 1)
+			if (Rooms[index].Players.length > 1)
 				io.to(Url).emit('retry', name)
 		})
 
