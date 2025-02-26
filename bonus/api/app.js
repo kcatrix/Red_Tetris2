@@ -12,18 +12,18 @@ const nmbrPieces = 2000;
 const Rooms = [];
 const ScoresList = [];
 
-server.listen(port, () => {}
+server.listen(port, '0.0.0.0', () => {}
 );
 
 const io = require('socket.io')(server, {
     cors: {
-        origin: "http://" + url + ":3000", // Spécifiez explicitement votre adresse publique
+        origin: url + ":3000", // Spécifiez explicitement votre adresse publique
         methods: ["GET", "POST"]
     },
 		maxHttpBufferSize: 1e8, pingTimeout: 60000
 });
 
-app.use(cors({ origin: "http://" + url + ":3000" }));
+app.use(cors({ origin: url + ":3000" }));
 
 app.get('/', (req, res) => {
     res.send('Home Route');

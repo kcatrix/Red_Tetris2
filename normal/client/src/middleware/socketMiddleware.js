@@ -91,7 +91,7 @@ const socketMiddleware = (() => {
   return store => next => action => {
     if (!socket && action.type === 'SOCKET_INIT') {
       // Initialiser la connexion socket une seule fois
-      socket = io("http://" + url + ":4000"); // Utilisez votre adresse publique ici
+      socket = io(url + ":4000"); // Utilisez votre adresse publique ici
 
       socket.on('connect', () => {
       });

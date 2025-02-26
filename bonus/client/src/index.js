@@ -12,7 +12,7 @@ import { store } from './store'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 			<Provider store={store}>
      	 <App />
 			</Provider>

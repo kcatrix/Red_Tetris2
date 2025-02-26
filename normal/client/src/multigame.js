@@ -555,7 +555,7 @@ function MultiGame() {
 				event.key == "ArrowRight" || event.key == " ") {
 			setTimeout(() => {
 				dispatch(changeKeyDown(event.key));
-			}, 25)
+			})
 		}
 		else
 			return;

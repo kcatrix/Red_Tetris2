@@ -16,13 +16,13 @@ services:
     build: ./client
     container_name: client_frontend
     ports:
-      - '3000:3000'
+      - '3000:80'
     env_file:
       - .env
     environment:
       - REACT_APP_URL=${URL}
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./client:/app
+    #   - /app/node_modules
     stdin_open: true
     tty: true

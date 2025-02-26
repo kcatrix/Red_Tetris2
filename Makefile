@@ -17,7 +17,7 @@ coverage:
 	docker exec -it api_backend npm run coverage
 
 bonus:
-	docker compose -f ./bonus/docker-compose.yml up --build
+	docker compose -f ./bonus/docker-compose.yml up --build -d
 
 b_stop:
 	docker compose -f ./bonus/docker-compose.yml stop
