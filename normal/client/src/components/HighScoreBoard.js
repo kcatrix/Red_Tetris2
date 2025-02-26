@@ -26,7 +26,7 @@ export const HighScoreBoard = ({scoresList}) => {
 			</div>
 		))
 	)
-
+	
 	return (
 		<div>
 			{scoresList.length == 0 ? 
