@@ -1,0 +1,16 @@
+{
+  "name": "red-tetris",
+  "version": "1.0.0",
+  "description": "Red Tetris Game",
+  "scripts": {
+    "test": "npm run test:client && npm run test:api",
+    "test:client": "cd client && npm test -- --coverage --watchAll=false",
+    "test:api": "cd api && npm test",
+    "test:watch": "cd client && npm test",
+    "coverage": "cd api && npm run coverage",
+    "covrage": "cd api && node coverage/coverage.js"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.2.7"
+  }
+}

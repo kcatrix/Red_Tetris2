@@ -1,4 +1,6 @@
 all: 
+	cp -r .env ./normal/
+	cp -r .env ./bonus/
 	docker compose -f ./normal/docker-compose.yml up --build -d
 
 n_stop:
@@ -17,6 +19,8 @@ coverage:
 	docker exec -it api_backend npm run coverage
 
 bonus:
+	cp -r .env ./normal/
+	cp -r .env ./bonus/
 	docker compose -f ./bonus/docker-compose.yml up --build
 
 b_stop:
