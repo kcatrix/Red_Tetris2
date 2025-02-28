@@ -8,6 +8,7 @@ import { HighScoreBoard } from './components/HighScoreBoard';
 import { selectRandomPiece } from "./reducers/pieceSlice";
 import { selectCatalogPieces } from './reducers/catalogPiecesSlice';
 import { multiOff, selectMulti } from './reducers/multiSlice';
+import { handle } from './components/changeButton';
 import { selectUrl, changeUrl } from './reducers/urlSlice';
 import { changeOkOff, selectChangeOk } from './reducers/changeOkSlice';
 import { selectShowHighScore, showHighScoreOn } from './reducers/showHighScoreSlice';
@@ -96,6 +97,7 @@ function App() {
     if (finalTempName.length >= 2 && finalTempName.length <= 15) {
       dispatch(changeTempName(finalTempName));
       dispatch(noNameOff());
+      handle()
     } else {
       alert('Name must be between 2 and 15 characters');
     }
