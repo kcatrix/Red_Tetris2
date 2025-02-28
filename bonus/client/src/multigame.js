@@ -335,6 +335,7 @@ function MultiGame() {
 				setPieceIndex(pieceIndex + 1);
 				dispatch(startPieceOn());
 				setPosition([...position, { x: 4, y: 0 }]);
+				changePieceColor(); // Appel de la fonction pour changer la couleur des pièces
 			}			
 }, [gameLaunched, pieceIndex, position, rows, malus, malus, startPiece, down, tick, keyDown, lastMalus, addMalusGo, spaceRaised]);
 
@@ -653,6 +654,46 @@ function MultiGame() {
 		dispatch({ type: "BACK_HOME" })
 		navigate("/");
 	}
+
+	// Fonction pour changer la couleur de toutes les pièces
+	const changePieceColor = () => {
+		// Génère une couleur aléatoire
+		const generateRandomColor = () => {
+			const letters = '0123456789ABCDEF';
+			let color = '#';
+			for (let i = 0; i < 6; i++) {
+				color += letters[Math.floor(Math.random() * 16)];
+			}
+			return color;
+		};
+
+		const randomColor = generateRandomColor();
+		
+		// Crée une feuille de style temporaire
+		const styleElement = document.createElement('style');
+		
+		// Définit les nouvelles règles CSS pour changer la couleur des pièces
+		styleElement.textContent = `
+			.cell.piece {
+				background-color: ${randomColor} !important;
+			}
+			.cellPiece {
+				background-color: ${randomColor} !important;
+			}
+		`;
+		
+		// Supprime toute ancienne feuille de style ajoutée précédemment
+		const oldStyle = document.getElementById('tetris-piece-color');
+		if (oldStyle) {
+			oldStyle.remove();
+		}
+		
+		// Ajoute un ID pour pouvoir la retrouver plus tard
+		styleElement.id = 'tetris-piece-color';
+		
+		// Ajoute la feuille de style au document
+		document.head.appendChild(styleElement);
+	};
 
   
 	return (
